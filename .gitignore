@@ -1,0 +1,14 @@
+# Unity meta files are needed for packages
+# Only ignore OS and IDE files
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
