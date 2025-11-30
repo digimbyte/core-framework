@@ -1,6 +1,6 @@
 {
   "name": "com.digimbyte.itemregistry",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "displayName": "CorePackages",
   "description": "A generic registry system for managing items and assets in Unity.",
   "unity": "2021.3",
