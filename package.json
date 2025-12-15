@@ -1,6 +1,6 @@
 {
   "name": "com.digimbyte.snowfall",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "displayName": "CorePackages",
   "description": "A generic registry system for managing items and assets in Unity.",
   "unity": "2021.3",
