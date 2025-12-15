@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d78337d09e99ffc489976200611e124b
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Scripts/MA_DestroyFinishedParticle.cs
+  uploadId: 829872

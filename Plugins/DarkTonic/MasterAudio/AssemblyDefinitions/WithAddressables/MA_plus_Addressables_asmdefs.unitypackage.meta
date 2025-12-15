@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e56ed53a87c41c5469f603de48a0e7fc
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudio/AssemblyDefinitions/WithAddressables/MA_plus_Addressables_asmdefs.unitypackage
+  uploadId: 829872

@@ -1,12 +1,12 @@
 {
-  "name": "com.digimbyte.itemregistry",
+  "name": "com.digimbyte.snowfall",
   "version": "1.0.5",
   "displayName": "CorePackages",
   "description": "A generic registry system for managing items and assets in Unity.",
   "unity": "2021.3",
   "author": {
     "name": "digimbyte",
-    "url": "https://github.com/digimbyte"
+    "url": "https://github.com/digimbyte/Snowfall"
   },
   "keywords": [
     "registry",

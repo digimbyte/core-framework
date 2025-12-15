@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: fa1d80321df46bd47a4a60137cea10de
+timeCreated: 1634768071
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudio/3rd Party Plugin Integration/MA_Opsive.unitypackage
+  uploadId: 829872

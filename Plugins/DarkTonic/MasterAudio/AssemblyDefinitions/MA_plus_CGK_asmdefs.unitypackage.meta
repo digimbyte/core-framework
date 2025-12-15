@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bd3ccd040e82bcb44b2d059120263d15
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudio/AssemblyDefinitions/MA_plus_CGK_asmdefs.unitypackage
+  uploadId: 829872

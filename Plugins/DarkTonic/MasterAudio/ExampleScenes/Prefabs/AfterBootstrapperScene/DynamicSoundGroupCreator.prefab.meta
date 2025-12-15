@@ -1,0 +1,11 @@
+fileFormatVersion: 2
+guid: b58a1789f1501964daa17ee9d85b5cba
+NativeFormatImporter:
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Prefabs/AfterBootstrapperScene/DynamicSoundGroupCreator.prefab
+  uploadId: 829872

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cd9da43799024a84ba7709f4d54259d6
+timeCreated: 1643183778
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudioMultiplayer/Packages/MAM_Photon.unitypackage
+  uploadId: 829872

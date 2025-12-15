@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: b69906a2cd12b004d8ad0daa269bd215
+AudioImporter:
+  serializedVersion: 4
+  format: -1
+  quality: -1
+  stream: 1
+  3D: 1
+  forceToMono: 0
+  useHardware: 0
+  loopable: 0
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287785
+  packageName: 'Master Audio 2024: AAA Sound'
+  packageVersion: 1.0.3
+  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Audio/SFX/Scream.wav
+  uploadId: 829872
