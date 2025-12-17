@@ -1,0 +1,19 @@
+{
+  "name": "Core.Data.Localisation.Editor",
+  "rootNamespace": "Core",
+  "references": [
+    "GUID:b8c9d0e1f2345678901234567890abcd",
+    "GUID:b3f49edfedc855a48aa1a9e5d3cba438"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

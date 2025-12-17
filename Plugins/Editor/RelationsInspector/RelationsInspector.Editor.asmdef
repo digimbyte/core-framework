@@ -2,7 +2,8 @@
     "name": "RelationsInspector.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:5ffb678c52fbef943a6c9871d0c80ce5"
+        "GUID:5ffb678c52fbef943a6c9871d0c80ce5",
+        "GUID:13f4d6bb8c8e4f2a8d1f7d10d0a4c3d6"
     ],
     "includePlatforms": [
         "Editor"

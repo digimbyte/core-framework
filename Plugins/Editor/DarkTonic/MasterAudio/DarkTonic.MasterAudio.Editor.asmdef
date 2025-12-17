@@ -2,7 +2,8 @@
     "name": "DarkTonic.MasterAudio.Editor",
     "rootNamespace": "DarkTonic.MasterAudio.EditorScripts",
     "references": [
-        "GUID:5ffb678c52fbef943a6c9871d0c80ce5"
+        "GUID:5ffb678c52fbef943a6c9871d0c80ce5",
+        "GUID:847ad2b01940dbd4eb878d68e55cd874"
     ],
     "includePlatforms": [
         "Editor"
