@@ -58,5 +58,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Editor Default Resources/MasterAudio/inspector_header_bulk_audio_importer.png
+  assetPath: Assets/Core/Editor Default Resources/MasterAudio/inspector_header_bulk_audio_importer.png
   uploadId: 829872

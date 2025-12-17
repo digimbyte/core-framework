@@ -15,5 +15,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/Scripts/Events/MechanimStateParameterCommands.cs
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/Scripts/Events/MechanimStateParameterCommands.cs
   uploadId: 829872

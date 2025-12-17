@@ -10,5 +10,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/AssemblyDefinitions/WithAddressables/MA_plus_CGK_plus_Addressables_asmdefs.unitypackage
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/AssemblyDefinitions/WithAddressables/MA_plus_CGK_plus_Addressables_asmdefs.unitypackage
   uploadId: 829872

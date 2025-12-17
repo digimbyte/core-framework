@@ -15,5 +15,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Audio/Resources/Chinese/hello.mp3
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/ExampleScenes/Audio/Resources/Chinese/hello.mp3
   uploadId: 829872

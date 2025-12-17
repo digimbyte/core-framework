@@ -7,5 +7,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Prefabs/StandaloneScene/DynamicSoundGroupCreator.prefab
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/ExampleScenes/Prefabs/StandaloneScene/DynamicSoundGroupCreator.prefab
   uploadId: 829872

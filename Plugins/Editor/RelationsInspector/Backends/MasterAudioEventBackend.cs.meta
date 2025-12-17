@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/Editor/RelationsInspector/Backends/MasterAudioEventBackend.cs
+  assetPath: Assets/Core/Plugins/Editor/RelationsInspector/Backends/MasterAudioEventBackend.cs
   uploadId: 829872

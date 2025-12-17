@@ -5,5 +5,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Prefabs/Projectile.prefab
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/ExampleScenes/Prefabs/Projectile.prefab
   uploadId: 829872

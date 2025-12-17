@@ -5,6 +5,6 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/Sources/Prefabs/GroupTemplates/Looping
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/Sources/Prefabs/GroupTemplates/Looping
     Clip.prefab
   uploadId: 829872

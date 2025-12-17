@@ -15,5 +15,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/Editor/DarkTonic/MasterAudio/DTDefineHelper.cs
+  assetPath: Assets/Core/Plugins/Editor/DarkTonic/MasterAudio/DTDefineHelper.cs
   uploadId: 829872

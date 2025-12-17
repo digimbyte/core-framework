@@ -5,5 +5,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/_LocalizationScene.unity
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/ExampleScenes/_LocalizationScene.unity
   uploadId: 829872

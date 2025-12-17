@@ -10,5 +10,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudioMultiplayer/Packages/MAM_PhotonFusion_Server.unitypackage
+  assetPath: Assets/Core/Plugins/Audio/MasterAudioMultiplayer/Packages/MAM_PhotonFusion_Server.unitypackage
   uploadId: 829872

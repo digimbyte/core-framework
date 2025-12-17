@@ -15,6 +15,6 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/ExampleScenes/Audio/Music/The epic
-    trailer - Lead Brass.wav
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/ExampleScenes/Audio/Music/The
+    epic trailer - Lead Brass.wav
   uploadId: 829872

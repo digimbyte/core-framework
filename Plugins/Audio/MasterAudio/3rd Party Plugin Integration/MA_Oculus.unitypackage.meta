@@ -10,5 +10,5 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/3rd Party Plugin Integration/MA_Oculus.unitypackage
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/3rd Party Plugin Integration/MA_Oculus.unitypackage
   uploadId: 829872

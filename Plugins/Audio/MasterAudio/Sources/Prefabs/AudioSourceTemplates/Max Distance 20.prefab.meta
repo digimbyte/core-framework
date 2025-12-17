@@ -7,6 +7,6 @@ AssetOrigin:
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
   packageVersion: 1.0.3
-  assetPath: Assets/Plugins/DarkTonic/MasterAudio/Sources/Prefabs/AudioSourceTemplates/Max
+  assetPath: Assets/Core/Plugins/Audio/MasterAudio/Sources/Prefabs/AudioSourceTemplates/Max
     Distance 20.prefab
   uploadId: 829872
