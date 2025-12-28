@@ -1,6 +1,6 @@
 {
   "name": "com.digimbyte.core",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "displayName": "Core Framework",
   "description": "A boiler plate framework for facilitating game data and systems to build scalable games or apps within Unity.",
   "unity": "2021.3",
