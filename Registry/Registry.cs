@@ -62,7 +62,7 @@ namespace Core.Registry
 
             BuildCache();
 
-            if (itemCache.TryGetValue(uid, out ItemEntry entry))
+            if (itemCache.TryGetValue(uid.ToLower(), out ItemEntry entry))
                 return entry;
 
             Debug.LogWarning($"[{assetType}Registry] Item UID '{uid}' not found, returning default asset");
@@ -244,10 +244,10 @@ namespace Core.Registry
                 return;
             }
 
-            // Check for duplicate UIDs
-            if (GetItemByUID(entry.uid) != null)
+            // Check for duplicate UIDs (case-insensitive)
+            if (GetItemByUID(entry.uid.ToLower()) != null)
             {
-                Debug.LogWarning($"[ItemRegistry] Item with UID '{entry.uid}' already exists in registry");
+                Debug.LogWarning($"[ItemRegistry] Item with UID '{entry.uid}' already exists in registry (case-insensitive match)");
                 return;
             }
 
@@ -260,7 +260,7 @@ namespace Core.Registry
         /// </summary>
         public bool RemoveItem(string uid)
         {
-            ItemEntry entry = GetItemByUID(uid);
+            ItemEntry entry = GetItemByUID(uid.ToLower());
             if (entry != null)
             {
                 itemEntries.Remove(entry);
@@ -292,13 +292,14 @@ namespace Core.Registry
             {
                 if (!string.IsNullOrEmpty(entry.uid))
                 {
-                    if (itemCache.ContainsKey(entry.uid))
+                    string lowerUid = entry.uid.ToLower();
+                    if (itemCache.ContainsKey(lowerUid))
                     {
-                        Debug.LogWarning($"[ItemRegistry] Duplicate item UID '{entry.uid}' in registry");
+                        Debug.LogWarning($"[ItemRegistry] Duplicate item UID '{entry.uid}' (case-insensitive match with existing '{itemCache[lowerUid].uid}') in registry");
                     }
                     else
                     {
-                        itemCache[entry.uid] = entry;
+                        itemCache[lowerUid] = entry;
                     }
                 }
             }

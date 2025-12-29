@@ -29,12 +29,12 @@ namespace Core.Registry
         // Keying strategy: composite key = "<registryName>/<path>"
         private static string NormalizeRegistryName(string name)
         {
-            return string.IsNullOrWhiteSpace(name) ? string.Empty : name.Trim().Trim('/');
+            return string.IsNullOrWhiteSpace(name) ? string.Empty : name.Trim().Trim('/').ToLower();
         }
 
         private static string NormalizePath(string path)
         {
-            return string.IsNullOrWhiteSpace(path) ? string.Empty : path.Trim().Trim('/').Replace("\\", "/");
+            return string.IsNullOrWhiteSpace(path) ? string.Empty : path.Trim().Trim('/').Replace("\\", "/").ToLower();
         }
 
         private static string MakeCompositeKey(string registryName, string itemPath)
@@ -202,7 +202,7 @@ namespace Core.Registry
         // Prefer composite keys: "prefix/path"; check overrides first
         if (uid.Contains("/"))
         {
-            if (TryParseCompositeKey(uid, out var regName, out var path))
+            if (TryParseCompositeKey(uid.ToLower(), out var regName, out var path))
             {
                 var key = MakeCompositeKey(regName, path);
                 Debug.Log($"[RegistryManager] Looking up '{key}', cache has {globalItemCache.Count} keys, contains key: {globalItemCache.ContainsKey(key)}");
@@ -548,7 +548,7 @@ namespace Core.Registry
         public void AddOverride(string compositeKey, ItemEntry entry)
         {
             if (string.IsNullOrWhiteSpace(compositeKey) || entry == null) return;
-            if (!TryParseCompositeKey(compositeKey, out var r, out var p)) return;
+            if (!TryParseCompositeKey(compositeKey.ToLower(), out var r, out var p)) return;
             overrideItemCache[MakeCompositeKey(r, p)] = entry;
         }
 
