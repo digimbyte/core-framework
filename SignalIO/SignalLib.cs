@@ -1,6 +1,3 @@
-using Core.InputManager;
-using Core.ItemSystem.Core;
-using Core.RTEditorExtensions.ToolOverrideSystem.Models;
 using UnityEngine;
 
 namespace Core.Signals
