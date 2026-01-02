@@ -47,10 +47,16 @@ namespace Core.Registry
         [NonSerialized]
         private bool isCacheValid = false;
 
+        [SerializeField]
+        [LabelText("Enable Logging")]
+        [InfoBox("Enable verbose logging for this Registry (default: false)")]
+        private bool enableLogging = false;
+
         public string Description => description;
         public int ItemCount => itemEntries.Count;
         public RegistryAssetType AssetType => assetType;
         public UnityEngine.Object DefaultAsset => defaultAsset;
+        public bool EnableLogging => enableLogging;
 
         /// <summary>
         /// Get an item entry by its UID. Returns null if not found.
@@ -65,7 +71,7 @@ namespace Core.Registry
             if (itemCache.TryGetValue(uid.ToLower(), out ItemEntry entry))
                 return entry;
 
-            Debug.LogWarning($"[{assetType}Registry] Item UID '{uid}' not found, returning default asset");
+            LogWarning($"[{assetType}Registry] Item UID '{uid}' not found, returning default asset");
             return null;
         }
 
@@ -124,6 +130,15 @@ namespace Core.Registry
         }
 
         /// <summary>
+        /// Get a sprite by its UID. Returns default sprite if not found.
+        /// </summary>
+        public Sprite GetSpriteByUID(string uid)
+        {
+            ItemEntry entry = GetItemByUID(uid);
+            return (entry?.asset as Sprite) ?? (defaultAsset as Sprite);
+        }
+
+        /// <summary>
         /// Get a typed asset by its UID. Returns default asset if not found.
         /// </summary>
         public T GetAssetByUID<T>(string uid) where T : UnityEngine.Object
@@ -158,6 +173,20 @@ namespace Core.Registry
             {
                 if (entry.asset is Texture tex)
                     results.Add(tex);
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Get all sprites in this registry.
+        /// </summary>
+        public List<Sprite> GetAllSprites()
+        {
+            List<Sprite> results = new List<Sprite>();
+            foreach (var entry in itemEntries)
+            {
+                if (entry.asset is Sprite s)
+                    results.Add(s);
             }
             return results;
         }
@@ -233,21 +262,21 @@ namespace Core.Registry
         {
             if (entry == null || string.IsNullOrEmpty(entry.uid))
             {
-                Debug.LogWarning("[ItemRegistry] Cannot add item entry: entry is null or has empty UID");
+                LogWarning("[ItemRegistry] Cannot add item entry: entry is null or has empty UID");
                 return;
             }
 
             // Validate asset type matches registry type
             if (!ValidateAssetType(entry.asset))
             {
-                Debug.LogError($"[ItemRegistry] Cannot add item '{entry.uid}': asset type mismatch. Registry expects {assetType}");
+                LogError($"[ItemRegistry] Cannot add item '{entry.uid}': asset type mismatch. Registry expects {assetType}");
                 return;
             }
 
             // Check for duplicate UIDs (case-insensitive)
             if (GetItemByUID(entry.uid.ToLower()) != null)
             {
-                Debug.LogWarning($"[ItemRegistry] Item with UID '{entry.uid}' already exists in registry (case-insensitive match)");
+                LogWarning($"[ItemRegistry] Item with UID '{entry.uid}' already exists in registry (case-insensitive match)");
                 return;
             }
 
@@ -295,7 +324,7 @@ namespace Core.Registry
                     string lowerUid = entry.uid.ToLower();
                     if (itemCache.ContainsKey(lowerUid))
                     {
-                        Debug.LogWarning($"[ItemRegistry] Duplicate item UID '{entry.uid}' (case-insensitive match with existing '{itemCache[lowerUid].uid}') in registry");
+                        LogWarning($"[ItemRegistry] Duplicate item UID '{entry.uid}' (case-insensitive match with existing '{itemCache[lowerUid].uid}') in registry");
                     }
                     else
                     {
@@ -330,11 +359,11 @@ namespace Core.Registry
             {
                 if (string.IsNullOrEmpty(entry.uid))
                 {
-                    Debug.LogWarning($"[ItemRegistry] Found entry with empty UID");
+                    LogWarning($"[ItemRegistry] Found entry with empty UID");
                 }
                 else if (seenUIDs.Contains(entry.uid))
                 {
-                    Debug.LogWarning($"[ItemRegistry] Duplicate UID found: '{entry.uid}'");
+                    LogWarning($"[ItemRegistry] Duplicate UID found: '{entry.uid}'");
                     duplicates++;
                 }
                 else
@@ -344,7 +373,7 @@ namespace Core.Registry
 
                 if (entry.asset == null)
                 {
-                    Debug.LogWarning($"[ItemRegistry] Entry '{entry.uid}' has no asset assigned");
+                    LogWarning($"[ItemRegistry] Entry '{entry.uid}' has no asset assigned");
                     invalidAssets++;
                 }
                 else
@@ -365,14 +394,14 @@ namespace Core.Registry
 
                         if (!validAsset)
                         {
-                            Debug.LogWarning($"[ItemRegistry] Entry '{entry.uid}' has invalid asset type: {assetPath}");
+                            LogWarning($"[ItemRegistry] Entry '{entry.uid}' has invalid asset type: {assetPath}");
                             invalidAssets++;
                         }
                     }
                 }
             }
 
-            Debug.Log($"[{assetType}Registry] Validation complete: {itemEntries.Count} entries, {duplicates} duplicates, {invalidAssets} invalid assets");
+            Log($"[{assetType}Registry] Validation complete: {itemEntries.Count} entries, {duplicates} duplicates, {invalidAssets} invalid assets");
         }
 
         [Button("Clear All Items")]
@@ -386,7 +415,7 @@ namespace Core.Registry
             {
                 itemEntries.Clear();
                 InvalidateCache();
-                Debug.Log($"[{assetType}Registry] All items cleared");
+                Log($"[{assetType}Registry] All items cleared");
             }
         }
 #endif
@@ -399,7 +428,7 @@ namespace Core.Registry
             // Validate default asset matches registry type
             if (defaultAsset != null && !ValidateAssetType(defaultAsset))
             {
-                Debug.LogError($"[{assetType}Registry] Default asset type mismatch! Expected {assetType}, got {defaultAsset.GetType().Name}. Clearing invalid default asset.");
+                LogError($"[{assetType}Registry] Default asset type mismatch! Expected {assetType}, got {defaultAsset.GetType().Name}. Clearing invalid default asset.");
 #if UNITY_EDITOR
                 // Defer the clearing to avoid serialization issues during OnValidate
                 UnityEditor.EditorApplication.delayCall += () =>
@@ -427,6 +456,8 @@ namespace Core.Registry
                     return asset is GameObject;
                 case RegistryAssetType.Texture:
                     return asset is Texture || asset is Texture2D;
+                case RegistryAssetType.Sprite:
+                    return asset is Sprite;
                 case RegistryAssetType.Material:
                     return asset is Material;
                 case RegistryAssetType.Mesh:
@@ -447,7 +478,7 @@ namespace Core.Registry
             {
                 if (entry.asset != null && !ValidateAssetType(entry.asset))
                 {
-                    Debug.LogWarning($"[ItemRegistry] Asset type mismatch in '{entry.uid}': expected {assetType}, got {entry.asset.GetType().Name}");
+                    LogWarning($"[ItemRegistry] Asset type mismatch in '{entry.uid}': expected {assetType}, got {entry.asset.GetType().Name}");
                 }
             }
         }
@@ -457,11 +488,30 @@ namespace Core.Registry
         {
             if (itemEntries.Count > 0)
             {
-                Debug.LogWarning($"[ItemRegistry] Changing asset type with existing items! Validate all assets match the new type.");
+                LogWarning($"[ItemRegistry] Changing asset type with existing items! Validate all assets match the new type.");
                 ValidateAllAssetTypes();
             }
         }
 #endif
+
+        // Logging helpers that respect the per-Registry `enableLogging` toggle.
+        private void Log(string message)
+        {
+            if (!enableLogging) return;
+            Debug.Log(message);
+        }
+
+        private void LogWarning(string message)
+        {
+            if (!enableLogging) return;
+            Debug.LogWarning(message);
+        }
+
+        private void LogError(string message)
+        {
+            if (!enableLogging) return;
+            Debug.LogError(message);
+        }
     }
 
     /// <summary>
@@ -528,6 +578,7 @@ namespace Core.Registry
     {
         Prefab,
         Texture,
+        Sprite,
         Material,
         Mesh,
         Audio

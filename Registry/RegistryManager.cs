@@ -290,6 +290,27 @@ namespace Core.Registry
     }
 
         /// <summary>
+        /// Get a sprite by UID from any loaded Registry.
+        /// </summary>
+    public Sprite GetSpriteByUID(string uid)
+    {
+        var entry = GetItemByUID(uid);
+        if (entry != null)
+            return entry.asset as Sprite;
+        
+        // If not found and uid has registry prefix, return that registry's default
+        if (!string.IsNullOrEmpty(uid) && uid.Contains("/"))
+        {
+            if (TryParseCompositeKey(uid, out var regName, out _))
+            {
+                if (loadedRegistries.TryGetValue(regName, out var reg))
+                    return reg.DefaultAsset as Sprite;
+            }
+        }
+        return null;
+    }
+
+        /// <summary>
         /// Get a material by UID from any loaded Registry.
         /// </summary>
     public Material GetMaterialByUID(string uid)
@@ -458,6 +479,21 @@ namespace Core.Registry
             foreach (var Registry in loadedRegistries.Values)
             {
                 results.AddRange(Registry.GetAllTextures());
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Get all sprites across all loaded Registries.
+        /// </summary>
+        public List<Sprite> GetAllSprites()
+        {
+            var results = new List<Sprite>();
+            
+            foreach (var Registry in loadedRegistries.Values)
+            {
+                results.AddRange(Registry.GetAllSprites());
             }
 
             return results;
