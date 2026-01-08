@@ -16,7 +16,7 @@ public static class FolderMergeInto
 		ReplaceDestination
 	}
 
-	// Context menu on Assets (Project window right-click)
+	// Project window right-click on a folder
 	[MenuItem("Assets/Merge Into...", false, 2200)]
 	private static void OpenMergeIntoWindow()
 	{
@@ -55,14 +55,14 @@ public static class FolderMergeInto
 		if (destFolder.StartsWith(sourceFolder + "/", StringComparison.Ordinal))
 			throw new InvalidOperationException("Destination cannot be inside the source folder.");
 
-		// Gather all assets under source (files + folders).
+		// Gather all assets under source (files + folders). Note: this will NOT include empty folders.
 		var allGuids = AssetDatabase.FindAssets("", new[] { sourceFolder });
 		var allPaths = allGuids
 			.Select(AssetDatabase.GUIDToAssetPath)
 			.Where(p => p.StartsWith(sourceFolder + "/", StringComparison.Ordinal))
 			.ToArray();
 
-		// 1) Ensure destination subfolder structure exists.
+		// 1) Ensure destination subfolder structure exists (for non-empty folders only).
 		var folderPaths = allPaths
 			.Where(AssetDatabase.IsValidFolder)
 			.OrderBy(p => p.Count(c => c == '/')) // parents first
@@ -121,32 +121,117 @@ public static class FolderMergeInto
 
 				moved++;
 			}
-
-			// 3) Delete empty folders from deepest to shallowest, then root.
-			// (After moving files, remaining folders should be empty.)
-			var remaining = AssetDatabase.FindAssets("", new[] { sourceFolder })
-				.Select(AssetDatabase.GUIDToAssetPath)
-				.Where(p => p.StartsWith(sourceFolder + "/", StringComparison.Ordinal))
-				.ToArray();
-
-			var remainingFolders = remaining
-				.Where(AssetDatabase.IsValidFolder)
-				.OrderByDescending(p => p.Count(c => c == '/'))
-				.ToArray();
-
-			foreach (var f in remainingFolders)
-				AssetDatabase.DeleteAsset(f);
-
-			AssetDatabase.DeleteAsset(sourceFolder);
-
-			Debug.Log($"[Merge Into] Moved: {moved}, Skipped: {skipped}, Renamed: {renamed}, Replaced: {replaced}\nSource: {sourceFolder}\nDest: {destFolder}");
 		}
 		finally
 		{
 			AssetDatabase.StopAssetEditing();
-			AssetDatabase.Refresh();
+		}
+
+		// 3) Cleanup: remove empty folders left behind (INCLUDING folders FindAssets() can't see).
+		AssetDatabase.Refresh();
+		CleanupEmptyFoldersUnder(sourceFolder);
+		AssetDatabase.Refresh();
+
+		Debug.Log($"[Merge Into] Moved: {moved}, Skipped: {skipped}, Renamed: {renamed}, Replaced: {replaced}\nSource: {sourceFolder}\nDest: {destFolder}");
+	}
+
+	// ---------- Empty folder cleanup (filesystem-backed) ----------
+
+	private static void CleanupEmptyFoldersUnder(string sourceFolderAssetPath)
+	{
+		// Convert "Assets/..." -> absolute
+		var absSource = ToAbsolutePath(sourceFolderAssetPath);
+		if (!Directory.Exists(absSource))
+			return;
+
+		// Enumerate directories deepest-first so children delete before parents.
+		var dirs = Directory.GetDirectories(absSource, "*", SearchOption.AllDirectories)
+			.OrderByDescending(d => d.Length)
+			.ToArray();
+
+		foreach (var absDir in dirs)
+		{
+			if (!Directory.Exists(absDir))
+				continue;
+
+			// Only delete if the directory is effectively empty (ignoring .meta).
+			if (!IsDirEffectivelyEmpty(absDir))
+				continue;
+
+			var assetDir = AbsDirToAssetPath(absDir);
+
+			// Prefer Unity-side deletion (keeps DB happy).
+			if (AssetDatabase.IsValidFolder(assetDir))
+			{
+				if (AssetDatabase.DeleteAsset(assetDir))
+					continue;
+			}
+
+			// Fallback: delete from filesystem (folder + meta).
+			TryDeleteDirectoryAndMeta(absDir);
+		}
+
+		// Finally delete the root source folder if it is now empty.
+		if (Directory.Exists(absSource) && IsDirEffectivelyEmpty(absSource))
+		{
+			if (AssetDatabase.IsValidFolder(sourceFolderAssetPath))
+			{
+				if (!AssetDatabase.DeleteAsset(sourceFolderAssetPath))
+					TryDeleteDirectoryAndMeta(absSource);
+			}
+			else
+			{
+				TryDeleteDirectoryAndMeta(absSource);
+			}
 		}
 	}
+
+	private static bool IsDirEffectivelyEmpty(string absDir)
+	{
+		// Any subdirectories means not empty (even if they contain only meta, they’ll be processed deepest-first)
+		var subDirs = Directory.GetDirectories(absDir);
+		if (subDirs.Length > 0) return false;
+
+		// Any files other than ".meta" means not empty
+		var files = Directory.GetFiles(absDir);
+		foreach (var f in files)
+		{
+			if (!f.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
+				return false;
+		}
+
+		return true;
+	}
+
+	private static string AbsDirToAssetPath(string absDir)
+	{
+		absDir = absDir.Replace("\\", "/");
+		var absAssets = Application.dataPath.Replace("\\", "/"); // .../<Project>/Assets
+		if (!absDir.StartsWith(absAssets, StringComparison.Ordinal))
+			throw new InvalidOperationException("Path not under Assets/: " + absDir);
+
+		return "Assets" + absDir.Substring(absAssets.Length);
+	}
+
+	private static void TryDeleteDirectoryAndMeta(string absDir)
+	{
+		try
+		{
+			if (Directory.Exists(absDir))
+				Directory.Delete(absDir, recursive: false);
+
+			var meta = absDir.TrimEnd('/', '\\') + ".meta";
+			if (File.Exists(meta))
+				File.Delete(meta);
+		}
+		catch (Exception e)
+		{
+			// If recursive:false fails due to OS thinking it's not empty, that's fine; we only call when empty.
+			Debug.LogWarning($"[Merge Into] Failed to delete folder '{absDir}': {e.Message}");
+		}
+	}
+
+	// ---------- Path/asset helpers ----------
 
 	private static bool AssetExists(string assetPath)
 	{
@@ -156,6 +241,7 @@ public static class FolderMergeInto
 
 	private static string ToAbsolutePath(string assetPath)
 	{
+		// assetPath like "Assets/..."
 		string projectRoot = Directory.GetParent(Application.dataPath)!.FullName.Replace("\\", "/");
 		return $"{projectRoot}/{assetPath}".Replace("\\", "/");
 	}
@@ -186,6 +272,8 @@ public static class FolderMergeInto
 		}
 	}
 
+	// ---------- UI Window ----------
+
 	private class MergeIntoWindow : EditorWindow
 	{
 		private string _sourcePath;
@@ -196,7 +284,7 @@ public static class FolderMergeInto
 		{
 			var w = CreateInstance<MergeIntoWindow>();
 			w.titleContent = new GUIContent("Merge Into");
-			w.minSize = new Vector2(420, 140);
+			w.minSize = new Vector2(440, 160);
 			w._sourcePath = sourcePath;
 
 			// Restore last destination if possible.
@@ -238,7 +326,7 @@ public static class FolderMergeInto
 					if (!IsValidDestination(out var destPath))
 						return;
 
-					// Persist last destination for next time
+					// Persist last destination
 					var destGuid = AssetDatabase.AssetPathToGUID(destPath);
 					if (!string.IsNullOrEmpty(destGuid))
 						EditorPrefs.SetString(PrefKeyLastDestGuid, destGuid);
@@ -273,7 +361,7 @@ public static class FolderMergeInto
 			var destPath = AssetDatabase.GetAssetPath(_destFolderAsset);
 			if (string.IsNullOrEmpty(destPath) || !AssetDatabase.IsValidFolder(destPath))
 			{
-				messageOrPath = "Destination must be a folder asset inside the Project (under Assets/).";
+				messageOrPath = "Destination must be a folder inside the Project (under Assets/).";
 				return false;
 			}
 
