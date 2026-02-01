@@ -1,0 +1,1284 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using Nova;
+
+namespace Animator
+{
+    /// <summary>
+    /// General purpose animator/tween component. Supports animating arbitrary values
+    /// via getter/setter delegates and provides convenience helpers for common
+    /// Unity types (float, Vector3, Quaternion, Color).
+    /// - Can use the current value as the start or force a provided start value.
+    /// - Uses an <see cref="AnimationCurve"/> for easing.
+    /// </summary>
+    public class Animate : MonoBehaviour
+    {
+        // Track started coroutines so we can stop them later if requested
+        private readonly List<Coroutine> activeTweens = new List<Coroutine>();
+        
+#if UNITY_EDITOR
+        // Editor preview tween state
+        private class PreviewTweenState
+        {
+            public TweenEntry entry;
+            public float startTime;
+            public object initialState;
+        }
+        private PreviewTweenState currentPreviewTween = null;
+#endif
+
+        [Header("Configured Tweens (Inspector)")]
+        [SerializeField]
+        private List<TweenEntry> configuredTweens = new List<TweenEntry>();
+
+        [Serializable]
+        public enum TweenType
+        {
+            Position,
+            LocalPosition,
+            RotationEuler,
+            LocalRotationEuler,
+            Scale,
+            CanvasGroupAlpha,
+            RendererColor,
+            MaterialFloat,
+            Float,
+            CustomProperty
+        }
+
+        public bool playAllOnStart = true;
+
+        void Start()
+        {
+            if (playAllOnStart)
+            {
+                PlayAllConfigured();
+                return;
+            }
+
+            // Legacy per-entry flag support
+            foreach (var e in configuredTweens)
+            {
+                if (e != null && e.playOnStart)
+                    PlayEntry(e);
+            }
+        }
+
+        [Serializable]
+        public class TweenEntry
+        {
+            public string name;
+            public GameObject targetObject;
+            public Component targetComponent;
+            public TweenType type = TweenType.Position;
+            public bool playOnStart = false;
+            public StartSource startSource = StartSource.Start;
+            public bool local = true; // used for position/rotation
+
+            public Vector3 fromVec3;
+            public Vector3 toVec3;
+
+            public Color fromColor = Color.white;
+            public Color toColor = Color.white;
+
+            public float fromFloat = 0f;
+            public float toFloat = 1f;
+            public string materialProperty = "_Glossiness";
+            public int materialIndex = 0;
+            [Tooltip("Optional additional material color properties to set alongside materialProperty (e.g. _EmissionColor, _SpecColor).")]
+            public string[] materialColorProperties = Array.Empty<string>();
+
+            public bool fromBool = false;
+            public bool toBool = true;
+            public string propertyName;
+            public CustomPropertyMode propertyMode = CustomPropertyMode.AutoTween;
+            public string detectedPropertyType;
+            public ComponentMask vectorMask = ComponentMask.All;
+
+            public float duration = 1f;
+            public AnimationCurve curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); // Smooth easing (slerp-like)
+        }
+
+        public enum CustomPropertyMode
+        {
+            AutoTween,
+            SetAtEnd,
+            ToggleAtHalf
+        }
+
+        [System.Flags]
+        public enum ComponentMask
+        {
+            None = 0,
+            X = 1 << 0,
+            Y = 1 << 1,
+            Z = 1 << 2,
+            W = 1 << 3,
+            All = X | Y | Z | W
+        }
+
+        [Serializable]
+        public enum StartSource
+        {
+            Ignore,     // Use provided from/fromVec3/fromColor/fromFloat values
+            Start,      // Use current value as the start point
+            End         // Use provided to/toVec3/toColor/toFloat as the start point (swap start/end)
+        }
+
+        // ----------------
+        // Generic Tween API
+        // ----------------
+
+        /// <summary>
+        /// Tween from an explicit <paramref name="from"/> to <paramref name="to"/> using the provided lerp function.
+        /// </summary>
+        public Coroutine Tween<T>(Func<T> getter, Action<T> setter, T from, T to, float duration, Func<T, T, float, T> lerpFunc, AnimationCurve curve = null, Action onComplete = null)
+        {
+            if (duration <= 0f)
+            {
+                setter(to);
+                onComplete?.Invoke();
+                return null;
+            }
+
+            curve ??= AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+            IEnumerator routine = TweenCoroutine(getter, setter, from, to, duration, curve, lerpFunc, onComplete);
+            Coroutine c = StartCoroutine(routine);
+            activeTweens.Add(c);
+            return c;
+        }
+
+        private const float BoolHighThreshold = 0.6f;
+        private const float BoolLowThreshold = 0.4f;
+
+        private IEnumerator DriveBoolWithCurve(object owner, MemberInfo member, bool startValue, bool endValue, float duration, AnimationCurve curve)
+        {
+            bool state = startValue;
+            SetMemberValue(owner, member, state);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float v = curve.Evaluate(t);
+
+                if (!state && v > BoolHighThreshold)
+                {
+                    state = true;
+                    SetMemberValue(owner, member, state);
+                }
+                else if (state && v < BoolLowThreshold)
+                {
+                    state = false;
+                    SetMemberValue(owner, member, state);
+                }
+                yield return null;
+            }
+            SetMemberValue(owner, member, endValue);
+        }
+
+        private IEnumerator InvokeMethodOnCurve(MemberInfo member, object owner, float duration, AnimationCurve curve)
+        {
+            float elapsed = 0f;
+            bool fired = false;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float v = curve.Evaluate(t);
+                if (!fired && v > BoolHighThreshold)
+                {
+                    if (member is MethodInfo mi) mi.Invoke(owner, null);
+                    fired = true;
+                }
+                if (fired && v < BoolLowThreshold)
+                {
+                    fired = false; // allow retrigger if curve goes up again
+                }
+                yield return null;
+            }
+        }
+
+        // Resolve a dot-separated member path starting from a root object (usually a Component).
+        // Returns the owner object that contains the final member and the MemberInfo for that member.
+        private bool TryResolveMember(object root, string path, out object owner, out MemberInfo member, out Type memberType)
+        {
+            owner = root;
+            member = null;
+            memberType = null;
+            if (string.IsNullOrEmpty(path) || owner == null) return false;
+
+            string[] parts = path.Split('.');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                string part = parts[i];
+                if (owner == null && !(owner is RefStructMarker)) return false;
+                
+                Type t;
+                if (owner is RefStructMarker marker)
+                {
+                    // We're already traversing into a ref struct
+                    t = marker.refStructType;
+                }
+                else
+                {
+                    t = owner.GetType();
+                }
+                
+                var pi = t.GetProperty(part, BindingFlags.Public | BindingFlags.Instance);
+                var fi = t.GetField(part, BindingFlags.Public | BindingFlags.Instance);
+
+                if (pi != null)
+                {
+                    if (i == parts.Length - 1)
+                    {
+                        // This is the final segment - return it
+                        member = pi;
+                        memberType = pi.PropertyType;
+                        return true;
+                    }
+                    
+                    // Not the final segment - continue traversal
+                    bool isRefReturn = pi.PropertyType.Name.EndsWith("&");
+                    
+                    if (isRefReturn)
+                    {
+                        // Resolve ref-return type and wrap in marker
+                        string refTypeName = pi.PropertyType.Name.TrimEnd('&');
+                        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                        var refStructType = ResolveType(pi.PropertyType.Namespace + "." + refTypeName, assemblies);
+                        
+                        if (refStructType != null)
+                        {
+                            // Create a marker - the actual traversal will happen in GetMemberValue/SetMemberValue
+                            owner = new RefStructMarker(owner, pi, refStructType);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        try { owner = pi.GetValue(owner); }
+                        catch { return false; }
+                    }
+                    continue;
+                }
+
+                if (fi != null)
+                {
+                    if (i == parts.Length - 1)
+                    {
+                        member = fi;
+                        memberType = fi.FieldType;
+                        return true;
+                    }
+                    try { owner = fi.GetValue(owner); }
+                    catch { return false; }
+                    continue;
+                }
+
+                var mi = t.GetMethod(part, BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
+                if (mi != null && mi.GetParameters().Length == 0 && mi.ReturnType == typeof(void))
+                {
+                    if (i == parts.Length - 1)
+                    {
+                        member = mi;
+                        memberType = typeof(void);
+                        return true;
+                    }
+                    owner = mi.Invoke(owner, null);
+                    continue;
+                }
+
+                // not found
+                return false;
+            }
+
+            return false;
+        }
+        
+        private Type ResolveType(string fullTypeName, System.Reflection.Assembly[] assemblies)
+        {
+            foreach (var asm in assemblies)
+            {
+                if (asm == null) continue;
+                var type = asm.GetType(fullTypeName);
+                if (type != null) return type;
+            }
+            return null;
+        }
+        
+        // Marker class for tracking ref struct traversal
+        private class RefStructMarker
+        {
+            public object originalOwner;
+            public PropertyInfo refProperty;
+            public Type refStructType;
+            
+            public RefStructMarker(object owner, PropertyInfo prop, Type structType)
+            {
+                originalOwner = owner;
+                refProperty = prop;
+                refStructType = structType;
+            }
+            
+            public override string ToString() => $"Ref<{refStructType.Name}>";
+        }
+
+        // Delegate types for ref-returning UIBlock.Size
+        private delegate ref Length3 SizeGetter(UIBlock target);
+        private delegate ref Length3 SizeGetter2D(Nova.UIBlock2D target);
+        private delegate ref Length3 SizeGetter3D(Nova.UIBlock3D target);
+
+        private object GetMemberValue(object owner, MemberInfo member)
+        {
+            // Handle ref struct marker
+            if (owner is RefStructMarker marker)
+            {
+                // Get the actual ref struct instance by recursively calling the ref-return chain
+                object refStructInstance = GetRefStructInstance(marker);
+                
+                if (member is PropertyInfo pi)
+                {
+                    try { return pi.GetValue(refStructInstance); }
+                    catch { return null; }
+                }
+                if (member is FieldInfo fi)
+                {
+                    try { return fi.GetValue(refStructInstance); }
+                    catch { return null; }
+                }
+                return null;
+            }
+            
+            if (member is PropertyInfo pi2) return pi2.GetValue(owner);
+            if (member is FieldInfo fi2) return fi2.GetValue(owner);
+            return null;
+        }
+        
+        private object GetRefStructInstance(RefStructMarker marker)
+        {
+            // If the original owner is also a marker, recursively resolve it first
+            object currentOwner = marker.originalOwner;
+            if (currentOwner is RefStructMarker parentMarker)
+            {
+                currentOwner = GetRefStructInstance(parentMarker);
+            }
+            
+            // Now call the ref-return property on the resolved owner
+            try { return marker.refProperty.GetValue(currentOwner); }
+            catch { return null; }
+        }
+
+        private bool SetMemberValue(object owner, MemberInfo member, object value)
+        {
+            // Handle ref struct marker - must reconstruct and set back through ref-return
+            if (owner is RefStructMarker marker)
+            {
+                return SetRefStructMember(marker, member, value);
+            }
+            
+            if (member is PropertyInfo pi)
+            {
+                if (!pi.CanWrite) return false;
+                pi.SetValue(owner, value);
+                return true;
+            }
+            if (member is FieldInfo fi)
+            {
+                fi.SetValue(owner, value);
+                return true;
+            }
+            return false;
+        }
+        
+        private bool SetRefStructMember(RefStructMarker marker, MemberInfo member, object value)
+        {
+            try
+            {
+                // Get current state of the ref struct
+                object refStructInstance = GetRefStructInstance(marker);
+                if (refStructInstance == null) return false;
+                
+                // Modify it
+                if (member is PropertyInfo pi)
+                {
+                    if (!pi.CanWrite) return false;
+                    pi.SetValue(refStructInstance, value);
+                }
+                else if (member is FieldInfo fi)
+                {
+                    fi.SetValue(refStructInstance, value);
+                }
+                else
+                {
+                    return false;
+                }
+                
+                // Now we need to set the modified struct back through the ref-return property
+                // Get the parent owner (could be another marker)
+                object parentOwner = marker.originalOwner;
+                if (parentOwner is RefStructMarker parentMarker)
+                {
+                    // Recursively set through parent
+                    return SetRefStructMember(parentMarker, marker.refProperty, refStructInstance);
+                }
+                else
+                {
+                    // Parent is the actual component - set the struct back
+                    if (!marker.refProperty.CanWrite) return false;
+                    marker.refProperty.SetValue(parentOwner, refStructInstance);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tween using the current getter value as the start.
+        /// </summary>
+        public Coroutine Tween<T>(Func<T> getter, Action<T> setter, T to, float duration, Func<T, T, float, T> lerpFunc, AnimationCurve curve = null, Action onComplete = null)
+        {
+            T from = getter();
+            return Tween(getter, setter, from, to, duration, lerpFunc, curve, onComplete);
+        }
+
+        private IEnumerator TweenCoroutine<T>(Func<T> getter, Action<T> setter, T from, T to, float duration, AnimationCurve curve, Func<T, T, float, T> lerpFunc, Action onComplete)
+        {
+            float startTime = Time.realtimeSinceStartup;
+            setter(from);
+            while (true)
+            {
+                float elapsed = Time.realtimeSinceStartup - startTime;
+                if (elapsed >= duration)
+                {
+                    setter(to);
+                    break;
+                }
+                float t = Mathf.Clamp01(elapsed / duration);
+                float e = curve.Evaluate(t);
+                setter(lerpFunc(from, to, e));
+                yield return null;
+            }
+
+            onComplete?.Invoke();
+        }
+
+        // ----------------
+        // Tween management
+        // ----------------
+        public void StopTween(Coroutine c)
+        {
+            if (c == null) return;
+            try { StopCoroutine(c); } catch { }
+            activeTweens.Remove(c);
+        }
+
+        public void StopAllTweens()
+        {
+            foreach (var c in activeTweens)
+            {
+                if (c != null)
+                {
+                    try { StopCoroutine(c); } catch { }
+                }
+            }
+
+            activeTweens.Clear();
+        }
+
+        // ----------------
+        // Inspector-play helpers
+        // ----------------
+
+        /// <summary>
+        /// Play all configured tweens in the inspector.
+        /// </summary>
+        public void PlayAllConfigured()
+        {
+            foreach (var e in configuredTweens)
+            {
+                if (e != null)
+                    PlayEntry(e);
+            }
+        }
+
+        /// <summary>
+        /// Play a configured entry by index.
+        /// </summary>
+        public void PlayByIndex(int index)
+        {
+            if (index < 0 || index >= configuredTweens.Count) return;
+            PlayEntry(configuredTweens[index]);
+        }
+
+        /// <summary>
+        /// Play the first configured entry with a matching name.
+        /// </summary>
+        public void PlayByName(string name)
+        {
+            var e = configuredTweens.Find(x => x != null && x.name == name);
+            if (e != null) PlayEntry(e);
+        }
+
+        private Coroutine PlayEntry(TweenEntry e)
+        {
+            if (e == null || e.targetObject == null) return null;
+            
+            // For editor preview (when not playing), auto-reset after duration + 1 second
+            bool isPreview = !Application.isPlaying;
+            if (isPreview)
+            {
+                StartCoroutine(PreviewTweenWithReset(e));
+                return null;
+            }
+            
+            return ExecuteEntry(e);
+        }
+
+        private Coroutine ExecuteEntry(TweenEntry e)
+        {
+            if (e == null || e.targetObject == null) return null;
+            var go = e.targetObject;
+            switch (e.type)
+            {
+                case TweenType.Position:
+                case TweenType.LocalPosition:
+                    return TweenPositionWithSource(go.transform, e.toVec3, e.duration, e.curve, e.local, e.startSource, e.fromVec3);
+
+                case TweenType.RotationEuler:
+                case TweenType.LocalRotationEuler:
+                {
+                    Quaternion toQ = Quaternion.Euler(e.toVec3);
+                    Quaternion fromQ = Quaternion.Euler(e.fromVec3);
+                    bool localRot = (e.type == TweenType.LocalRotationEuler) || e.local;
+                    return TweenRotationWithSource(go.transform, toQ, e.duration, e.curve, localRot, e.startSource, fromQ);
+                }
+
+                case TweenType.Scale:
+                    return TweenScaleWithSource(go.transform, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+
+                case TweenType.CanvasGroupAlpha:
+                {
+                    var cg = go.GetComponent<CanvasGroup>();
+                    if (cg == null) return null;
+                    return TweenCanvasAlphaWithSource(cg, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                }
+
+                case TweenType.RendererColor:
+                {
+                    var r = go.GetComponent<Renderer>();
+                    if (r == null) return null;
+                    string prop = string.IsNullOrEmpty(e.materialProperty) ? "_Color" : e.materialProperty;
+                    int mIndex = Mathf.Clamp(e.materialIndex, 0, r.materials.Length - 1);
+                    return TweenMaterialColorWithSource(r, mIndex, prop, e.materialColorProperties, e.toColor, e.duration, e.curve, e.startSource, e.fromColor);
+                }
+
+                case TweenType.MaterialFloat:
+                {
+                    var r = go.GetComponent<Renderer>();
+                    if (r == null) return null;
+                    string prop = string.IsNullOrEmpty(e.materialProperty) ? "_Glossiness" : e.materialProperty;
+                    Func<float> getter = () => r.material.GetFloat(prop);
+                    Action<float> setter = v => r.material.SetFloat(prop, v);
+                    return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                }
+
+                case TweenType.CustomProperty:
+                {
+                    Component comp = e.targetComponent ?? go.GetComponent<Component>();
+                    if (comp == null)
+                    {
+                        Debug.LogWarning($"Animate: CustomProperty entry '{e.name}' has no component assigned on {go.name}.");
+                        return null;
+                    }
+
+                    // support nested member path via dot notation; strip enum backing-field suffix if user picked it
+                    string resolvedPath = e.propertyName;
+                    const string backingSuffix = ".value__";
+                    if (!string.IsNullOrEmpty(resolvedPath) && resolvedPath.EndsWith(backingSuffix, StringComparison.Ordinal))
+                        resolvedPath = resolvedPath.Substring(0, resolvedPath.Length - backingSuffix.Length);
+
+                    // Fast-path: direct UIBlock Size handling (avoids ref-return reflection issues)
+                    if (comp is Nova.UIBlock2D ub2 && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
+                    {
+                        bool isPercent = resolvedPath.EndsWith("Percent");
+                        Func<Vector3> getter = () => isPercent ? ub2.Size.Percent * 100f : ub2.Size.Raw;
+                        Action<Vector3> setter = v =>
+                        {
+                            if (isPercent) ub2.Size.Percent = v * 0.01f;
+                            else ub2.Size.Raw = v;
+                        };
+                        ComponentMask mask = e.vectorMask;
+                        Action<Vector3> maskedSetter = v =>
+                        {
+                            Vector3 current = getter();
+                            if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                            if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                            if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                            setter(v);
+                        };
+                        return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                    }
+                    if (comp is Nova.UIBlock3D ub3 && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
+                    {
+                        bool isPercent = resolvedPath.EndsWith("Percent");
+                        Func<Vector3> getter = () => isPercent ? ub3.Size.Percent * 100f : ub3.Size.Raw;
+                        Action<Vector3> setter = v =>
+                        {
+                            if (isPercent) ub3.Size.Percent = v * 0.01f;
+                            else ub3.Size.Raw = v;
+                        };
+                        ComponentMask mask = e.vectorMask;
+                        Action<Vector3> maskedSetter = v =>
+                        {
+                            Vector3 current = getter();
+                            if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                            if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                            if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                            setter(v);
+                        };
+                        return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                    }
+
+                    if (TryResolveMember(comp, resolvedPath, out var owner, out var memberInfo, out var memberType))
+                    {
+                        // handle numeric types
+                        if (memberType == typeof(float) || memberType == typeof(double) || memberType == typeof(int))
+                        {
+                            Func<float> getter;
+                            Action<float> setter;
+                            
+                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size" && (marker.originalOwner is Nova.UIBlock2D uiBlock2D || marker.originalOwner is Nova.UIBlock3D uiBlock3D))
+                            {
+                                // Create closures that properly handle ref struct get/set
+                                getter = () =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker);
+                                    if (refStructInstance == null) return 0f;
+                                    if (memberInfo is PropertyInfo pi) return Convert.ToSingle(pi.GetValue(refStructInstance));
+                                    if (memberInfo is FieldInfo fi) return Convert.ToSingle(fi.GetValue(refStructInstance));
+                                    return 0f;
+                                };
+                                
+                                setter = v =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker);
+                                    if (refStructInstance == null) return;
+                                    
+                                    if (memberInfo is PropertyInfo pi && pi.CanWrite)
+                                    {
+                                        pi.SetValue(refStructInstance, Convert.ChangeType(v, memberType));
+                                        SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                    else if (memberInfo is FieldInfo fi)
+                                    {
+                                        fi.SetValue(refStructInstance, Convert.ChangeType(v, memberType));
+                                        SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                };
+                            }
+                            else
+                            {
+                                getter = () => Convert.ToSingle(GetMemberValue(owner, memberInfo));
+                                setter = v => SetMemberValue(owner, memberInfo, Convert.ChangeType(v, memberType));
+                            }
+
+                            bool isPercent = memberInfo.Name == "Percent";
+                            if (isPercent)
+                            {
+                                var baseGetter = getter;
+                                var baseSetter = setter;
+                                getter = () => baseGetter() * 100f;          // engine -> UI
+                                setter = v => baseSetter(v * 0.01f);         // UI -> engine
+                            }
+                            return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                        }
+
+                        // handle enums by tweening over their underlying numeric value
+                        if (memberType.IsEnum)
+                        {
+                            Type underlying = Enum.GetUnderlyingType(memberType);
+                            Func<float> getter = () => Convert.ToSingle(Convert.ChangeType(GetMemberValue(owner, memberInfo), underlying));
+                            Action<float> setter = v => SetMemberValue(owner, memberInfo, Enum.ToObject(memberType, Convert.ChangeType(v, underlying)));
+                            return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                        }
+
+                        if (memberType == typeof(Vector3))
+                        {
+                            Func<Vector3> getter;
+                            Action<Vector3> setter;
+                            bool configured = false;
+
+                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size")
+                            {
+                                var ui2 = marker.originalOwner as Nova.UIBlock2D;
+                                var ui3 = marker.originalOwner as Nova.UIBlock3D;
+
+                                if (ui2 != null || ui3 != null)
+                                {
+                                    Delegate sizeGetterDel = ui2 != null
+                                        ? marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter2D))
+                                        : marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter3D));
+
+                                    getter = () =>
+                                    {
+                                        if (ui2 != null)
+                                        {
+                                            ref Length3 size = ref ((SizeGetter2D)sizeGetterDel)(ui2);
+                                            if (memberInfo.Name == "Raw") return size.Raw;
+                                            if (memberInfo.Name == "Percent") return size.Percent;
+                                            if (memberInfo is PropertyInfo pi) return (Vector3)pi.GetValue(size);
+                                            if (memberInfo is FieldInfo fi) return (Vector3)fi.GetValue(size);
+                                            return Vector3.zero;
+                                        }
+                                        else
+                                        {
+                                            ref Length3 size = ref ((SizeGetter3D)sizeGetterDel)(ui3);
+                                            if (memberInfo.Name == "Raw") return size.Raw;
+                                            if (memberInfo.Name == "Percent") return size.Percent;
+                                            if (memberInfo is PropertyInfo pi) return (Vector3)pi.GetValue(size);
+                                            if (memberInfo is FieldInfo fi) return (Vector3)fi.GetValue(size);
+                                            return Vector3.zero;
+                                        }
+                                    };
+
+                                    setter = v =>
+                                    {
+                                        if (ui2 != null)
+                                        {
+                                            ref Length3 size = ref ((SizeGetter2D)sizeGetterDel)(ui2);
+                                            if (memberInfo.Name == "Raw") size.Raw = v;
+                                            else if (memberInfo.Name == "Percent") size.Percent = v;
+                                            else if (memberInfo is PropertyInfo pi && pi.CanWrite) pi.SetValue(size, v);
+                                            else if (memberInfo is FieldInfo fi) fi.SetValue(size, v);
+                                        }
+                                        else
+                                        {
+                                            ref Length3 size = ref ((SizeGetter3D)sizeGetterDel)(ui3);
+                                            if (memberInfo.Name == "Raw") size.Raw = v;
+                                            else if (memberInfo.Name == "Percent") size.Percent = v;
+                                            else if (memberInfo is PropertyInfo pi && pi.CanWrite) pi.SetValue(size, v);
+                                            else if (memberInfo is FieldInfo fi) fi.SetValue(size, v);
+                                        }
+                                    };
+                                    configured = true;
+                                }
+                            }
+
+                            if (owner is RefStructMarker marker2)
+                            {
+                                // generic ref struct path
+                                getter = () =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker2);
+                                    if (refStructInstance == null) return Vector3.zero;
+                                    if (memberInfo is PropertyInfo pi) return (Vector3)pi.GetValue(refStructInstance);
+                                    if (memberInfo is FieldInfo fi) return (Vector3)fi.GetValue(refStructInstance);
+                                    return Vector3.zero;
+                                };
+
+                                setter = v =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker2);
+                                    if (refStructInstance == null) return;
+
+                                    if (memberInfo is PropertyInfo pi && pi.CanWrite)
+                                    {
+                                        pi.SetValue(refStructInstance, v);
+                                        SetRefStructMember(marker2, marker2.refProperty, refStructInstance);
+                                    }
+                                    else if (memberInfo is FieldInfo fi)
+                                    {
+                                        fi.SetValue(refStructInstance, v);
+                                        SetRefStructMember(marker2, marker2.refProperty, refStructInstance);
+                                    }
+                                };
+                                configured = true;
+                            }
+                            else
+                            {
+                                getter = () => (Vector3)GetMemberValue(owner, memberInfo);
+                                setter = v => SetMemberValue(owner, memberInfo, v);
+                                configured = true;
+                            }
+
+                            if (!configured) return null;
+
+                            bool isPercent = memberInfo.Name == "Percent";
+                            if (isPercent)
+                            {
+                                var baseGetter = getter;
+                                var baseSetter = setter;
+                                getter = () => baseGetter() * 100f;                // engine -> UI
+                                setter = v => baseSetter(v * 0.01f);               // UI -> engine
+                            }
+
+                            ComponentMask mask = e.vectorMask;
+                            Action<Vector3> maskedSetter = v =>
+                            {
+                                Vector3 current = getter();
+                                if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                                if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                                if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                                setter(v);
+                            };
+
+                            return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                        }
+
+                        if (memberType == typeof(Color))
+                        {
+                            Func<Color> getter;
+                            Action<Color> setter;
+                            
+                            if (owner is RefStructMarker marker)
+                            {
+                                getter = () =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker);
+                                    if (refStructInstance == null) return Color.white;
+                                    if (memberInfo is PropertyInfo pi) return (Color)pi.GetValue(refStructInstance);
+                                    if (memberInfo is FieldInfo fi) return (Color)fi.GetValue(refStructInstance);
+                                    return Color.white;
+                                };
+                                
+                                setter = v =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker);
+                                    if (refStructInstance == null) return;
+                                    
+                                    if (memberInfo is PropertyInfo pi && pi.CanWrite)
+                                    {
+                                        pi.SetValue(refStructInstance, v);
+                                        SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                    else if (memberInfo is FieldInfo fi)
+                                    {
+                                        fi.SetValue(refStructInstance, v);
+                                        SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                };
+                            }
+                            else
+                            {
+                                getter = () => (Color)GetMemberValue(owner, memberInfo);
+                                setter = v => SetMemberValue(owner, memberInfo, v);
+                            }
+                            
+                            return TweenColorWithSource(getter, setter, e.toColor, e.duration, e.curve, e.startSource, e.fromColor);
+                        }
+
+                        if (memberType == typeof(Quaternion))
+                        {
+                            Func<Quaternion> getter;
+                            Action<Quaternion> setter;
+                            
+                            if (owner is RefStructMarker marker)
+                            {
+                                getter = () =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker);
+                                    if (refStructInstance == null) return Quaternion.identity;
+                                    if (memberInfo is PropertyInfo pi) return (Quaternion)pi.GetValue(refStructInstance);
+                                    if (memberInfo is FieldInfo fi) return (Quaternion)fi.GetValue(refStructInstance);
+                                    return Quaternion.identity;
+                                };
+                                
+                                setter = v =>
+                                {
+                                    object refStructInstance = GetRefStructInstance(marker);
+                                    if (refStructInstance == null) return;
+                                    
+                                    if (memberInfo is PropertyInfo pi && pi.CanWrite)
+                                    {
+                                        pi.SetValue(refStructInstance, v);
+                                        SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                    else if (memberInfo is FieldInfo fi)
+                                    {
+                                        fi.SetValue(refStructInstance, v);
+                                        SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                };
+                            }
+                            else
+                            {
+                                getter = () => (Quaternion)GetMemberValue(owner, memberInfo);
+                                setter = v => SetMemberValue(owner, memberInfo, v);
+                            }
+                            
+                            Func<Quaternion, Quaternion, float, Quaternion> slerp = (a, b, t) => Quaternion.SlerpUnclamped(a, b, t);
+                            Quaternion toQ = Quaternion.Euler(e.toVec3);
+                            Quaternion fromQ = Quaternion.Euler(e.fromVec3);
+                            return TweenQuatWithSource(getter, setter, toQ, e.duration, slerp, e.curve, e.startSource, fromQ);
+                        }
+
+                        if (memberType == typeof(bool))
+                        {
+                            StartCoroutine(DriveBoolWithCurve(owner, memberInfo, e.fromBool, e.toBool, e.duration, e.curve));
+                            return null;
+                        }
+                        if (memberType == typeof(void) && memberInfo is MethodInfo method)
+                        {
+                            // Use curve-driven trigger with hysteresis to avoid skim noise
+                            StartCoroutine(InvokeMethodOnCurve(method, owner, e.duration, e.curve));
+                            return null;
+                        }
+
+                        Debug.LogWarning($"Animate: Unsupported property type '{memberType.Name}' for CustomProperty on {comp.GetType().Name} (path '{e.propertyName}').");
+                        return null;
+                    }
+
+                    Debug.LogWarning($"Animate: Property/Field path '{e.propertyName}' not found on component {comp.GetType().Name}.");
+                    return null;
+                }
+
+                case TweenType.Float:
+                default:
+                    // For generic float, user must wire getter/setter from code.
+                    return null;
+            }
+        }
+
+        // ----------------
+        // Convenience helpers
+        // ----------------
+
+        // Position (with legacy signature)
+        public Coroutine TweenPosition(Transform tgt, Vector3 to, float duration, AnimationCurve curve = null, bool local = true, bool useExplicitFrom = false, Vector3 explicitFrom = default, Action onComplete = null)
+        {
+            Func<Vector3> getter = local ? (Func<Vector3>)(() => tgt.localPosition) : () => tgt.position;
+            Action<Vector3> setter = local ? (Action<Vector3>)(v => tgt.localPosition = v) : v => tgt.position = v;
+            if (useExplicitFrom)
+                return Tween(getter, setter, explicitFrom, to, duration, Vector3.LerpUnclamped, curve, onComplete);
+            return Tween(getter, setter, to, duration, Vector3.LerpUnclamped, curve, onComplete);
+        }
+
+        private Coroutine TweenPositionWithSource(Transform tgt, Vector3 to, float duration, AnimationCurve curve, bool local, StartSource source, Vector3 explicitFrom)
+        {
+            Func<Vector3> getter = local ? (Func<Vector3>)(() => tgt.localPosition) : () => tgt.position;
+            Action<Vector3> setter = local ? (Action<Vector3>)(v => tgt.localPosition = v) : v => tgt.position = v;
+            return ApplyStartSource(getter, setter, to, duration, Vector3.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        // Rotation (slerp) - legacy
+        public Coroutine TweenRotation(Transform tgt, Quaternion to, float duration, AnimationCurve curve = null, bool local = true, bool useExplicitFrom = false, Quaternion explicitFrom = default, Action onComplete = null)
+        {
+            Func<Quaternion> getter = local ? (Func<Quaternion>)(() => tgt.localRotation) : () => tgt.rotation;
+            Action<Quaternion> setter = local ? (Action<Quaternion>)(q => tgt.localRotation = q) : q => tgt.rotation = q;
+            Func<Quaternion, Quaternion, float, Quaternion> slerp = (a, b, t) => Quaternion.SlerpUnclamped(a, b, t);
+            if (useExplicitFrom)
+                return Tween(getter, setter, explicitFrom, to, duration, slerp, curve, onComplete);
+            return Tween(getter, setter, to, duration, slerp, curve, onComplete);
+        }
+
+        private Coroutine TweenRotationWithSource(Transform tgt, Quaternion to, float duration, AnimationCurve curve, bool local, StartSource source, Quaternion explicitFrom)
+        {
+            Func<Quaternion> getter = local ? (Func<Quaternion>)(() => tgt.localRotation) : () => tgt.rotation;
+            Action<Quaternion> setter = local ? (Action<Quaternion>)(q => tgt.localRotation = q) : q => tgt.rotation = q;
+            Func<Quaternion, Quaternion, float, Quaternion> slerp = (a, b, t) => Quaternion.SlerpUnclamped(a, b, t);
+            return ApplyStartSource(getter, setter, to, duration, slerp, curve, source, explicitFrom);
+        }
+
+        // Scale - legacy
+        public Coroutine TweenScale(Transform tgt, Vector3 to, float duration, AnimationCurve curve = null, bool useExplicitFrom = false, Vector3 explicitFrom = default, Action onComplete = null)
+        {
+            Func<Vector3> getter = () => tgt.localScale;
+            Action<Vector3> setter = v => tgt.localScale = v;
+            if (useExplicitFrom)
+                return Tween(getter, setter, explicitFrom, to, duration, Vector3.LerpUnclamped, curve, onComplete);
+            return Tween(getter, setter, to, duration, Vector3.LerpUnclamped, curve, onComplete);
+        }
+
+        private Coroutine TweenScaleWithSource(Transform tgt, Vector3 to, float duration, AnimationCurve curve, StartSource source, Vector3 explicitFrom)
+        {
+            Func<Vector3> getter = () => tgt.localScale;
+            Action<Vector3> setter = v => tgt.localScale = v;
+            return ApplyStartSource(getter, setter, to, duration, Vector3.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        // Float (useful for CanvasGroup alpha, material floats, etc.) - legacy
+        public Coroutine TweenFloat(Func<float> getter, Action<float> setter, float to, float duration, AnimationCurve curve = null, bool useExplicitFrom = false, float explicitFrom = 0f, Action onComplete = null)
+        {
+            Func<float, float, float, float> lerp = Mathf.LerpUnclamped;
+            if (useExplicitFrom)
+                return Tween(getter, setter, explicitFrom, to, duration, lerp, curve, onComplete);
+            return Tween(getter, setter, to, duration, lerp, curve, onComplete);
+        }
+
+        private Coroutine TweenFloatWithSource(Func<float> getter, Action<float> setter, float to, float duration, AnimationCurve curve, StartSource source, float explicitFrom)
+        {
+            Func<float, float, float, float> lerp = Mathf.LerpUnclamped;
+            return ApplyStartSource(getter, setter, to, duration, lerp, curve, source, explicitFrom);
+        }
+
+        // Color (Renderer material color) - legacy
+        public Coroutine TweenColor(Renderer renderer, Color to, float duration, AnimationCurve curve = null, bool useExplicitFrom = false, Color explicitFrom = default, Action onComplete = null)
+        {
+            if (renderer == null) return null;
+            Func<Color> getter = () => renderer.material.color;
+            Action<Color> setter = c => renderer.material.color = c;
+            if (useExplicitFrom)
+                return Tween(getter, setter, explicitFrom, to, duration, Color.LerpUnclamped, curve, onComplete);
+            return Tween(getter, setter, to, duration, Color.LerpUnclamped, curve, onComplete);
+        }
+
+        private Coroutine TweenColorWithSource(Func<Color> getter, Action<Color> setter, Color to, float duration, AnimationCurve curve, StartSource source, Color explicitFrom)
+        {
+            return ApplyStartSource(getter, setter, to, duration, Color.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        // CanvasGroup alpha helper - legacy
+        public Coroutine TweenCanvasAlpha(CanvasGroup cg, float to, float duration, AnimationCurve curve = null, bool useExplicitFrom = false, float explicitFrom = 0f, Action onComplete = null)
+        {
+            if (cg == null) return null;
+            return TweenFloat(() => cg.alpha, v => cg.alpha = v, to, duration, curve, useExplicitFrom, explicitFrom, onComplete);
+        }
+
+        private Coroutine TweenCanvasAlphaWithSource(CanvasGroup cg, float to, float duration, AnimationCurve curve, StartSource source, float explicitFrom)
+        {
+            if (cg == null) return null;
+            return TweenFloatWithSource(() => cg.alpha, v => cg.alpha = v, to, duration, curve, source, explicitFrom);
+        }
+
+        // Renderer material color with property name and material index - legacy
+        public Coroutine TweenMaterialColor(Renderer renderer, int materialIndex, string primaryProperty, string[] extraProperties, Color to, float duration, AnimationCurve curve = null, bool useExplicitFrom = false, Color explicitFrom = default, bool useCurrentAsFrom = false, Action onComplete = null)
+        {
+            if (renderer == null || renderer.materials == null || renderer.materials.Length == 0) return null;
+            var mats = renderer.sharedMaterials;
+            materialIndex = Mathf.Clamp(materialIndex, 0, mats.Length - 1);
+            Material mat = mats[materialIndex];
+            // build property list
+            var props = new List<string>();
+            if (!string.IsNullOrEmpty(primaryProperty)) props.Add(primaryProperty);
+            if (extraProperties != null && extraProperties.Length > 0)
+                props.AddRange(extraProperties.Where(p => !string.IsNullOrEmpty(p)));
+            if (props.Count == 0) props.Add("_Color");
+            string sampleProp = props[0];
+            Func<Color> getter = () =>
+            {
+                if (mat != null && mat.HasProperty(sampleProp))
+                {
+                    // Prefer the currently rendered value (PropertyBlock), fallback to material value.
+                    var mpb = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(mpb, materialIndex);
+                    if (mpb.HasProperty(sampleProp))
+                        return mpb.GetColor(sampleProp);
+                    return mat.GetColor(sampleProp);
+                }
+                return Color.white;
+            };
+            Action<Color> setter = c =>
+            {
+                var mpb = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(mpb, materialIndex);
+                foreach (var p in props)
+                {
+                    if (mat != null && mat.HasProperty(p))
+                        mpb.SetColor(p, c);
+                }
+                renderer.SetPropertyBlock(mpb, materialIndex);
+            };
+
+            if (useExplicitFrom && !useCurrentAsFrom)
+                return Tween(getter, setter, explicitFrom, to, duration, Color.LerpUnclamped, curve, onComplete);
+
+            // use current as from
+            Color currentFrom = getter();
+            return Tween(getter, setter, currentFrom, to, duration, Color.LerpUnclamped, curve, onComplete);
+        }
+
+        private Coroutine TweenMaterialColorWithSource(Renderer renderer, int materialIndex, string primaryProperty, string[] extraProperties, Color to, float duration, AnimationCurve curve, StartSource source, Color explicitFrom)
+        {
+            if (renderer == null || renderer.materials == null || renderer.materials.Length == 0) return null;
+            var mats = renderer.sharedMaterials;
+            materialIndex = Mathf.Clamp(materialIndex, 0, mats.Length - 1);
+            Material mat = mats[materialIndex];
+            // build property list
+            var props = new List<string>();
+            if (!string.IsNullOrEmpty(primaryProperty)) props.Add(primaryProperty);
+            if (extraProperties != null && extraProperties.Length > 0)
+                props.AddRange(extraProperties.Where(p => !string.IsNullOrEmpty(p)));
+            if (props.Count == 0) props.Add("_Color");
+            string sampleProp = props[0];
+            Func<Color> getter = () =>
+            {
+                if (mat != null && mat.HasProperty(sampleProp))
+                {
+                    var mpb = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(mpb, materialIndex);
+                    if (mpb.HasProperty(sampleProp))
+                        return mpb.GetColor(sampleProp);
+                    return mat.GetColor(sampleProp);
+                }
+                return Color.white;
+            };
+            Action<Color> setter = c =>
+            {
+                var mpb = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(mpb, materialIndex);
+                foreach (var p in props)
+                {
+                    if (mat != null && mat.HasProperty(p))
+                        mpb.SetColor(p, c);
+                }
+                renderer.SetPropertyBlock(mpb, materialIndex);
+            };
+            return ApplyStartSource(getter, setter, to, duration, Color.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        // Generic start source handler
+        private Coroutine ApplyStartSource<T>(Func<T> getter, Action<T> setter, T to, float duration, Func<T, T, float, T> lerpFunc, AnimationCurve curve, StartSource source, T explicitFrom)
+        {
+            switch (source)
+            {
+                case StartSource.Ignore:
+                    // Use explicit start/end values provided in the inspector
+                    return Tween(getter, setter, explicitFrom, to, duration, lerpFunc, curve);
+                case StartSource.Start:
+                    // Override start with current value, keep inspector end
+                    {
+                        T current = getter();
+                        return Tween(getter, setter, current, to, duration, lerpFunc, curve);
+                    }
+                case StartSource.End:
+                    // Override end with current value, keep inspector start
+                    {
+                        T current = getter();
+                        return Tween(getter, setter, explicitFrom, current, duration, lerpFunc, curve);
+                    }
+                default:
+                    return null;
+            }
+        }
+
+        private Coroutine TweenVec3WithSource(Func<Vector3> getter, Action<Vector3> setter, Vector3 to, float duration, AnimationCurve curve, StartSource source, Vector3 explicitFrom)
+        {
+            return ApplyStartSource(getter, setter, to, duration, Vector3.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        private Coroutine TweenQuatWithSource(Func<Quaternion> getter, Action<Quaternion> setter, Quaternion to, float duration, Func<Quaternion, Quaternion, float, Quaternion> slerp, AnimationCurve curve, StartSource source, Quaternion explicitFrom)
+        {
+            return ApplyStartSource(getter, setter, to, duration, slerp, curve, source, explicitFrom);
+        }
+
+        /// <summary>
+        /// Preview tween in editor that auto-resets after completion.
+        /// Captures current state before tweening and restores it after a delay.
+        /// </summary>
+        private IEnumerator PreviewTweenWithReset(TweenEntry e)
+        {
+#if UNITY_EDITOR
+            var go = e.targetObject;
+            if (go == null) yield break;
+            
+            var initialState = CaptureGameObjectState(go, e.type);
+            currentPreviewTween = new PreviewTweenState
+            {
+                entry = e,
+                startTime = Time.realtimeSinceStartup,
+                initialState = initialState
+            };
+            
+            // Register update hook
+            UnityEditor.EditorApplication.update += UpdatePreviewTweenFrame;
+#endif
+            
+            yield return null;
+        }
+        
+        private void UpdatePreviewTweenFrame()
+        {
+#if UNITY_EDITOR
+            if (currentPreviewTween == null) return;
+            
+            var e = currentPreviewTween.entry;
+            if (e?.targetObject == null)
+            {
+                UnityEditor.EditorApplication.update -= UpdatePreviewTweenFrame;
+                currentPreviewTween = null;
+                return;
+            }
+            
+            float elapsed = Time.realtimeSinceStartup - currentPreviewTween.startTime;
+            
+            // Tween is complete, wait 1 second then restore
+            if (elapsed >= e.duration + 1f)
+            {
+                RestoreGameObjectState(e.targetObject, e.type, currentPreviewTween.initialState);
+                UnityEditor.EditorApplication.update -= UpdatePreviewTweenFrame;
+                currentPreviewTween = null;
+            }
+#endif
+        }
+
+        private object CaptureGameObjectState(GameObject go, TweenType type)
+        {
+            if (go == null) return null;
+            switch (type)
+            {
+                case TweenType.Position:
+                    return go.transform.position;
+                case TweenType.LocalPosition:
+                    return go.transform.localPosition;
+                case TweenType.RotationEuler:
+                    return go.transform.rotation;
+                case TweenType.LocalRotationEuler:
+                    return go.transform.localRotation;
+                case TweenType.Scale:
+                    return go.transform.localScale;
+                case TweenType.CanvasGroupAlpha:
+                    var cg = go.GetComponent<CanvasGroup>();
+                    return cg != null ? cg.alpha : 1f;
+                case TweenType.RendererColor:
+                case TweenType.MaterialFloat:
+                    var r = go.GetComponent<Renderer>();
+                    return r != null ? r.material.color : Color.white;
+                default:
+                    return null;
+            }
+        }
+
+        private void RestoreGameObjectState(GameObject go, TweenType type, object state)
+        {
+            if (go == null || state == null) return;
+            switch (type)
+            {
+                case TweenType.Position:
+                    go.transform.position = (Vector3)state;
+                    break;
+                case TweenType.LocalPosition:
+                    go.transform.localPosition = (Vector3)state;
+                    break;
+                case TweenType.RotationEuler:
+                    go.transform.rotation = (Quaternion)state;
+                    break;
+                case TweenType.LocalRotationEuler:
+                    go.transform.localRotation = (Quaternion)state;
+                    break;
+                case TweenType.Scale:
+                    go.transform.localScale = (Vector3)state;
+                    break;
+                case TweenType.CanvasGroupAlpha:
+                    var cg = go.GetComponent<CanvasGroup>();
+                    if (cg != null) cg.alpha = (float)state;
+                    break;
+                case TweenType.RendererColor:
+                case TweenType.MaterialFloat:
+                    var r = go.GetComponent<Renderer>();
+                    if (r != null) r.material.color = (Color)state;
+                    break;
+            }
+        }
+    }
+}

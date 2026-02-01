@@ -1,0 +1,19 @@
+{
+  "name": "Animator.Editor",
+  "rootNamespace": "Animator",
+  "references": [
+    "Animator",
+    "Nova"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

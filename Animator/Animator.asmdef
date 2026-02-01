@@ -1,0 +1,17 @@
+{
+  "name": "Animator",
+  "rootNamespace": "Animator",
+  "references": [
+    "Unity.TextMeshPro",
+    "Nova"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
