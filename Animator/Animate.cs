@@ -609,35 +609,102 @@ namespace Animator
                         resolvedPath = resolvedPath.Substring(0, resolvedPath.Length - backingSuffix.Length);
 
                     // Fast-path: direct UIBlock Size handling (avoids ref-return reflection issues)
-                    if (comp is Nova.UIBlock2D ub2 && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
+                    if ((comp is Nova.UIBlock || comp is Nova.UIBlock2D || comp is Nova.UIBlock3D) && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
                     {
                         bool isPercent = resolvedPath.EndsWith("Percent");
-                        Func<Vector3> getter = () => isPercent ? ub2.Size.Percent * 100f : ub2.Size.Raw;
-                        Action<Vector3> setter = v =>
+                        Func<Vector3> getter;
+                        Action<Vector3> setter;
+                        
+                        // Check most specific types first to avoid catching inherited types
+                        if (comp is Nova.UIBlock3D ub3)
                         {
-                            if (isPercent) ub2.Size.Percent = v * 0.01f;
-                            else ub2.Size.Raw = v;
-                        };
-                        ComponentMask mask = e.vectorMask;
-                        Action<Vector3> maskedSetter = v =>
+                            getter = () => 
+                            {
+                                if (isPercent) 
+                                {
+                                    var size = ub3.Size;
+                                    // Return actual values - masking needs real current values for components not being animated
+                                    return new Vector3(size.X.Raw, size.Y.Raw, size.Z.Raw);
+                                }
+                                return ub3.Size.Raw;
+                            };
+                            setter = v =>
+                            {
+                                if (isPercent) 
+                                {
+                                    var size = ub3.Size;
+                                    // Only convert to Percent if not already set, preserve Raw components
+                                    if (size.X.Type != Nova.LengthType.Percent) size.X = new Nova.Length(v.x, Nova.LengthType.Percent);
+                                    else size.X.Percent = v.x;
+                                    if (size.Y.Type != Nova.LengthType.Percent) size.Y = new Nova.Length(v.y, Nova.LengthType.Percent);
+                                    else size.Y.Percent = v.y;
+                                    if (size.Z.Type != Nova.LengthType.Percent) size.Z = new Nova.Length(v.z, Nova.LengthType.Percent);
+                                    else size.Z.Percent = v.z;
+                                    ub3.Size = size;
+                                }
+                                else ub3.Size.Raw = v;
+                            };
+                        }
+                        else if (comp is Nova.UIBlock2D ub2)
                         {
-                            Vector3 current = getter();
-                            if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
-                            if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
-                            if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
-                            setter(v);
-                        };
-                        return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
-                    }
-                    if (comp is Nova.UIBlock3D ub3 && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
-                    {
-                        bool isPercent = resolvedPath.EndsWith("Percent");
-                        Func<Vector3> getter = () => isPercent ? ub3.Size.Percent * 100f : ub3.Size.Raw;
-                        Action<Vector3> setter = v =>
+                            getter = () => 
+                            {
+                                if (isPercent) 
+                                {
+                                    var size = ub2.Size;
+                                    // Return actual values - masking needs real current values for components not being animated
+                                    return new Vector3(size.X.Raw, size.Y.Raw, size.Z.Raw);
+                                }
+                                return ub2.Size.Raw;
+                            };
+                            setter = v =>
+                            {
+                                if (isPercent) 
+                                {
+                                    var size = ub2.Size;
+                                    // Only convert to Percent if not already set, preserve Raw components
+                                    if (size.X.Type != Nova.LengthType.Percent) size.X = new Nova.Length(v.x, Nova.LengthType.Percent);
+                                    else size.X.Percent = v.x;
+                                    if (size.Y.Type != Nova.LengthType.Percent) size.Y = new Nova.Length(v.y, Nova.LengthType.Percent);
+                                    else size.Y.Percent = v.y;
+                                    if (size.Z.Type != Nova.LengthType.Percent) size.Z = new Nova.Length(v.z, Nova.LengthType.Percent);
+                                    else size.Z.Percent = v.z;
+                                    ub2.Size = size;
+                                }
+                                else ub2.Size.Raw = v;
+                            };
+                        }
+                        else
                         {
-                            if (isPercent) ub3.Size.Percent = v * 0.01f;
-                            else ub3.Size.Raw = v;
-                        };
+                            var ub = (Nova.UIBlock)comp;
+                            getter = () => 
+                            {
+                                if (isPercent) 
+                                {
+                                    var size = ub.Size;
+                                    // Return actual values - masking needs real current values for components not being animated
+                                    return new Vector3(size.X.Raw, size.Y.Raw, size.Z.Raw);
+                                }
+                                return ub.Size.Raw;
+                            };
+                            setter = v =>
+                            {
+                                if (isPercent) 
+                                {
+                                    var size = ub.Size;
+                                    // Only convert to Percent if not already set, preserve Raw components
+                                    if (size.X.Type != Nova.LengthType.Percent) size.X = new Nova.Length(v.x, Nova.LengthType.Percent);
+                                    else size.X.Percent = v.x;
+                                    if (size.Y.Type != Nova.LengthType.Percent) size.Y = new Nova.Length(v.y, Nova.LengthType.Percent);
+                                    else size.Y.Percent = v.y;
+                                    if (size.Z.Type != Nova.LengthType.Percent) size.Z = new Nova.Length(v.z, Nova.LengthType.Percent);
+                                    else size.Z.Percent = v.z;
+                                    ub.Size = size;
+                                }
+                                else ub.Size.Raw = v;
+                            };
+                        }
+                        
                         ComponentMask mask = e.vectorMask;
                         Action<Vector3> maskedSetter = v =>
                         {
@@ -658,7 +725,7 @@ namespace Animator
                             Func<float> getter;
                             Action<float> setter;
                             
-                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size" && (marker.originalOwner is Nova.UIBlock2D uiBlock2D || marker.originalOwner is Nova.UIBlock3D uiBlock3D))
+                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size" && (marker.originalOwner is Nova.UIBlock uiBlock || marker.originalOwner is Nova.UIBlock2D uiBlock2D || marker.originalOwner is Nova.UIBlock3D uiBlock3D))
                             {
                                 // Create closures that properly handle ref struct get/set
                                 getter = () =>
@@ -721,18 +788,32 @@ namespace Animator
 
                             if (owner is RefStructMarker marker && marker.refProperty.Name == "Size")
                             {
+                                var ui = marker.originalOwner as Nova.UIBlock;
                                 var ui2 = marker.originalOwner as Nova.UIBlock2D;
                                 var ui3 = marker.originalOwner as Nova.UIBlock3D;
 
-                                if (ui2 != null || ui3 != null)
+                                if (ui != null || ui2 != null || ui3 != null)
                                 {
-                                    Delegate sizeGetterDel = ui2 != null
-                                        ? marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter2D))
-                                        : marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter3D));
+                                    Delegate sizeGetterDel;
+                                    if (ui != null)
+                                        sizeGetterDel = marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter));
+                                    else if (ui2 != null)
+                                        sizeGetterDel = marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter2D));
+                                    else
+                                        sizeGetterDel = marker.refProperty.GetMethod.CreateDelegate(typeof(SizeGetter3D));
 
                                     getter = () =>
                                     {
-                                        if (ui2 != null)
+                                        if (ui != null)
+                                        {
+                                            ref Length3 size = ref ((SizeGetter)sizeGetterDel)(ui);
+                                            if (memberInfo.Name == "Raw") return size.Raw;
+                                            if (memberInfo.Name == "Percent") return size.Percent;
+                                            if (memberInfo is PropertyInfo pi) return (Vector3)pi.GetValue(size);
+                                            if (memberInfo is FieldInfo fi) return (Vector3)fi.GetValue(size);
+                                            return Vector3.zero;
+                                        }
+                                        else if (ui2 != null)
                                         {
                                             ref Length3 size = ref ((SizeGetter2D)sizeGetterDel)(ui2);
                                             if (memberInfo.Name == "Raw") return size.Raw;
@@ -754,7 +835,15 @@ namespace Animator
 
                                     setter = v =>
                                     {
-                                        if (ui2 != null)
+                                        if (ui != null)
+                                        {
+                                            ref Length3 size = ref ((SizeGetter)sizeGetterDel)(ui);
+                                            if (memberInfo.Name == "Raw") size.Raw = v;
+                                            else if (memberInfo.Name == "Percent") size.Percent = v;
+                                            else if (memberInfo is PropertyInfo pi && pi.CanWrite) pi.SetValue(size, v);
+                                            else if (memberInfo is FieldInfo fi) fi.SetValue(size, v);
+                                        }
+                                        else if (ui2 != null)
                                         {
                                             ref Length3 size = ref ((SizeGetter2D)sizeGetterDel)(ui2);
                                             if (memberInfo.Name == "Raw") size.Raw = v;
