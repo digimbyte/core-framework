@@ -143,10 +143,10 @@ namespace Animator
                 source = textToType;
             }
 
-            // If configured, pre-populate the target with whitespace immediately
-            if (insertMode && prefillWhitespace && source != null)
+            // Clear text if not appending
+            if (!append)
             {
-                try { target.text = new string(' ', source.Length); } catch { }
+                target.text = "";
             }
 
             // Start typing coroutine
@@ -248,15 +248,9 @@ namespace Animator
             int idx = 0;
             if (append)
             {
-                // Append mode: start with existing rendered text and resume typing from its length
+                // Append mode (forced insert mode): start with existing rendered text and resume typing from its length
                 output = new StringBuilder(target.text);
                 idx = target.text.Length;  // Start typing after what's already rendered
-            }
-            else if (insertMode && prefillWhitespace)
-            {
-                // Fresh overwrite mode with insert: prefill with spaces
-                output = new StringBuilder(new string(' ', source.Length));
-                idx = 0;
             }
             else
             {
@@ -283,15 +277,15 @@ namespace Animator
                             ? glitchCharacters[UnityEngine.Random.Range(0, glitchCharacters.Length)]
                             : (char)UnityEngine.Random.Range(33, 126);
 
-                        WriteChar(output, idx, wrong);
+                        WriteChar(output, idx, wrong, append);
                         UpdateTarget(output);
                         PlayTypoSound();
                         if (typoHoldSeconds > 0f) yield return new WaitForSeconds(typoHoldSeconds);
 
                         // backtrack the wrong character
-                        if (insertMode)
+                        if (insertMode || append)
                         {
-                            WriteChar(output, idx, ' ');
+                            WriteChar(output, idx, ' ', append);
                             PlayDeleteSound();
                         }
                         else
@@ -304,7 +298,7 @@ namespace Animator
                     }
 
                     // write the correct character at idx
-                    WriteChar(output, idx, source[idx]);
+                    WriteChar(output, idx, source[idx], append);
                     idx++;
                     UpdateTarget(output);
                     PlayTypeSound();
@@ -317,9 +311,11 @@ namespace Animator
             UpdateTarget(output); // final write without cursor
         }
 
-        private void WriteChar(StringBuilder sb, int index, char c)
+        private void WriteChar(StringBuilder sb, int index, char c, bool forceInsertMode = false)
         {
-            if (insertMode)
+            // Use insert mode if explicitly enabled OR if forceInsertMode is true (from append)
+            bool useInsert = insertMode || forceInsertMode;
+            if (useInsert)
             {
                 if (index < sb.Length)
                 {
