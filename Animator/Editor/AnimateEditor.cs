@@ -14,11 +14,13 @@ namespace Animator
     public partial class AnimateEditor : Editor
     {
         private SerializedProperty configuredTweensProp;
+        private SerializedProperty playAllOnStartProp;
         private List<bool> foldouts = new List<bool>();
 
         void OnEnable()
         {
             configuredTweensProp = serializedObject.FindProperty("configuredTweens");
+            playAllOnStartProp = serializedObject.FindProperty("playAllOnStart");
             SyncFoldouts();
         }
 
@@ -34,7 +36,7 @@ namespace Animator
             }
 
             EditorGUILayout.LabelField("Configured Tweens", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("playAllOnStart"), new GUIContent("Play All On Start"));
+            EditorGUILayout.PropertyField(playAllOnStartProp, new GUIContent("Play All On Start"));
             SyncFoldouts();
 
             for (int i = 0; i < configuredTweensProp.arraySize; ++i)
@@ -78,7 +80,20 @@ namespace Animator
                 var typeIndex = typeProp.enumValueIndex;
 
                 // Common fields
-                EditorGUILayout.PropertyField(e.FindPropertyRelative("duration"));
+                EditorGUILayout.PropertyField(e.FindPropertyRelative("delayMode"), new GUIContent("Delay Mode"));
+                var delayModeProp = e.FindPropertyRelative("delayMode");
+                var delayMode = (Animate.DelayMode)delayModeProp.enumValueIndex;
+                
+                if (delayMode == Animate.DelayMode.Frames)
+                {
+                    EditorGUILayout.PropertyField(e.FindPropertyRelative("delayValue"), new GUIContent("Delay (frames)"));
+                }
+                else if (delayMode == Animate.DelayMode.Seconds)
+                {
+                    EditorGUILayout.PropertyField(e.FindPropertyRelative("delayValue"), new GUIContent("Delay (s)"));
+                }
+                
+                EditorGUILayout.PropertyField(e.FindPropertyRelative("duration"), new GUIContent("Duration (s)"));
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("curve"));
 
                 switch ((Animate.TweenType)typeIndex)
@@ -168,19 +183,21 @@ namespace Animator
                             EditorGUILayout.EndHorizontal();
 
                             // Hierarchical nested property dropdowns (depth 1-3)
+                            // NOTE: Reflection is deferred until Browse button is clicked to avoid inspector lag
                             var compProp = e.FindPropertyRelative("targetComponent");
                             var compObj = compProp.objectReferenceValue as Component;
                             if (compObj != null)
                             {
-                                var nested = CollectNestedMembers(compObj, 3);
-                                if (nested.Count > 0)
+                                string currentPath = e.FindPropertyRelative("propertyName").stringValue;
+                                
+                                EditorGUILayout.LabelField("Select Property");
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.TextField(currentPath);
+                                if (GUILayout.Button("Browse", GUILayout.Width(80)))
                                 {
-                                    string currentPath = e.FindPropertyRelative("propertyName").stringValue;
-                                    
-                                    EditorGUILayout.LabelField("Select Property");
-                                    EditorGUILayout.BeginHorizontal();
-                                    EditorGUILayout.TextField(currentPath);
-                                    if (GUILayout.Button("Browse", GUILayout.Width(80)))
+                                    // ONLY collect nested members when button is clicked, not every frame
+                                    var nested = CollectNestedMembers(compObj, 3);
+                                    if (nested.Count > 0)
                                     {
                                         PropertySearchWindow.ShowWindow(nested, selectedEntry =>
                                         {
@@ -189,12 +206,12 @@ namespace Animator
                                             serializedObject.ApplyModifiedProperties();
                                         });
                                     }
-                                    EditorGUILayout.EndHorizontal();
+                                    else
+                                    {
+                                        EditorUtility.DisplayDialog("No Properties Found", "No nested public fields/properties found on this component.", "OK");
+                                    }
                                 }
-                                else
-                                {
-                                    EditorGUILayout.LabelField("No nested public fields/properties found.");
-                                }
+                                EditorGUILayout.EndHorizontal();
                             }
 
                             // Type-specific inputs based on detectedPropertyType
@@ -303,6 +320,8 @@ namespace Animator
                 e.FindPropertyRelative("propertyName").stringValue = string.Empty;
                 e.FindPropertyRelative("detectedPropertyType").stringValue = string.Empty;
                 e.FindPropertyRelative("propertyMode").enumValueIndex = (int)Animate.CustomPropertyMode.AutoTween;
+                e.FindPropertyRelative("delayMode").enumValueIndex = (int)Animate.DelayMode.None;
+                e.FindPropertyRelative("delayValue").floatValue = 0f;
                 e.FindPropertyRelative("duration").floatValue = 1f;
                 e.FindPropertyRelative("curve").animationCurveValue = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
@@ -571,13 +590,16 @@ namespace Animator
     {
         private Vector2 scrollPosition;
         private string searchText = "";
+        private string lastSearchText = null;
         private List<NestedEntry> allProperties = new List<NestedEntry>();
+        private List<NestedEntry> cachedFiltered = new List<NestedEntry>();
         private System.Action<NestedEntry> onSelected;
 
         public static void ShowWindow(List<NestedEntry> properties, System.Action<NestedEntry> onSelect)
         {
             var window = GetWindow<PropertySearchWindow>("Select Property");
             window.allProperties = properties;
+            window.cachedFiltered = new List<NestedEntry>(properties);
             window.onSelected = onSelect;
             window.minSize = new Vector2(400, 300);
             window.Show();
@@ -589,17 +611,25 @@ namespace Animator
             searchText = EditorGUILayout.TextField("Search:", searchText);
             EditorGUILayout.Space();
 
-            var filtered = allProperties
-                .Where(p => string.IsNullOrEmpty(searchText) || p.path.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) >= 0)
-                .OrderBy(p => p.path)
-                .ToList();
+            // Only refilter if search text changed
+            if (searchText != lastSearchText)
+            {
+                lastSearchText = searchText;
+                cachedFiltered.Clear();
+                foreach (var p in allProperties)
+                {
+                    if (string.IsNullOrEmpty(searchText) || p.path.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                        cachedFiltered.Add(p);
+                }
+                cachedFiltered.Sort((a, b) => a.path.CompareTo(b.path));
+            }
 
-            EditorGUILayout.LabelField($"Found: {filtered.Count} properties");
+            EditorGUILayout.LabelField($"Found: {cachedFiltered.Count} properties");
             EditorGUILayout.Space();
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            foreach (var entry in filtered)
+            foreach (var entry in cachedFiltered)
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(entry.display, GUILayout.ExpandWidth(true));

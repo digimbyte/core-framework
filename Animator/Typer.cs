@@ -113,7 +113,9 @@ namespace Animator
         /// <summary>
         /// Start typing using the configured source text or an override.
         /// </summary>
-        public void StartTyping(string overrideText = null)
+        /// <param name="overrideText">Optional text to type instead of the configured source.</param>
+        /// <param name="append">If true, append to existing text. If false, replace with fresh text. Defaults to false.</param>
+        public void StartTyping(string overrideText = null, bool append = false)
         {
             // Stop any existing typing
             if (typingCoroutine != null)
@@ -152,7 +154,7 @@ namespace Animator
             {
                 cursorCoroutine = StartCoroutine(CursorBlinkRoutine());
             }
-            typingCoroutine = StartCoroutine(TypeRoutine(source));
+            typingCoroutine = StartCoroutine(TypeRoutine(source, append));
         }
 
         /// <summary>
@@ -196,13 +198,26 @@ namespace Animator
             cursorVisible = false;
         }
 
-        private IEnumerator TypeRoutine(string source)
+        private IEnumerator TypeRoutine(string source, bool append = false)
         {
             isTyping = true;
 
-            var output = insertMode && prefillWhitespace
-                ? new StringBuilder(new string(' ', source.Length))
-                : new StringBuilder();
+            StringBuilder output;
+            if (append)
+            {
+                // Append mode: start with existing text
+                output = new StringBuilder(target.text);
+            }
+            else if (insertMode && prefillWhitespace)
+            {
+                // Fresh overwrite mode with insert: prefill with spaces
+                output = new StringBuilder(new string(' ', source.Length));
+            }
+            else
+            {
+                // Fresh overwrite mode: start empty
+                output = new StringBuilder();
+            }
 
             float charDelay = charactersPerSecond > 0 ? 1f / charactersPerSecond : 0f;
             float backspaceDelay = backspacePerSecond > 0 ? 1f / backspacePerSecond : 0f;

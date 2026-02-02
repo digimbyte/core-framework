@@ -99,6 +99,8 @@ namespace Animator
             public string detectedPropertyType;
             public ComponentMask vectorMask = ComponentMask.All;
 
+            public DelayMode delayMode = DelayMode.None;
+            public float delayValue = 0f;  // Frames (if Frames mode) or Seconds (if Seconds mode)
             public float duration = 1f;
             public AnimationCurve curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); // Smooth easing (slerp-like)
         }
@@ -108,6 +110,14 @@ namespace Animator
             AutoTween,
             SetAtEnd,
             ToggleAtHalf
+        }
+        
+        [Serializable]
+        public enum DelayMode
+        {
+            None,           // No delay
+            Frames,         // Delay by N frames (waits for next LateUpdate cycle)
+            Seconds         // Delay by N seconds (real time)
         }
 
         [System.Flags]
@@ -157,6 +167,7 @@ namespace Animator
 
         private IEnumerator DriveBoolWithCurve(object owner, MemberInfo member, bool startValue, bool endValue, float duration, AnimationCurve curve)
         {
+            // Execute bool state changes just before render each frame
             bool state = startValue;
             SetMemberValue(owner, member, state);
             float elapsed = 0f;
@@ -176,13 +187,16 @@ namespace Animator
                     state = false;
                     SetMemberValue(owner, member, state);
                 }
-                yield return null;
+                // Execute state change right before render
+                yield return new WaitForEndOfFrame();
             }
             SetMemberValue(owner, member, endValue);
+            yield return new WaitForEndOfFrame();
         }
 
         private IEnumerator InvokeMethodOnCurve(MemberInfo member, object owner, float duration, AnimationCurve curve)
         {
+            // Execute method invocations just before render each frame
             float elapsed = 0f;
             bool fired = false;
             while (elapsed < duration)
@@ -199,7 +213,8 @@ namespace Animator
                 {
                     fired = false; // allow retrigger if curve goes up again
                 }
-                yield return null;
+                // Execute method invocation right before render
+                yield return new WaitForEndOfFrame();
             }
         }
 
@@ -454,6 +469,8 @@ namespace Animator
 
         private IEnumerator TweenCoroutine<T>(Func<T> getter, Action<T> setter, T from, T to, float duration, AnimationCurve curve, Func<T, T, float, T> lerpFunc, Action onComplete)
         {
+            // Tweens execute just before render each frame using WaitForEndOfFrame
+            // This ensures: Layout calculations → Tween applies value → Render with updated value
             float startTime = Time.realtimeSinceStartup;
             setter(from);
             while (true)
@@ -462,12 +479,15 @@ namespace Animator
                 if (elapsed >= duration)
                 {
                     setter(to);
+                    // Final update at render time
+                    yield return new WaitForEndOfFrame();
                     break;
                 }
                 float t = Mathf.Clamp01(elapsed / duration);
                 float e = curve.Evaluate(t);
                 setter(lerpFunc(from, to, e));
-                yield return null;
+                // Execute update right before render
+                yield return new WaitForEndOfFrame();
             }
 
             onComplete?.Invoke();
@@ -548,6 +568,43 @@ namespace Animator
         private Coroutine ExecuteEntry(TweenEntry e)
         {
             if (e == null || e.targetObject == null) return null;
+            
+            // If there's a delay, wrap the execution in a delayed coroutine
+            if (e.delayMode != DelayMode.None && e.delayValue > 0f)
+            {
+                return StartCoroutine(ExecuteEntryWithDelay(e));
+            }
+            
+            return ExecuteEntryImmediate(e);
+        }
+        
+        private IEnumerator ExecuteEntryWithDelay(TweenEntry e)
+        {
+            if (e.delayMode == DelayMode.Frames)
+            {
+                // Wait N frames - each WaitForEndOfFrame is one frame
+                int framesToWait = Mathf.Max(1, Mathf.RoundToInt(e.delayValue));
+                for (int i = 0; i < framesToWait; i++)
+                {
+                    yield return new WaitForEndOfFrame();
+                }
+            }
+            else if (e.delayMode == DelayMode.Seconds)
+            {
+                // Wait by real time
+                yield return new WaitForSeconds(e.delayValue);
+            }
+            
+            var c = ExecuteEntryImmediate(e);
+            if (c != null)
+            {
+                yield return c;
+            }
+        }
+        
+        private Coroutine ExecuteEntryImmediate(TweenEntry e)
+        {
+            if (e == null || e.targetObject == null) return null;
             var go = e.targetObject;
             switch (e.type)
             {
@@ -623,8 +680,11 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub3.Size;
-                                    // Return actual values - masking needs real current values for components not being animated
-                                    return new Vector3(size.X.Raw, size.Y.Raw, size.Z.Raw);
+                                    // Nova uses 1 == 100% for Percent type, convert to UI convention (0-100 range)
+                                    float x = size.X.Type == Nova.LengthType.Percent ? size.X.Percent * 100f : float.NaN;
+                                    float y = size.Y.Type == Nova.LengthType.Percent ? size.Y.Percent * 100f : float.NaN;
+                                    float z = size.Z.Type == Nova.LengthType.Percent ? size.Z.Percent * 100f : float.NaN;
+                                    return new Vector3(x, y, z);
                                 }
                                 return ub3.Size.Raw;
                             };
@@ -633,13 +693,10 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub3.Size;
-                                    // Only convert to Percent if not already set, preserve Raw components
-                                    if (size.X.Type != Nova.LengthType.Percent) size.X = new Nova.Length(v.x, Nova.LengthType.Percent);
-                                    else size.X.Percent = v.x;
-                                    if (size.Y.Type != Nova.LengthType.Percent) size.Y = new Nova.Length(v.y, Nova.LengthType.Percent);
-                                    else size.Y.Percent = v.y;
-                                    if (size.Z.Type != Nova.LengthType.Percent) size.Z = new Nova.Length(v.z, Nova.LengthType.Percent);
-                                    else size.Z.Percent = v.z;
+                                    // Convert from UI convention (0-100) to Nova convention (0-1) for Percent type
+                                    size.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
+                                    size.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
+                                    size.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
                                     ub3.Size = size;
                                 }
                                 else ub3.Size.Raw = v;
@@ -652,8 +709,11 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub2.Size;
-                                    // Return actual values - masking needs real current values for components not being animated
-                                    return new Vector3(size.X.Raw, size.Y.Raw, size.Z.Raw);
+                                    // Nova uses 1 == 100% for Percent type, convert to UI convention (0-100 range)
+                                    float x = size.X.Type == Nova.LengthType.Percent ? size.X.Percent * 100f : float.NaN;
+                                    float y = size.Y.Type == Nova.LengthType.Percent ? size.Y.Percent * 100f : float.NaN;
+                                    float z = size.Z.Type == Nova.LengthType.Percent ? size.Z.Percent * 100f : float.NaN;
+                                    return new Vector3(x, y, z);
                                 }
                                 return ub2.Size.Raw;
                             };
@@ -662,13 +722,10 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub2.Size;
-                                    // Only convert to Percent if not already set, preserve Raw components
-                                    if (size.X.Type != Nova.LengthType.Percent) size.X = new Nova.Length(v.x, Nova.LengthType.Percent);
-                                    else size.X.Percent = v.x;
-                                    if (size.Y.Type != Nova.LengthType.Percent) size.Y = new Nova.Length(v.y, Nova.LengthType.Percent);
-                                    else size.Y.Percent = v.y;
-                                    if (size.Z.Type != Nova.LengthType.Percent) size.Z = new Nova.Length(v.z, Nova.LengthType.Percent);
-                                    else size.Z.Percent = v.z;
+                                    // Convert from UI convention (0-100) to Nova convention (0-1) for Percent type
+                                    size.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
+                                    size.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
+                                    size.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
                                     ub2.Size = size;
                                 }
                                 else ub2.Size.Raw = v;
@@ -682,8 +739,11 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub.Size;
-                                    // Return actual values - masking needs real current values for components not being animated
-                                    return new Vector3(size.X.Raw, size.Y.Raw, size.Z.Raw);
+                                    // Nova uses 1 == 100% for Percent type, convert to UI convention (0-100 range)
+                                    float x = size.X.Type == Nova.LengthType.Percent ? size.X.Percent * 100f : float.NaN;
+                                    float y = size.Y.Type == Nova.LengthType.Percent ? size.Y.Percent * 100f : float.NaN;
+                                    float z = size.Z.Type == Nova.LengthType.Percent ? size.Z.Percent * 100f : float.NaN;
+                                    return new Vector3(x, y, z);
                                 }
                                 return ub.Size.Raw;
                             };
@@ -692,13 +752,10 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub.Size;
-                                    // Only convert to Percent if not already set, preserve Raw components
-                                    if (size.X.Type != Nova.LengthType.Percent) size.X = new Nova.Length(v.x, Nova.LengthType.Percent);
-                                    else size.X.Percent = v.x;
-                                    if (size.Y.Type != Nova.LengthType.Percent) size.Y = new Nova.Length(v.y, Nova.LengthType.Percent);
-                                    else size.Y.Percent = v.y;
-                                    if (size.Z.Type != Nova.LengthType.Percent) size.Z = new Nova.Length(v.z, Nova.LengthType.Percent);
-                                    else size.Z.Percent = v.z;
+                                    // Convert from UI convention (0-100) to Nova convention (0-1) for Percent type
+                                    size.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
+                                    size.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
+                                    size.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
                                     ub.Size = size;
                                 }
                                 else ub.Size.Raw = v;
