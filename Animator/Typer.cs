@@ -111,6 +111,14 @@ namespace Animator
         }
 
         /// <summary>
+        /// Type with empty override and append mode enabled. Useful for Unity Events.
+        /// </summary>
+        public void Type()
+        {
+            StartTyping("", true);
+        }
+
+        /// <summary>
         /// Start typing using the configured source text or an override.
         /// </summary>
         /// <param name="overrideText">Optional text to type instead of the configured source.</param>
