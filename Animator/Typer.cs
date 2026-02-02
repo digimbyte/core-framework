@@ -198,31 +198,75 @@ namespace Animator
             cursorVisible = false;
         }
 
+        /// <summary>
+        /// Delete characters from the start of the text.
+        /// </summary>
+        /// <param name="count">Number of characters to delete from the start. If 0 or negative, deletes entire text.</param>
+        public void Delete(int count = 0)
+        {
+            StopTyping(manualStop: false);
+            string current = target.text;
+            if (count <= 0)
+            {
+                // Delete entire text
+                target.text = "";
+            }
+            else
+            {
+                // Delete from start up to count characters
+                int deleteCount = Mathf.Min(count, current.Length);
+                target.text = current.Substring(deleteCount);
+            }
+        }
+
+        /// <summary>
+        /// Delete characters from the end of the text (backspace).
+        /// </summary>
+        /// <param name="count">Number of characters to delete from the end. If 0 or negative, deletes entire text.</param>
+        public void Backspace(int count = 0)
+        {
+            StopTyping(manualStop: false);
+            string current = target.text;
+            if (count <= 0)
+            {
+                // Delete entire text
+                target.text = "";
+            }
+            else
+            {
+                // Delete from end, up to count characters
+                int deleteCount = Mathf.Min(count, current.Length);
+                target.text = current.Substring(0, current.Length - deleteCount);
+            }
+        }
+
         private IEnumerator TypeRoutine(string source, bool append = false)
         {
             isTyping = true;
 
             StringBuilder output;
+            int idx = 0;
             if (append)
             {
-                // Append mode: start with existing text
+                // Append mode: start with existing rendered text and resume typing from its length
                 output = new StringBuilder(target.text);
+                idx = target.text.Length;  // Start typing after what's already rendered
             }
             else if (insertMode && prefillWhitespace)
             {
                 // Fresh overwrite mode with insert: prefill with spaces
                 output = new StringBuilder(new string(' ', source.Length));
+                idx = 0;
             }
             else
             {
                 // Fresh overwrite mode: start empty
                 output = new StringBuilder();
+                idx = 0;
             }
 
             float charDelay = charactersPerSecond > 0 ? 1f / charactersPerSecond : 0f;
             float backspaceDelay = backspacePerSecond > 0 ? 1f / backspacePerSecond : 0f;
-
-            int idx = 0;
             while (idx < source.Length)
             {
                 // Decide how many characters to emit in this batch (1..maxMultiChars) based on chance
