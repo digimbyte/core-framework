@@ -96,6 +96,7 @@ namespace Animator
             public bool toBool = true;
             public string propertyName;
             public CustomPropertyMode propertyMode = CustomPropertyMode.AutoTween;
+            public MethodInvokeTiming methodInvokeTiming = MethodInvokeTiming.OnEnd;
             public string detectedPropertyType;
             public ComponentMask vectorMask = ComponentMask.All;
 
@@ -110,6 +111,15 @@ namespace Animator
             AutoTween,
             SetAtEnd,
             ToggleAtHalf
+        }
+        
+        [Serializable]
+        public enum MethodInvokeTiming
+        {
+            OnCurve,        // Use curve threshold (0.9+) with retrigger support
+            OnEnd,          // Invoke once at end of duration
+            OnStart,        // Invoke once at start of duration
+            StartAndEnd     // Invoke at both start and end
         }
         
         [Serializable]
@@ -195,27 +205,69 @@ namespace Animator
             yield return new WaitForEndOfFrame();
         }
 
-        private IEnumerator InvokeMethodOnCurve(MemberInfo member, object owner, float duration, AnimationCurve curve)
+        private IEnumerator InvokeMethodWithTiming(MemberInfo member, object owner, float duration, AnimationCurve curve, MethodInvokeTiming timing)
         {
-            // Execute method invocations just before render each frame
-            float elapsed = 0f;
-            bool fired = false;
-            while (elapsed < duration)
+            if (member is not MethodInfo mi) yield break;
+            
+            switch (timing)
             {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                float v = curve.Evaluate(t);
-                if (!fired && v >= MethodInvokeThreshold)
-                {
-                    if (member is MethodInfo mi) mi.Invoke(owner, null);
-                    fired = true;
-                }
-                if (fired && v < MethodInvokeThreshold)
-                {
-                    fired = false; // allow retrigger if curve goes down and up again
-                }
-                // Execute method invocation right before render
-                yield return new WaitForEndOfFrame();
+                case MethodInvokeTiming.OnStart:
+                    mi.Invoke(owner, null);
+                    yield return new WaitForEndOfFrame();
+                    break;
+                    
+                case MethodInvokeTiming.OnEnd:
+                    {
+                        float elapsed = 0f;
+                        while (elapsed < duration)
+                        {
+                            elapsed += Time.deltaTime;
+                            yield return new WaitForEndOfFrame();
+                        }
+                        mi.Invoke(owner, null);
+                        yield return new WaitForEndOfFrame();
+                    }
+                    break;
+                    
+                case MethodInvokeTiming.StartAndEnd:
+                    {
+                        mi.Invoke(owner, null);
+                        yield return new WaitForEndOfFrame();
+                        
+                        float elapsed = 0f;
+                        while (elapsed < duration)
+                        {
+                            elapsed += Time.deltaTime;
+                            yield return new WaitForEndOfFrame();
+                        }
+                        mi.Invoke(owner, null);
+                        yield return new WaitForEndOfFrame();
+                    }
+                    break;
+                    
+                case MethodInvokeTiming.OnCurve:
+                    {
+                        // Execute method invocations based on curve threshold with retrigger support
+                        float elapsed = 0f;
+                        bool fired = false;
+                        while (elapsed < duration)
+                        {
+                            elapsed += Time.deltaTime;
+                            float t = Mathf.Clamp01(elapsed / duration);
+                            float v = curve.Evaluate(t);
+                            if (!fired && v >= MethodInvokeThreshold)
+                            {
+                                mi.Invoke(owner, null);
+                                fired = true;
+                            }
+                            if (fired && v < MethodInvokeThreshold)
+                            {
+                                fired = false; // allow retrigger if curve goes down and up again
+                            }
+                            yield return new WaitForEndOfFrame();
+                        }
+                    }
+                    break;
             }
         }
 
@@ -1077,8 +1129,8 @@ namespace Animator
                         }
                         if (memberType == typeof(void) && memberInfo is MethodInfo method)
                         {
-                            // Use curve-driven trigger with hysteresis to avoid skim noise
-                            StartCoroutine(InvokeMethodOnCurve(method, owner, e.duration, e.curve));
+                            // Invoke method based on configured timing
+                            StartCoroutine(InvokeMethodWithTiming(method, owner, e.duration, e.curve, e.methodInvokeTiming));
                             return null;
                         }
 

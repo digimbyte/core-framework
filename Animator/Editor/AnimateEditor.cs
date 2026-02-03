@@ -271,7 +271,26 @@ namespace Animator
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("toVec3"), new GUIContent("End Euler"));
                                         break;
                                     case "Void":
-                                        EditorGUILayout.HelpBox("Method will be invoked when the animation curve value reaches or exceeds 0.9. Curve can retrigger the method if it drops below 0.9 and rises again.", MessageType.Info);
+                                        EditorGUILayout.PropertyField(e.FindPropertyRelative("methodInvokeTiming"), new GUIContent("Invoke Timing"));
+                                        var timingProp = e.FindPropertyRelative("methodInvokeTiming");
+                                        var timing = (Animate.MethodInvokeTiming)timingProp.enumValueIndex;
+                                        
+                                        if (timing == Animate.MethodInvokeTiming.OnCurve)
+                                        {
+                                            EditorGUILayout.HelpBox("Method will be invoked when the animation curve value reaches or exceeds 0.9. Curve can retrigger the method if it drops below 0.9 and rises again.", MessageType.Info);
+                                        }
+                                        else if (timing == Animate.MethodInvokeTiming.OnStart)
+                                        {
+                                            EditorGUILayout.HelpBox("Method will be invoked once at the start of the animation.", MessageType.Info);
+                                        }
+                                        else if (timing == Animate.MethodInvokeTiming.OnEnd)
+                                        {
+                                            EditorGUILayout.HelpBox("Method will be invoked once at the end of the animation (after duration).", MessageType.Info);
+                                        }
+                                        else if (timing == Animate.MethodInvokeTiming.StartAndEnd)
+                                        {
+                                            EditorGUILayout.HelpBox("Method will be invoked once at the start and once at the end of the animation.", MessageType.Info);
+                                        }
                                         break;
                                     default:
                                         EditorGUILayout.LabelField($"Type '{det}' not directly supported in inspector.");
@@ -323,6 +342,7 @@ namespace Animator
                 e.FindPropertyRelative("propertyName").stringValue = string.Empty;
                 e.FindPropertyRelative("detectedPropertyType").stringValue = string.Empty;
                 e.FindPropertyRelative("propertyMode").enumValueIndex = (int)Animate.CustomPropertyMode.AutoTween;
+                e.FindPropertyRelative("methodInvokeTiming").enumValueIndex = (int)Animate.MethodInvokeTiming.OnEnd;
                 e.FindPropertyRelative("delayMode").enumValueIndex = (int)Animate.DelayMode.None;
                 e.FindPropertyRelative("delayValue").floatValue = 0f;
                 e.FindPropertyRelative("duration").floatValue = 1f;
