@@ -76,7 +76,7 @@ namespace Animator
             public Component targetComponent;
             public TweenType type = TweenType.Position;
             public bool playOnStart = false;
-            public StartSource startSource = StartSource.Start;
+            public StartSource startSource = StartSource.Ignore;
             public bool local = true; // used for position/rotation
 
             public Vector3 fromVec3;
@@ -164,6 +164,7 @@ namespace Animator
 
         private const float BoolHighThreshold = 0.6f;
         private const float BoolLowThreshold = 0.4f;
+        private const float MethodInvokeThreshold = 0.9f;
 
         private IEnumerator DriveBoolWithCurve(object owner, MemberInfo member, bool startValue, bool endValue, float duration, AnimationCurve curve)
         {
@@ -204,14 +205,14 @@ namespace Animator
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
                 float v = curve.Evaluate(t);
-                if (!fired && v > BoolHighThreshold)
+                if (!fired && v >= MethodInvokeThreshold)
                 {
                     if (member is MethodInfo mi) mi.Invoke(owner, null);
                     fired = true;
                 }
-                if (fired && v < BoolLowThreshold)
+                if (fired && v < MethodInvokeThreshold)
                 {
-                    fired = false; // allow retrigger if curve goes up again
+                    fired = false; // allow retrigger if curve goes down and up again
                 }
                 // Execute method invocation right before render
                 yield return new WaitForEndOfFrame();

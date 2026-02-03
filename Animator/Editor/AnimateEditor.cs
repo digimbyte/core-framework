@@ -270,6 +270,9 @@ namespace Animator
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("fromVec3"), new GUIContent("Start Euler"));
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("toVec3"), new GUIContent("End Euler"));
                                         break;
+                                    case "Void":
+                                        EditorGUILayout.HelpBox("Method will be invoked when the animation curve value reaches or exceeds 0.9. Curve can retrigger the method if it drops below 0.9 and rises again.", MessageType.Info);
+                                        break;
                                     default:
                                         EditorGUILayout.LabelField($"Type '{det}' not directly supported in inspector.");
                                         EditorGUILayout.HelpBox("Use from/to float values or define custom handling in code.", MessageType.Info);
@@ -303,7 +306,7 @@ namespace Animator
                 e.FindPropertyRelative("targetComponent").objectReferenceValue = null;
                 e.FindPropertyRelative("type").enumValueIndex = (int)Animate.TweenType.Position;
                 e.FindPropertyRelative("playOnStart").boolValue = false;
-                e.FindPropertyRelative("startSource").enumValueIndex = (int)Animate.StartSource.Start;
+                e.FindPropertyRelative("startSource").enumValueIndex = (int)Animate.StartSource.Ignore;
                 e.FindPropertyRelative("local").boolValue = true;
 
                 e.FindPropertyRelative("fromVec3").vector3Value = Vector3.zero;
@@ -576,6 +579,13 @@ namespace Animator
                     currentType = fi.FieldType;
                     try { current = current != null ? fi.GetValue(current) : null; } catch { current = null; }
                     continue;
+                }
+                
+                // Check for methods (parameterless, void return)
+                var mi = currentType.GetMethod(segment, BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
+                if (mi != null && mi.GetParameters().Length == 0 && mi.ReturnType == typeof(void))
+                {
+                    return typeof(void);
                 }
 
                 // segment not found
