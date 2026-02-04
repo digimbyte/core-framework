@@ -660,4 +660,96 @@ namespace Nova
         }
         #endregion
     }
+
+    /// <summary>
+    /// Extension methods for Length3 to support selective axis updates while preserving type and unmodified axes.
+    /// </summary>
+    public static class Length3Extensions
+    {
+        public enum LengthInputSpace
+        {
+            ValueUnits,
+            PercentUI_0_100,
+        }
+
+        /// <summary>
+        /// Set specific axes of a Length3. Only axes with non-null values will be updated.
+        /// </summary>
+        /// <remarks>
+        /// This helper can optionally preserve each axis's existing <see cref="LengthType"/> by converting between
+        /// ValueUnits and Percent using <paramref name="relativeTo"/> (typically parent padded size).
+        /// </remarks>
+        public static Length3 SetSelectiveAxesPreserveType(this Length3 length, float? x, float? y, float? z, LengthInputSpace inputSpace, Vector3 relativeTo)
+        {
+            if (x.HasValue)
+                length.X = SetLengthPreserveType(length.X, x.Value, inputSpace, relativeTo.x);
+            if (y.HasValue)
+                length.Y = SetLengthPreserveType(length.Y, y.Value, inputSpace, relativeTo.y);
+            if (z.HasValue)
+                length.Z = SetLengthPreserveType(length.Z, z.Value, inputSpace, relativeTo.z);
+            return length;
+        }
+
+        /// <summary>
+        /// Legacy helper: writes values by forcing the type (Percent or Value) per axis.
+        /// Percent values are expected in UI space (0-100).
+        /// </summary>
+        public static Length3 SetSelectiveAxes(this Length3 length, float? x = null, float? y = null, float? z = null, bool asPercent = false)
+        {
+            if (x.HasValue)
+                length.X = asPercent ? Length.Percentage(x.Value * 0.01f) : Length.FixedValue(x.Value);
+            if (y.HasValue)
+                length.Y = asPercent ? Length.Percentage(y.Value * 0.01f) : Length.FixedValue(y.Value);
+            if (z.HasValue)
+                length.Z = asPercent ? Length.Percentage(z.Value * 0.01f) : Length.FixedValue(z.Value);
+            return length;
+        }
+
+        public static Length SetLengthPreserveType(Length current, float input, LengthInputSpace inputSpace, float relativeTo)
+        {
+            bool relativeValid = !float.IsNaN(relativeTo) && !float.IsInfinity(relativeTo) && Mathf.Abs(relativeTo) > 1e-6f;
+
+            switch (inputSpace)
+            {
+                case LengthInputSpace.PercentUI_0_100:
+                    {
+                        float p = input * 0.01f; // UI(0-100) -> Nova(0-1)
+                        if (current.Type == LengthType.Percent)
+                        {
+                            // No conversion needed
+                            return Length.Percentage(p);
+                        }
+
+                        // current is Value units: we must convert percent -> units to preserve type
+                        if (!relativeValid)
+                        {
+                            // Can't safely convert yet (layout not ready). Preserve current.
+                            return current;
+                        }
+
+                        return Length.FixedValue(p * relativeTo);
+                    }
+
+                case LengthInputSpace.ValueUnits:
+                default:
+                    {
+                        float v = input;
+                        if (current.Type == LengthType.Value)
+                        {
+                            // No conversion needed
+                            return Length.FixedValue(v);
+                        }
+
+                        // current is Percent: we must convert units -> percent to preserve type
+                        if (!relativeValid)
+                        {
+                            // Can't safely convert yet (layout not ready). Preserve current.
+                            return current;
+                        }
+
+                        return Length.Percentage(v / relativeTo);
+                    }
+            }
+        }
+    }
 }

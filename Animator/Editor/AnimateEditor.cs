@@ -56,6 +56,10 @@ namespace Animator
                     SaveFoldout(i, newFoldout);
                 }
                 if (GUILayout.Button("Play", GUILayout.Width(60))) ((Animate)target).PlayByIndex(i);
+                if (GUILayout.Button("Clone", GUILayout.Width(70)))
+                {
+                    CloneTweenEntry(i);
+                }
                 if (GUILayout.Button("Remove", GUILayout.Width(70)))
                 {
                     configuredTweensProp.DeleteArrayElementAtIndex(i);
@@ -72,6 +76,7 @@ namespace Animator
                     continue;
                 }
 
+                // Show all the existing fields (original inspector)
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("name"));
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("targetObject"));
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("type"));
@@ -83,7 +88,7 @@ namespace Animator
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("delayMode"), new GUIContent("Delay Mode"));
                 var delayModeProp = e.FindPropertyRelative("delayMode");
                 var delayMode = (Animate.DelayMode)delayModeProp.enumValueIndex;
-                
+
                 if (delayMode == Animate.DelayMode.Frames)
                 {
                     EditorGUILayout.PropertyField(e.FindPropertyRelative("delayValue"), new GUIContent("Delay (frames)"));
@@ -92,7 +97,7 @@ namespace Animator
                 {
                     EditorGUILayout.PropertyField(e.FindPropertyRelative("delayValue"), new GUIContent("Delay (s)"));
                 }
-                
+
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("duration"), new GUIContent("Duration (s)"));
                 EditorGUILayout.PropertyField(e.FindPropertyRelative("curve"));
 
@@ -189,7 +194,7 @@ namespace Animator
                             if (compObj != null)
                             {
                                 string currentPath = e.FindPropertyRelative("propertyName").stringValue;
-                                
+
                                 EditorGUILayout.LabelField("Select Property");
                                 EditorGUILayout.BeginHorizontal();
                                 EditorGUILayout.TextField(currentPath);
@@ -257,15 +262,15 @@ namespace Animator
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("fromVec3"), new GUIContent("Start Value"));
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("toVec3"), new GUIContent("End Value"));
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("vectorMask"), new GUIContent("Component Mask"));
-                                        
+
                                         // Show enum helper if property contains enum fields (like Alignment)
                                         var comp = e.FindPropertyRelative("targetComponent").objectReferenceValue as Component;
                                         string propPath = e.FindPropertyRelative("propertyName").stringValue;
                                         if (comp != null && !string.IsNullOrEmpty(propPath))
                                         {
                                             EnumAnimationHelper.ShowEnumHelperIfApplicable(
-                                                comp, 
-                                                propPath, 
+                                                comp,
+                                                propPath,
                                                 e.FindPropertyRelative("fromVec3"),
                                                 e.FindPropertyRelative("toVec3")
                                             );
@@ -386,6 +391,111 @@ namespace Animator
             EditorGUILayout.EndHorizontal();
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void CloneTweenEntry(int sourceIndex)
+        {
+            if (sourceIndex < 0 || sourceIndex >= configuredTweensProp.arraySize) return;
+            
+            int newIndex = configuredTweensProp.arraySize;
+            configuredTweensProp.arraySize++;
+            
+            // Apply first to ensure the new element is properly initialized
+            serializedObject.ApplyModifiedProperties();
+            serializedObject.Update();
+            
+            var sourceProp = configuredTweensProp.GetArrayElementAtIndex(sourceIndex);
+            var targetProp = configuredTweensProp.GetArrayElementAtIndex(newIndex);
+            
+            // Copy all direct fields from source to target
+            CopyTweenProperties(sourceProp, targetProp);
+            
+            // Append " (Clone)" to the name
+            var nameProp = targetProp.FindPropertyRelative("name");
+            if (nameProp != null)
+            {
+                nameProp.stringValue += " (Clone)";
+            }
+            
+            // Add new foldout state
+            foldouts.Add(true);
+            
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void CopyTweenProperties(SerializedProperty source, SerializedProperty target)
+        {
+            // Copy basic fields
+            CopyProperty(source, target, "name", p => p.stringValue, (p, v) => p.stringValue = (string)v);
+            CopyProperty(source, target, "targetObject", p => p.objectReferenceValue, (p, v) => p.objectReferenceValue = (UnityEngine.Object)v);
+            CopyProperty(source, target, "targetComponent", p => p.objectReferenceValue, (p, v) => p.objectReferenceValue = (UnityEngine.Object)v);
+            CopyEnumSafe(source, target, "type");
+            CopyProperty(source, target, "playOnStart", p => p.boolValue, (p, v) => p.boolValue = (bool)v);
+            CopyEnumSafe(source, target, "startSource");
+            CopyProperty(source, target, "local", p => p.boolValue, (p, v) => p.boolValue = (bool)v);
+            
+            CopyProperty(source, target, "fromVec3", p => p.vector3Value, (p, v) => p.vector3Value = (Vector3)v);
+            CopyProperty(source, target, "toVec3", p => p.vector3Value, (p, v) => p.vector3Value = (Vector3)v);
+            CopyProperty(source, target, "fromColor", p => p.colorValue, (p, v) => p.colorValue = (Color)v);
+            CopyProperty(source, target, "toColor", p => p.colorValue, (p, v) => p.colorValue = (Color)v);
+            CopyProperty(source, target, "fromFloat", p => p.floatValue, (p, v) => p.floatValue = (float)v);
+            CopyProperty(source, target, "toFloat", p => p.floatValue, (p, v) => p.floatValue = (float)v);
+            
+            CopyProperty(source, target, "materialProperty", p => p.stringValue, (p, v) => p.stringValue = (string)v);
+            CopyProperty(source, target, "materialIndex", p => p.intValue, (p, v) => p.intValue = (int)v);
+            CopyProperty(source, target, "fromBool", p => p.boolValue, (p, v) => p.boolValue = (bool)v);
+            CopyProperty(source, target, "toBool", p => p.boolValue, (p, v) => p.boolValue = (bool)v);
+            CopyProperty(source, target, "propertyName", p => p.stringValue, (p, v) => p.stringValue = (string)v);
+            CopyProperty(source, target, "detectedPropertyType", p => p.stringValue, (p, v) => p.stringValue = (string)v);
+            CopyEnumSafe(source, target, "propertyMode");
+            CopyEnumSafe(source, target, "methodInvokeTiming");
+            CopyEnumSafe(source, target, "vectorMask");
+            CopyEnumSafe(source, target, "enumFieldMask");
+            CopyEnumSafe(source, target, "delayMode");
+            CopyProperty(source, target, "delayValue", p => p.floatValue, (p, v) => p.floatValue = (float)v);
+            CopyProperty(source, target, "duration", p => p.floatValue, (p, v) => p.floatValue = (float)v);
+            CopyProperty(source, target, "curve", p => p.animationCurveValue, (p, v) => p.animationCurveValue = (AnimationCurve)v);
+            
+            // Copy array
+            var srcArray = source.FindPropertyRelative("materialColorProperties");
+            var tgtArray = target.FindPropertyRelative("materialColorProperties");
+            if (srcArray != null && tgtArray != null)
+            {
+                tgtArray.ClearArray();
+                for (int i = 0; i < srcArray.arraySize; i++)
+                {
+                    tgtArray.InsertArrayElementAtIndex(i);
+                    tgtArray.GetArrayElementAtIndex(i).stringValue = srcArray.GetArrayElementAtIndex(i).stringValue;
+                }
+            }
+        }
+
+        private void CopyProperty<T>(SerializedProperty source, SerializedProperty target, string propName, System.Func<SerializedProperty, T> getter, System.Action<SerializedProperty, T> setter)
+        {
+            var srcProp = source.FindPropertyRelative(propName);
+            var tgtProp = target.FindPropertyRelative(propName);
+            if (srcProp != null && tgtProp != null)
+            {
+                try
+                {
+                    setter(tgtProp, getter(srcProp));
+                }
+                catch { }
+            }
+        }
+
+        private void CopyEnumSafe(SerializedProperty source, SerializedProperty target, string propName)
+        {
+            var srcProp = source.FindPropertyRelative(propName);
+            var tgtProp = target.FindPropertyRelative(propName);
+            if (srcProp != null && tgtProp != null && srcProp.enumValueIndex >= 0)
+            {
+                // Only copy if the source enum value is valid (non-negative)
+                if (tgtProp.enumNames != null && srcProp.enumValueIndex < tgtProp.enumNames.Length)
+                {
+                    tgtProp.enumValueIndex = srcProp.enumValueIndex;
+                }
+            }
         }
 
         private List<NestedEntry> CollectNestedMembers(Component root, int maxDepth)

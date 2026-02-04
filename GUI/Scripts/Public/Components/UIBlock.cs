@@ -146,6 +146,56 @@ namespace Nova
         }
 
         /// <summary>
+        /// Update <see cref="Size"/> per-axis while preserving unmodified axes.
+        /// Supports mixed <see cref="LengthType.Value"/> and <see cref="LengthType.Percent"/> per axis.
+        /// </summary>
+        /// <remarks>
+        /// If an axis is currently stored as <see cref="LengthType.Value"/>, percent inputs will be converted to units using
+        /// the <see cref="Parent"/>'s <see cref="PaddedSize"/> along that axis (and vice versa).
+        /// Percent inputs are expected in UI space (0-100).
+        /// </remarks>
+        public void SetSizeAxes(float? x = null, float? y = null, float? z = null, Length3Extensions.LengthInputSpace inputSpace = Length3Extensions.LengthInputSpace.ValueUnits)
+        {
+            Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
+            ref Length3 size = ref Size;
+
+            if (x.HasValue)
+                size.X = Length3Extensions.SetLengthPreserveType(size.X, x.Value, inputSpace, relativeTo.x);
+            if (y.HasValue)
+                size.Y = Length3Extensions.SetLengthPreserveType(size.Y, y.Value, inputSpace, relativeTo.y);
+            if (z.HasValue)
+                size.Z = Length3Extensions.SetLengthPreserveType(size.Z, z.Value, inputSpace, relativeTo.z);
+        }
+
+        /// <summary>
+        /// Read <see cref="Size"/> as UI percent values (0-100), converting per-axis as needed.
+        /// </summary>
+        public Vector3 GetSizePercentUI()
+        {
+            Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
+            ref Length3 size = ref Size;
+
+            float x = size.X.Type == LengthType.Percent ? size.X.Percent * 100f : (relativeTo.x != 0f ? (size.X.Value / relativeTo.x) * 100f : 0f);
+            float y = size.Y.Type == LengthType.Percent ? size.Y.Percent * 100f : (relativeTo.y != 0f ? (size.Y.Value / relativeTo.y) * 100f : 0f);
+            float z = size.Z.Type == LengthType.Percent ? size.Z.Percent * 100f : (relativeTo.z != 0f ? (size.Z.Value / relativeTo.z) * 100f : 0f);
+            return new Vector3(x, y, z);
+        }
+
+        /// <summary>
+        /// Read <see cref="Size"/> as value units, converting per-axis as needed.
+        /// </summary>
+        public Vector3 GetSizeValueUnits()
+        {
+            Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
+            ref Length3 size = ref Size;
+
+            float x = size.X.Type == LengthType.Value ? size.X.Value : size.X.Percent * relativeTo.x;
+            float y = size.Y.Type == LengthType.Value ? size.Y.Value : size.Y.Percent * relativeTo.y;
+            float z = size.Z.Type == LengthType.Value ? size.Z.Value : size.Z.Percent * relativeTo.z;
+            return new Vector3(x, y, z);
+        }
+
+        /// <summary>
         /// The <see cref="MinMax3"/> used to clamp <see cref="Size">Size</see> and <see cref="AutoSize">Auto Size</see> when calculating <see cref="CalculatedSize">CalculatedSize.</see>.
         /// </summary>
         public ref MinMax3 SizeMinMax
@@ -367,6 +417,56 @@ namespace Nova
             {
                 return ref Layout.Position;
             }
+        }
+
+        /// <summary>
+        /// Update <see cref="Position"/> per-axis while preserving unmodified axes.
+        /// Supports mixed <see cref="LengthType.Value"/> and <see cref="LengthType.Percent"/> per axis.
+        /// </summary>
+        /// <remarks>
+        /// If an axis is currently stored as <see cref="LengthType.Value"/>, percent inputs will be converted to units using
+        /// the <see cref="Parent"/>'s <see cref="PaddedSize"/> along that axis (and vice versa).
+        /// Percent inputs are expected in UI space (0-100).
+        /// </remarks>
+        public void SetPositionAxes(float? x = null, float? y = null, float? z = null, Length3Extensions.LengthInputSpace inputSpace = Length3Extensions.LengthInputSpace.ValueUnits)
+        {
+            Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
+            ref Length3 pos = ref Position;
+
+            if (x.HasValue)
+                pos.X = Length3Extensions.SetLengthPreserveType(pos.X, x.Value, inputSpace, relativeTo.x);
+            if (y.HasValue)
+                pos.Y = Length3Extensions.SetLengthPreserveType(pos.Y, y.Value, inputSpace, relativeTo.y);
+            if (z.HasValue)
+                pos.Z = Length3Extensions.SetLengthPreserveType(pos.Z, z.Value, inputSpace, relativeTo.z);
+        }
+
+        /// <summary>
+        /// Read <see cref="Position"/> as UI percent values (0-100), converting per-axis as needed.
+        /// </summary>
+        public Vector3 GetPositionPercentUI()
+        {
+            Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
+            ref Length3 pos = ref Position;
+
+            float x = pos.X.Type == LengthType.Percent ? pos.X.Percent * 100f : (relativeTo.x != 0f ? (pos.X.Value / relativeTo.x) * 100f : 0f);
+            float y = pos.Y.Type == LengthType.Percent ? pos.Y.Percent * 100f : (relativeTo.y != 0f ? (pos.Y.Value / relativeTo.y) * 100f : 0f);
+            float z = pos.Z.Type == LengthType.Percent ? pos.Z.Percent * 100f : (relativeTo.z != 0f ? (pos.Z.Value / relativeTo.z) * 100f : 0f);
+            return new Vector3(x, y, z);
+        }
+
+        /// <summary>
+        /// Read <see cref="Position"/> as value units, converting per-axis as needed.
+        /// </summary>
+        public Vector3 GetPositionValueUnits()
+        {
+            Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
+            ref Length3 pos = ref Position;
+
+            float x = pos.X.Type == LengthType.Value ? pos.X.Value : pos.X.Percent * relativeTo.x;
+            float y = pos.Y.Type == LengthType.Value ? pos.Y.Value : pos.Y.Percent * relativeTo.y;
+            float z = pos.Z.Type == LengthType.Value ? pos.Z.Value : pos.Z.Percent * relativeTo.z;
+            return new Vector3(x, y, z);
         }
 
         /// <summary>

@@ -79,6 +79,9 @@ namespace Animator
             public StartSource startSource = StartSource.Ignore;
             public bool local = true; // used for position/rotation
 
+            [Tooltip("If enabled, this tween will not start until the previous configured tween has finished.")]
+            public bool chainAfterPrevious = false;
+
             public Vector3 fromVec3;
             public Vector3 toVec3;
 
@@ -864,14 +867,38 @@ namespace Animator
         // ----------------
 
         /// <summary>
-        /// Play all configured tweens in the inspector.
+        /// Play all configured tweens.
+        /// If <see cref="TweenEntry.chainAfterPrevious"/> is enabled, will wait for the previous tween to finish.
         /// </summary>
         public void PlayAllConfigured()
         {
-            foreach (var e in configuredTweens)
+            // In edit mode, PlayEntry() runs preview behavior. Chaining is not guaranteed there,
+            // but we still run the same scheduling logic.
+            StartCoroutine(PlayAllConfiguredCoroutine());
+        }
+
+        private IEnumerator PlayAllConfiguredCoroutine()
+        {
+            // Track the coroutine handle per entry so we can wait on the previous one when chaining.
+            Coroutine prev = null;
+
+            for (int i = 0; i < configuredTweens.Count; i++)
             {
-                if (e != null)
-                    PlayEntry(e);
+                var e = configuredTweens[i];
+                if (e == null) continue;
+
+                if (e.chainAfterPrevious && prev != null)
+                {
+                    yield return prev;
+                }
+
+                prev = PlayEntry(e);
+
+                // If PlayEntry returned null (e.g. editor preview), don't block the chain.
+                if (prev == null)
+                {
+                    yield return null;
+                }
             }
         }
 
@@ -1012,100 +1039,42 @@ namespace Animator
                     if ((comp is Nova.UIBlock || comp is Nova.UIBlock2D || comp is Nova.UIBlock3D) && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
                     {
                         bool isPercent = resolvedPath.EndsWith("Percent");
-                        Func<Vector3> getter;
-                        Action<Vector3> setter;
                         
-                        // Check most specific types first to avoid catching inherited types
-                        if (comp is Nova.UIBlock3D ub3)
+                        // Generic handler works for all UIBlock types since Size property is the same
+                        // Store references to get both values for masking to work with mixed Raw/Percent
+                        Func<Vector3> getter = () => 
                         {
-                            getter = () => 
-                            {
-                                if (isPercent) 
-                                {
-                                    var size = ub3.Size;
-                                    // Always read as percent values, regardless of current type
-                                    float x = size.X.Percent * 100f;
-                                    float y = size.Y.Percent * 100f;
-                                    float z = size.Z.Percent * 100f;
-                                    return new Vector3(x, y, z);
-                                }
-                                return ub3.Size.Raw;
-                            };
-                            setter = v =>
-                            {
-                                if (isPercent) 
-                                {
-                                    var size = ub3.Size;
-                                    // Convert from UI convention (0-100) to Nova convention (0-1) for Percent type
-                                    size.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
-                                    size.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
-                                    size.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
-                                    ub3.Size = size;
-                                }
-                                else ub3.Size.Raw = v;
-                            };
-                        }
-                        else if (comp is Nova.UIBlock2D ub2)
+                            Nova.Length3 size;
+                            if (comp is Nova.UIBlock3D ub3d)
+                                size = ub3d.Size;
+                            else if (comp is Nova.UIBlock2D ub2d)
+                                size = ub2d.Size;
+                            else
+                                size = ((Nova.UIBlock)comp).Size;
+                            
+                            var block = comp as Nova.UIBlock;
+                            if (block == null) return Vector3.zero;
+                            return isPercent ? block.GetSizePercentUI() : block.GetSizeValueUnits();
+                        };
+                        
+                        Action<Vector3> setter = v =>
                         {
-                            getter = () => 
-                            {
-                                if (isPercent) 
-                                {
-                                    var size = ub2.Size;
-                                    // Always read as percent values, regardless of current type
-                                    float x = size.X.Percent * 100f;
-                                    float y = size.Y.Percent * 100f;
-                                    float z = size.Z.Percent * 100f;
-                                    return new Vector3(x, y, z);
-                                }
-                                return ub2.Size.Raw;
-                            };
-                            setter = v =>
-                            {
-                                if (isPercent) 
-                                {
-                                    var size = ub2.Size;
-                                    // Convert from UI convention (0-100) to Nova convention (0-1) for Percent type
-                                    size.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
-                                    size.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
-                                    size.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
-                                    ub2.Size = size;
-                                }
-                                else ub2.Size.Raw = v;
-                            };
-                        }
-                        else
-                        {
-                            var ub = (Nova.UIBlock)comp;
-                            getter = () => 
-                            {
-                                if (isPercent) 
-                                {
-                                    var size = ub.Size;
-                                    // Always read as percent values, regardless of current type
-                                    float x = size.X.Percent * 100f;
-                                    float y = size.Y.Percent * 100f;
-                                    float z = size.Z.Percent * 100f;
-                                    return new Vector3(x, y, z);
-                                }
-                                return ub.Size.Raw;
-                            };
-                            setter = v =>
-                            {
-                                if (isPercent) 
-                                {
-                                    var size = ub.Size;
-                                    // Convert from UI convention (0-100) to Nova convention (0-1) for Percent type
-                                    size.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
-                                    size.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
-                                    size.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
-                                    ub.Size = size;
-                                }
-                                else ub.Size.Raw = v;
-                            };
-                        }
+                            // Only set axes that are in the mask; null means "do not change"
+                            float? setX = e.vectorMask.HasFlag(ComponentMask.X) ? (float?)v.x : null;
+                            float? setY = e.vectorMask.HasFlag(ComponentMask.Y) ? (float?)v.y : null;
+                            float? setZ = e.vectorMask.HasFlag(ComponentMask.Z) ? (float?)v.z : null;
+
+                            var block = comp as Nova.UIBlock;
+                            if (block == null) return;
+
+                            block.SetSizeAxes(setX, setY, setZ,
+                                isPercent ? Nova.Length3Extensions.LengthInputSpace.PercentUI_0_100 : Nova.Length3Extensions.LengthInputSpace.ValueUnits);
+                        };
                         
                         ComponentMask mask = e.vectorMask;
+                        if (mask == ComponentMask.None)
+                            mask = ComponentMask.All;
+                        
                         Action<Vector3> maskedSetter = v =>
                         {
                             Vector3 current = getter();
@@ -1121,96 +1090,42 @@ namespace Animator
                     if ((comp is Nova.UIBlock || comp is Nova.UIBlock2D || comp is Nova.UIBlock3D) && (resolvedPath == "Position.Percent" || resolvedPath == "Position.Raw"))
                     {
                         bool isPercent = resolvedPath.EndsWith("Percent");
-                        Func<Vector3> getter;
-                        Action<Vector3> setter;
                         
-                        if (comp is Nova.UIBlock3D ub3)
+                        // Generic handler works for all UIBlock types since Position property is the same
+                        // Store references to get both values for masking to work with mixed Raw/Percent
+                        Func<Vector3> getter = () => 
                         {
-                            getter = () => 
-                            {
-                                if (isPercent) 
-                                {
-                                    var pos = ub3.Position;
-                                    // Always read as percent values, regardless of current type
-                                    float x = pos.X.Percent * 100f;
-                                    float y = pos.Y.Percent * 100f;
-                                    float z = pos.Z.Percent * 100f;
-                                    return new Vector3(x, y, z);
-                                }
-                                return ub3.Position.Raw;
-                            };
-                            setter = v =>
-                            {
-                                if (isPercent) 
-                                {
-                                    var pos = ub3.Position;
-                                    pos.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
-                                    pos.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
-                                    pos.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
-                                    ub3.Position = pos;
-                                }
-                                else ub3.Position.Raw = v;
-                            };
-                        }
-                        else if (comp is Nova.UIBlock2D ub2)
+                            Nova.Length3 pos;
+                            if (comp is Nova.UIBlock3D ub3d)
+                                pos = ub3d.Position;
+                            else if (comp is Nova.UIBlock2D ub2d)
+                                pos = ub2d.Position;
+                            else
+                                pos = ((Nova.UIBlock)comp).Position;
+                            
+                            var block = comp as Nova.UIBlock;
+                            if (block == null) return Vector3.zero;
+                            return isPercent ? block.GetPositionPercentUI() : block.GetPositionValueUnits();
+                        };
+                        
+                        Action<Vector3> setter = v =>
                         {
-                            getter = () => 
-                            {
-                                if (isPercent) 
-                                {
-                                    var pos = ub2.Position;
-                                    // Always read as percent values, regardless of current type
-                                    float x = pos.X.Percent * 100f;
-                                    float y = pos.Y.Percent * 100f;
-                                    float z = pos.Z.Percent * 100f;
-                                    return new Vector3(x, y, z);
-                                }
-                                return ub2.Position.Raw;
-                            };
-                            setter = v =>
-                            {
-                                if (isPercent) 
-                                {
-                                    var pos = ub2.Position;
-                                    pos.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
-                                    pos.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
-                                    pos.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
-                                    ub2.Position = pos;
-                                }
-                                else ub2.Position.Raw = v;
-                            };
-                        }
-                        else
-                        {
-                            var ub = (Nova.UIBlock)comp;
-                            getter = () => 
-                            {
-                                if (isPercent) 
-                                {
-                                    var pos = ub.Position;
-                                    // Always read as percent values, regardless of current type
-                                    float x = pos.X.Percent * 100f;
-                                    float y = pos.Y.Percent * 100f;
-                                    float z = pos.Z.Percent * 100f;
-                                    return new Vector3(x, y, z);
-                                }
-                                return ub.Position.Raw;
-                            };
-                            setter = v =>
-                            {
-                                if (isPercent) 
-                                {
-                                    var pos = ub.Position;
-                                    pos.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
-                                    pos.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
-                                    pos.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
-                                    ub.Position = pos;
-                                }
-                                else ub.Position.Raw = v;
-                            };
-                        }
+                            // Only set axes that are in the mask; null means "do not change"
+                            float? setX = e.vectorMask.HasFlag(ComponentMask.X) ? (float?)v.x : null;
+                            float? setY = e.vectorMask.HasFlag(ComponentMask.Y) ? (float?)v.y : null;
+                            float? setZ = e.vectorMask.HasFlag(ComponentMask.Z) ? (float?)v.z : null;
+
+                            var block = comp as Nova.UIBlock;
+                            if (block == null) return;
+
+                            block.SetPositionAxes(setX, setY, setZ,
+                                isPercent ? Nova.Length3Extensions.LengthInputSpace.PercentUI_0_100 : Nova.Length3Extensions.LengthInputSpace.ValueUnits);
+                        };
                         
                         ComponentMask mask = e.vectorMask;
+                        if (mask == ComponentMask.None)
+                            mask = ComponentMask.All;
+                        
                         Action<Vector3> maskedSetter = v =>
                         {
                             Vector3 current = getter();
@@ -1760,7 +1675,7 @@ namespace Animator
                         return Tween(getter, setter, current, to, duration, lerpFunc, curve);
                     }
                 case StartSource.End:
-                    // Override end with current value, keep inspector start
+                    // Override end with current value, keep inspector start.
                     {
                         T current = getter();
                         return Tween(getter, setter, explicitFrom, current, duration, lerpFunc, curve);
