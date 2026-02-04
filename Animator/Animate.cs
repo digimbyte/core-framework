@@ -99,6 +99,7 @@ namespace Animator
             public MethodInvokeTiming methodInvokeTiming = MethodInvokeTiming.OnEnd;
             public string detectedPropertyType;
             public ComponentMask vectorMask = ComponentMask.All;
+            public ComponentMask enumFieldMask = ComponentMask.None; // Enum field selection mask (X=field 0, Y=field 1, Z=field 2, W=field 3)
 
             public DelayMode delayMode = DelayMode.None;
             public float delayValue = 0f;  // Frames (if Frames mode) or Seconds (if Seconds mode)
@@ -307,6 +308,19 @@ namespace Animator
                         // This is the final segment - return it
                         member = pi;
                         memberType = pi.PropertyType;
+                        
+                        // If it's a ref-return type, resolve the actual type
+                        if (memberType.Name.EndsWith("&"))
+                        {
+                            string refTypeName = memberType.Name.TrimEnd('&');
+                            var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                            var resolvedType = ResolveType(memberType.Namespace + "." + refTypeName, assemblies);
+                            if (resolvedType != null)
+                            {
+                                memberType = resolvedType;
+                            }
+                        }
+                        
                         return true;
                     }
                     
@@ -509,6 +523,282 @@ namespace Animator
             {
                 return false;
             }
+        }
+        
+        private bool TryHandleUIBlockAlignment(TweenEntry e, Component comp)
+        {
+            // Special handler for ref-return Alignment property on UIBlock/UIBlock2D/UIBlock3D
+            // Enums are discrete states, not continuous values - snap to target at end
+            
+            return StartCoroutine(DriveEnumAlignment(e, comp)) != null;
+        }
+        
+        private IEnumerator DriveEnumAlignment(TweenEntry e, Component comp)
+        {
+            // Get current alignment
+            Func<Nova.Alignment> getCurrentAlignment = () =>
+            {
+                if (comp is Nova.UIBlock3D ub3) return ub3.Alignment;
+                if (comp is Nova.UIBlock2D ub2) return ub2.Alignment;
+                if (comp is Nova.UIBlock ub) return ub.Alignment;
+                return Nova.Alignment.Center;
+            };
+            
+            // Parse target alignment from toVec3
+            var targetAlignment = new Nova.Alignment(
+                (Nova.HorizontalAlignment)Mathf.RoundToInt(e.toVec3.x),
+                (Nova.VerticalAlignment)Mathf.RoundToInt(e.toVec3.y),
+                (Nova.DepthAlignment)Mathf.RoundToInt(e.toVec3.z)
+            );
+            
+            // Apply start source logic
+            Nova.Alignment startAlignment;
+            if (e.startSource == StartSource.Start)
+            {
+                startAlignment = getCurrentAlignment();
+            }
+            else if (e.startSource == StartSource.End)
+            {
+                startAlignment = targetAlignment;
+                targetAlignment = new Nova.Alignment(
+                    (Nova.HorizontalAlignment)Mathf.RoundToInt(e.fromVec3.x),
+                    (Nova.VerticalAlignment)Mathf.RoundToInt(e.fromVec3.y),
+                    (Nova.DepthAlignment)Mathf.RoundToInt(e.fromVec3.z)
+                );
+            }
+            else
+            {
+                startAlignment = new Nova.Alignment(
+                    (Nova.HorizontalAlignment)Mathf.RoundToInt(e.fromVec3.x),
+                    (Nova.VerticalAlignment)Mathf.RoundToInt(e.fromVec3.y),
+                    (Nova.DepthAlignment)Mathf.RoundToInt(e.fromVec3.z)
+                );
+            }
+            
+            // Set start value
+            ComponentMask mask = e.enumFieldMask;
+            if (mask == ComponentMask.None)
+                mask = ComponentMask.All;
+            
+            var current = startAlignment;
+            if (mask.HasFlag(ComponentMask.X)) current.X = startAlignment.X;
+            if (mask.HasFlag(ComponentMask.Y)) current.Y = startAlignment.Y;
+            if (mask.HasFlag(ComponentMask.Z)) current.Z = startAlignment.Z;
+            
+            if (comp is Nova.UIBlock3D ub3) ub3.Alignment = current;
+            else if (comp is Nova.UIBlock2D ub2) ub2.Alignment = current;
+            else if (comp is Nova.UIBlock ub) ub.Alignment = current;
+            
+            // Wait for duration
+            float startTime = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - startTime < e.duration)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+            
+            // Snap to target at end
+            current = getCurrentAlignment();
+            if (mask.HasFlag(ComponentMask.X)) current.X = targetAlignment.X;
+            if (mask.HasFlag(ComponentMask.Y)) current.Y = targetAlignment.Y;
+            if (mask.HasFlag(ComponentMask.Z)) current.Z = targetAlignment.Z;
+            
+            if (comp is Nova.UIBlock3D ub3b) ub3b.Alignment = current;
+            else if (comp is Nova.UIBlock2D ub2b) ub2b.Alignment = current;
+            else if (comp is Nova.UIBlock ub) ub.Alignment = current;
+            
+            yield return new WaitForEndOfFrame();
+        }
+        
+        /// <summary>
+        /// Adaptively handle any struct with enum fields (1-4 fields).
+        /// Extracts enum values to the appropriate vector type, tweens, and applies back.
+        /// Returns true if handled, false otherwise.
+        /// </summary>
+        private bool TryHandleEnumStruct(Component comp, TweenEntry e, object owner, MemberInfo memberInfo, Type memberType)
+        {
+            // Check if it's a struct with enum fields
+            if (!memberType.IsValueType || memberType.IsPrimitive || memberType.IsEnum)
+                return false;
+            
+            var enumFields = memberType.GetFields(BindingFlags.Public | BindingFlags.Instance)
+                .Where(f => f.FieldType.IsEnum)
+                .OrderBy(f => f.Name) // Deterministic order for extraction
+                .ToArray();
+            
+            if (enumFields.Length == 0 || enumFields.Length > 4)
+                return false;
+            
+            // Dynamically adapt to field count: 1 field = float, 2-4 fields = Vector2/3/4
+            switch (enumFields.Length)
+            {
+                case 1:
+                    return TweenEnumStructAsFloat(e, owner, memberInfo, enumFields);
+                case 2:
+                    return TweenEnumStructAsVector2(e, owner, memberInfo, enumFields);
+                case 3:
+                    return TweenEnumStructAsVector3(e, owner, memberInfo, enumFields);
+                case 4:
+                    return TweenEnumStructAsVector4(e, owner, memberInfo, enumFields);
+            }
+            
+            return false;
+        }
+        
+        private bool TweenEnumStructAsFloat(TweenEntry e, object owner, MemberInfo memberInfo, FieldInfo[] enumFields)
+        {
+            Func<float> getter = () =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                return structInstance != null ? Convert.ToSingle(enumFields[0].GetValue(structInstance)) : 0f;
+            };
+            
+            Action<float> setter = v =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance != null)
+                {
+                    enumFields[0].SetValue(structInstance, Enum.ToObject(enumFields[0].FieldType, Mathf.RoundToInt(v)));
+                    SetMemberValue(owner, memberInfo, structInstance);
+                }
+            };
+            
+            var coro = TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+            return coro != null;
+        }
+        
+        private bool TweenEnumStructAsVector2(TweenEntry e, object owner, MemberInfo memberInfo, FieldInfo[] enumFields)
+        {
+            Func<Vector3> getter = () =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance == null) return Vector3.zero;
+                return new Vector3(
+                    Convert.ToSingle(enumFields[0].GetValue(structInstance)),
+                    Convert.ToSingle(enumFields[1].GetValue(structInstance)),
+                    0f
+                );
+            };
+            
+            Action<Vector3> setter = v =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance != null)
+                {
+                    enumFields[0].SetValue(structInstance, Enum.ToObject(enumFields[0].FieldType, Mathf.RoundToInt(v.x)));
+                    enumFields[1].SetValue(structInstance, Enum.ToObject(enumFields[1].FieldType, Mathf.RoundToInt(v.y)));
+                    SetMemberValue(owner, memberInfo, structInstance);
+                }
+            };
+            
+            ComponentMask mask = e.vectorMask;
+            Action<Vector3> maskedSetter = v =>
+            {
+                Vector3 current = getter();
+                if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                setter(v);
+            };
+            
+            var coro = TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+            return coro != null;
+        }
+        
+        private bool TweenEnumStructAsVector3(TweenEntry e, object owner, MemberInfo memberInfo, FieldInfo[] enumFields)
+        {
+            Func<Vector3> getter = () =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance == null) return Vector3.zero;
+                return new Vector3(
+                    Convert.ToSingle(enumFields[0].GetValue(structInstance)),
+                    Convert.ToSingle(enumFields[1].GetValue(structInstance)),
+                    Convert.ToSingle(enumFields[2].GetValue(structInstance))
+                );
+            };
+            
+            Action<Vector3> setter = v =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance != null)
+                {
+                    // Only tween fields that are in the mask
+                    ComponentMask mask = e.enumFieldMask;
+                    if (mask.HasFlag(ComponentMask.X))
+                        enumFields[0].SetValue(structInstance, Enum.ToObject(enumFields[0].FieldType, Mathf.RoundToInt(v.x)));
+                    if (mask.HasFlag(ComponentMask.Y))
+                        enumFields[1].SetValue(structInstance, Enum.ToObject(enumFields[1].FieldType, Mathf.RoundToInt(v.y)));
+                    if (mask.HasFlag(ComponentMask.Z))
+                        enumFields[2].SetValue(structInstance, Enum.ToObject(enumFields[2].FieldType, Mathf.RoundToInt(v.z)));
+                    SetMemberValue(owner, memberInfo, structInstance);
+                }
+            };
+            
+            // If no enum fields are masked, default to all
+            ComponentMask enumMask = e.enumFieldMask;
+            if (enumMask == ComponentMask.None)
+                enumMask = ComponentMask.All;
+            
+            Action<Vector3> maskedSetter = v =>
+            {
+                Vector3 current = getter();
+                if (!enumMask.HasFlag(ComponentMask.X)) v.x = current.x;
+                if (!enumMask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                if (!enumMask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                setter(v);
+            };
+            
+            var coro = TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+            return coro != null;
+        }
+        
+        private bool TweenEnumStructAsVector4(TweenEntry e, object owner, MemberInfo memberInfo, FieldInfo[] enumFields)
+        {
+            Func<Vector3> getter = () =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance == null) return Vector3.zero;
+                return new Vector3(
+                    Convert.ToSingle(enumFields[0].GetValue(structInstance)),
+                    Convert.ToSingle(enumFields[1].GetValue(structInstance)),
+                    Convert.ToSingle(enumFields[2].GetValue(structInstance))
+                    // Note: Vector4.w would need separate handling if needed
+                );
+            };
+            
+            Action<Vector3> setter = v =>
+            {
+                object structInstance = GetMemberValue(owner, memberInfo);
+                if (structInstance != null)
+                {
+                    enumFields[0].SetValue(structInstance, Enum.ToObject(enumFields[0].FieldType, Mathf.RoundToInt(v.x)));
+                    enumFields[1].SetValue(structInstance, Enum.ToObject(enumFields[1].FieldType, Mathf.RoundToInt(v.y)));
+                    enumFields[2].SetValue(structInstance, Enum.ToObject(enumFields[2].FieldType, Mathf.RoundToInt(v.z)));
+                    if (enumFields.Length > 3)
+                    {
+                        // For 4th field, would need to pass as separate value
+                        // For now, keep from current state
+                        var current = GetMemberValue(owner, memberInfo);
+                        if (current != null)
+                        {
+                            enumFields[3].SetValue(structInstance, enumFields[3].GetValue(current));
+                        }
+                    }
+                    SetMemberValue(owner, memberInfo, structInstance);
+                }
+            };
+            
+            ComponentMask mask = e.vectorMask;
+            Action<Vector3> maskedSetter = v =>
+            {
+                Vector3 current = getter();
+                if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                setter(v);
+            };
+            
+            var coro = TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+            return coro != null;
         }
 
         /// <summary>
@@ -733,10 +1023,10 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub3.Size;
-                                    // Nova uses 1 == 100% for Percent type, convert to UI convention (0-100 range)
-                                    float x = size.X.Type == Nova.LengthType.Percent ? size.X.Percent * 100f : float.NaN;
-                                    float y = size.Y.Type == Nova.LengthType.Percent ? size.Y.Percent * 100f : float.NaN;
-                                    float z = size.Z.Type == Nova.LengthType.Percent ? size.Z.Percent * 100f : float.NaN;
+                                    // Always read as percent values, regardless of current type
+                                    float x = size.X.Percent * 100f;
+                                    float y = size.Y.Percent * 100f;
+                                    float z = size.Z.Percent * 100f;
                                     return new Vector3(x, y, z);
                                 }
                                 return ub3.Size.Raw;
@@ -762,10 +1052,10 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub2.Size;
-                                    // Nova uses 1 == 100% for Percent type, convert to UI convention (0-100 range)
-                                    float x = size.X.Type == Nova.LengthType.Percent ? size.X.Percent * 100f : float.NaN;
-                                    float y = size.Y.Type == Nova.LengthType.Percent ? size.Y.Percent * 100f : float.NaN;
-                                    float z = size.Z.Type == Nova.LengthType.Percent ? size.Z.Percent * 100f : float.NaN;
+                                    // Always read as percent values, regardless of current type
+                                    float x = size.X.Percent * 100f;
+                                    float y = size.Y.Percent * 100f;
+                                    float z = size.Z.Percent * 100f;
                                     return new Vector3(x, y, z);
                                 }
                                 return ub2.Size.Raw;
@@ -792,10 +1082,10 @@ namespace Animator
                                 if (isPercent) 
                                 {
                                     var size = ub.Size;
-                                    // Nova uses 1 == 100% for Percent type, convert to UI convention (0-100 range)
-                                    float x = size.X.Type == Nova.LengthType.Percent ? size.X.Percent * 100f : float.NaN;
-                                    float y = size.Y.Type == Nova.LengthType.Percent ? size.Y.Percent * 100f : float.NaN;
-                                    float z = size.Z.Type == Nova.LengthType.Percent ? size.Z.Percent * 100f : float.NaN;
+                                    // Always read as percent values, regardless of current type
+                                    float x = size.X.Percent * 100f;
+                                    float y = size.Y.Percent * 100f;
+                                    float z = size.Z.Percent * 100f;
                                     return new Vector3(x, y, z);
                                 }
                                 return ub.Size.Raw;
@@ -825,6 +1115,118 @@ namespace Animator
                             setter(v);
                         };
                         return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                    }
+
+                    // Fast-path: Position ref-return handling  
+                    if ((comp is Nova.UIBlock || comp is Nova.UIBlock2D || comp is Nova.UIBlock3D) && (resolvedPath == "Position.Percent" || resolvedPath == "Position.Raw"))
+                    {
+                        bool isPercent = resolvedPath.EndsWith("Percent");
+                        Func<Vector3> getter;
+                        Action<Vector3> setter;
+                        
+                        if (comp is Nova.UIBlock3D ub3)
+                        {
+                            getter = () => 
+                            {
+                                if (isPercent) 
+                                {
+                                    var pos = ub3.Position;
+                                    // Always read as percent values, regardless of current type
+                                    float x = pos.X.Percent * 100f;
+                                    float y = pos.Y.Percent * 100f;
+                                    float z = pos.Z.Percent * 100f;
+                                    return new Vector3(x, y, z);
+                                }
+                                return ub3.Position.Raw;
+                            };
+                            setter = v =>
+                            {
+                                if (isPercent) 
+                                {
+                                    var pos = ub3.Position;
+                                    pos.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
+                                    pos.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
+                                    pos.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
+                                    ub3.Position = pos;
+                                }
+                                else ub3.Position.Raw = v;
+                            };
+                        }
+                        else if (comp is Nova.UIBlock2D ub2)
+                        {
+                            getter = () => 
+                            {
+                                if (isPercent) 
+                                {
+                                    var pos = ub2.Position;
+                                    // Always read as percent values, regardless of current type
+                                    float x = pos.X.Percent * 100f;
+                                    float y = pos.Y.Percent * 100f;
+                                    float z = pos.Z.Percent * 100f;
+                                    return new Vector3(x, y, z);
+                                }
+                                return ub2.Position.Raw;
+                            };
+                            setter = v =>
+                            {
+                                if (isPercent) 
+                                {
+                                    var pos = ub2.Position;
+                                    pos.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
+                                    pos.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
+                                    pos.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
+                                    ub2.Position = pos;
+                                }
+                                else ub2.Position.Raw = v;
+                            };
+                        }
+                        else
+                        {
+                            var ub = (Nova.UIBlock)comp;
+                            getter = () => 
+                            {
+                                if (isPercent) 
+                                {
+                                    var pos = ub.Position;
+                                    // Always read as percent values, regardless of current type
+                                    float x = pos.X.Percent * 100f;
+                                    float y = pos.Y.Percent * 100f;
+                                    float z = pos.Z.Percent * 100f;
+                                    return new Vector3(x, y, z);
+                                }
+                                return ub.Position.Raw;
+                            };
+                            setter = v =>
+                            {
+                                if (isPercent) 
+                                {
+                                    var pos = ub.Position;
+                                    pos.X = new Nova.Length(v.x * 0.01f, Nova.LengthType.Percent);
+                                    pos.Y = new Nova.Length(v.y * 0.01f, Nova.LengthType.Percent);
+                                    pos.Z = new Nova.Length(v.z * 0.01f, Nova.LengthType.Percent);
+                                    ub.Position = pos;
+                                }
+                                else ub.Position.Raw = v;
+                            };
+                        }
+                        
+                        ComponentMask mask = e.vectorMask;
+                        Action<Vector3> maskedSetter = v =>
+                        {
+                            Vector3 current = getter();
+                            if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                            if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                            if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                            setter(v);
+                        };
+                        return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                    }
+
+                    // Fast-path: Alignment ref-return handling
+                    if ((comp is Nova.UIBlock || comp is Nova.UIBlock2D || comp is Nova.UIBlock3D) && resolvedPath == "Alignment")
+                    {
+                        TryHandleUIBlockAlignment(e, comp);
+                        return null;
                     }
 
                     if (TryResolveMember(comp, resolvedPath, out var owner, out var memberInfo, out var memberType))
@@ -888,6 +1290,13 @@ namespace Animator
                             Func<float> getter = () => Convert.ToSingle(Convert.ChangeType(GetMemberValue(owner, memberInfo), underlying));
                             Action<float> setter = v => SetMemberValue(owner, memberInfo, Enum.ToObject(memberType, Convert.ChangeType(v, underlying)));
                             return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                        }
+
+                        // Handle any struct with enum fields (e.g., Alignment, any custom enum struct)
+                        // Dynamically adapts to the number of enum fields (1-4) and tweens as float/vector
+                        if (TryHandleEnumStruct(comp, e, owner, memberInfo, memberType))
+                        {
+                            return null; // Handled by TryHandleEnumStruct, which starts its own coroutine
                         }
 
                         if (memberType == typeof(Vector3))

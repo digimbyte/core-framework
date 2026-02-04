@@ -48,7 +48,7 @@ namespace Animator
                 EditorGUILayout.BeginHorizontal();
                 string headerName = e.FindPropertyRelative("name").stringValue;
                 if (string.IsNullOrEmpty(headerName)) headerName = $"Tween {i + 1}";
-                if (i >= foldouts.Count) foldouts.Add(LoadFoldout(i, true));
+                if (i >= foldouts.Count) foldouts.Add(LoadFoldout(i, false));
                 bool newFoldout = EditorGUILayout.Foldout(foldouts[i], headerName, true);
                 if (newFoldout != foldouts[i])
                 {
@@ -306,10 +306,29 @@ namespace Animator
                                         }
                                         break;
                                     default:
-                                        EditorGUILayout.LabelField($"Type '{det}' not directly supported in inspector.");
-                                        EditorGUILayout.HelpBox("Use from/to float values or define custom handling in code.", MessageType.Info);
-                                        EditorGUILayout.PropertyField(e.FindPropertyRelative("fromFloat"), new GUIContent("From (as float)"));
-                                        EditorGUILayout.PropertyField(e.FindPropertyRelative("toFloat"), new GUIContent("To (as float)"));
+                                        // Try to show enum helper for struct types with enum fields
+                                        var compEnum = e.FindPropertyRelative("targetComponent").objectReferenceValue as Component;
+                                        string propPathEnum = e.FindPropertyRelative("propertyName").stringValue;
+                                        bool shownEnumHelper = false;
+                                        
+                                        if (compEnum != null && !string.IsNullOrEmpty(propPathEnum))
+                                        {
+                                            shownEnumHelper = EnumAnimationHelper.ShowEnumHelperIfApplicable(
+                                                compEnum, 
+                                                propPathEnum, 
+                                                e.FindPropertyRelative("fromVec3"),
+                                                e.FindPropertyRelative("toVec3"),
+                                                e.FindPropertyRelative("enumFieldMask")
+                                            );
+                                        }
+                                        
+                                        if (!shownEnumHelper)
+                                        {
+                                            EditorGUILayout.LabelField($"Type '{det}' not directly supported in inspector.");
+                                            EditorGUILayout.HelpBox("Use from/to float values or define custom handling in code.", MessageType.Info);
+                                            EditorGUILayout.PropertyField(e.FindPropertyRelative("fromFloat"), new GUIContent("From (as float)"));
+                                            EditorGUILayout.PropertyField(e.FindPropertyRelative("toFloat"), new GUIContent("To (as float)"));
+                                        }
                                         break;
                                 }
                             }
@@ -550,7 +569,7 @@ namespace Animator
         private void SyncFoldouts()
         {
             int size = configuredTweensProp != null ? configuredTweensProp.arraySize : 0;
-            while (foldouts.Count < size) foldouts.Add(LoadFoldout(foldouts.Count, true));
+            while (foldouts.Count < size) foldouts.Add(LoadFoldout(foldouts.Count, false));
             while (foldouts.Count > size) foldouts.RemoveAt(foldouts.Count - 1);
         }
 
@@ -717,19 +736,21 @@ namespace Animator
     public static class EnumAnimationHelper
     {
         /// <summary>
-        /// Show a button that opens a popup to select an enum value.
+        /// Show a dropdown to select an enum value for a specific axis of a Vector3 property.
         /// Returns true if a value was selected.
         /// </summary>
-        public static bool ShowEnumSelector(SerializedProperty vectorProp, Type enumType, string axis, string label)
+        public static bool ShowEnumSelector(SerializedProperty vectorProp, Type enumType, int axisIndex, string label)
         {
             if (enumType == null || !enumType.IsEnum)
                 return false;
+            
+            if (axisIndex < 0 || axisIndex > 2)
+                return false;
                 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(label, GUILayout.Width(100));
+            EditorGUILayout.LabelField(label, GUILayout.Width(50));
             
             // Get current value as int
-            int axisIndex = axis == "X" ? 0 : axis == "Y" ? 1 : 2;
             float currentFloatValue = 0f;
             if (vectorProp.propertyType == SerializedPropertyType.Vector3)
             {
@@ -767,6 +788,8 @@ namespace Animator
                 else if (axisIndex == 1) vec.y = newValue;
                 else vec.z = newValue;
                 vectorProp.vector3Value = vec;
+                // Mark as dirty and apply immediately
+                vectorProp.serializedObject.ApplyModifiedProperties();
             }
             
             EditorGUILayout.EndHorizontal();
@@ -776,46 +799,81 @@ namespace Animator
         /// <summary>
         /// Detect if a property path resolves to a struct with enum fields.
         /// If detected, show enum helper UI.
+        /// Returns true if enum helper was shown, false otherwise.
         /// </summary>
-        public static void ShowEnumHelperIfApplicable(Component comp, string propertyPath, SerializedProperty fromProp, SerializedProperty toProp)
+        public static bool ShowEnumHelperIfApplicable(Component comp, string propertyPath, SerializedProperty fromProp, SerializedProperty toProp, SerializedProperty enumFieldMaskProp = null)
         {
             if (comp == null || string.IsNullOrEmpty(propertyPath))
-                return;
+                return false;
                 
             // Try to resolve the member type
             Type memberType = ResolveMemberTypeStatic(comp, propertyPath);
             if (memberType == null)
-                return;
+                return false;
                 
             // Check if it's a struct with enum fields (like Nova.Alignment)
             if (!memberType.IsValueType || memberType.IsPrimitive || memberType.IsEnum)
-                return;
+                return false;
                 
             var fields = memberType.GetFields(BindingFlags.Public | BindingFlags.Instance);
             var enumFields = fields.Where(f => f.FieldType.IsEnum).ToArray();
             
             if (enumFields.Length == 0)
-                return;
+                return false;
                 
             // Show enum helper UI
             EditorGUILayout.Space();
             EditorGUILayout.LabelField($"Enum Helper: {memberType.Name}", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox($"Detected {enumFields.Length} enum field(s). Use dropdowns to select values.", MessageType.Info);
+            EditorGUILayout.HelpBox($"Detected {enumFields.Length} enum field(s). Enable fields to tween them.", MessageType.Info);
             
-            // Show dropdown for each enum field
-            for (int i = 0; i < enumFields.Length && i < 3; i++)
+            // Field mask selection (opt-in)
+            EditorGUILayout.LabelField("Enable Fields to Tween:", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            
+            Animate.ComponentMask currentMask = enumFieldMaskProp != null ? (Animate.ComponentMask)enumFieldMaskProp.intValue : Animate.ComponentMask.None;
+            
+            for (int i = 0; i < enumFields.Length && i < 4; i++)
             {
                 var field = enumFields[i];
-                string axis = i == 0 ? "X" : i == 1 ? "Y" : "Z";
+                Animate.ComponentMask bit = (Animate.ComponentMask)(1 << i);
+                bool isEnabled = (currentMask & bit) != 0;
                 
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"{field.Name} ({axis})", GUILayout.Width(100));
-                
-                ShowEnumSelector(fromProp, field.FieldType, axis, "From");
-                ShowEnumSelector(toProp, field.FieldType, axis, "To");
-                
-                EditorGUILayout.EndHorizontal();
+                EditorGUI.BeginChangeCheck();
+                bool newEnabled = EditorGUILayout.ToggleLeft(field.Name, isEnabled, GUILayout.Width(100));
+                if (EditorGUI.EndChangeCheck() && enumFieldMaskProp != null)
+                {
+                    if (newEnabled)
+                        enumFieldMaskProp.intValue |= (int)bit;
+                    else
+                        enumFieldMaskProp.intValue &= ~(int)bit;
+                    currentMask = (Animate.ComponentMask)enumFieldMaskProp.intValue;
+                }
             }
+            EditorGUILayout.EndHorizontal();
+            
+            // Show dropdowns only for enabled fields
+            if (currentMask != Animate.ComponentMask.None)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Enum Values:", EditorStyles.boldLabel);
+                
+                for (int i = 0; i < enumFields.Length && i < 4; i++)
+                {
+                    Animate.ComponentMask bit = (Animate.ComponentMask)(1 << i);
+                    if ((currentMask & bit) == 0) continue;
+                    
+                    var field = enumFields[i];
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(field.Name, GUILayout.Width(50));
+                    
+                    ShowEnumSelector(fromProp, field.FieldType, i, "From");
+                    ShowEnumSelector(toProp, field.FieldType, i, "To");
+                    
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+            
+            return true;
         }
         
         private static Type ResolveMemberTypeStatic(object root, string path)
