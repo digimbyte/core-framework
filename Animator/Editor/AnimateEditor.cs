@@ -257,6 +257,19 @@ namespace Animator
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("fromVec3"), new GUIContent("Start Value"));
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("toVec3"), new GUIContent("End Value"));
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("vectorMask"), new GUIContent("Component Mask"));
+                                        
+                                        // Show enum helper if property contains enum fields (like Alignment)
+                                        var comp = e.FindPropertyRelative("targetComponent").objectReferenceValue as Component;
+                                        string propPath = e.FindPropertyRelative("propertyName").stringValue;
+                                        if (comp != null && !string.IsNullOrEmpty(propPath))
+                                        {
+                                            EnumAnimationHelper.ShowEnumHelperIfApplicable(
+                                                comp, 
+                                                propPath, 
+                                                e.FindPropertyRelative("fromVec3"),
+                                                e.FindPropertyRelative("toVec3")
+                                            );
+                                        }
                                         break;
                                     case "Color":
                                         EditorGUILayout.PropertyField(e.FindPropertyRelative("fromColor"), new GUIContent("Start Color"));
@@ -659,19 +672,201 @@ namespace Animator
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            foreach (var entry in cachedFiltered)
+            for (int i = 0; i < cachedFiltered.Count; i++)
             {
-                EditorGUILayout.BeginHorizontal();
+                var entry = cachedFiltered[i];
+                
+                // Get rect for this row to detect hover
+                Rect rowRect = EditorGUILayout.BeginHorizontal();
+                
+                // Highlight on hover
+                bool isHovered = rowRect.Contains(Event.current.mousePosition);
+                if (isHovered)
+                {
+                    EditorGUI.DrawRect(rowRect, new Color(0.3f, 0.5f, 0.8f, 0.3f));
+                    Repaint(); // Ensure hover updates smoothly
+                }
+                
                 EditorGUILayout.LabelField(entry.display, GUILayout.ExpandWidth(true));
+                
+                // Allow clicking anywhere on the row to select
+                if (isHovered && Event.current.type == EventType.MouseDown && Event.current.button == 0)
+                {
+                    onSelected?.Invoke(entry);
+                    Close();
+                    Event.current.Use();
+                }
+                
                 if (GUILayout.Button("Select", GUILayout.Width(80)))
                 {
                     onSelected?.Invoke(entry);
                     Close();
                 }
+                
                 EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndScrollView();
+        }
+    }
+    
+    /// <summary>
+    /// Generic enum helper for Animate editor.
+    /// Provides dropdown UI for any enum type detected via reflection.
+    /// </summary>
+    public static class EnumAnimationHelper
+    {
+        /// <summary>
+        /// Show a button that opens a popup to select an enum value.
+        /// Returns true if a value was selected.
+        /// </summary>
+        public static bool ShowEnumSelector(SerializedProperty vectorProp, Type enumType, string axis, string label)
+        {
+            if (enumType == null || !enumType.IsEnum)
+                return false;
+                
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(100));
+            
+            // Get current value as int
+            int axisIndex = axis == "X" ? 0 : axis == "Y" ? 1 : 2;
+            float currentFloatValue = 0f;
+            if (vectorProp.propertyType == SerializedPropertyType.Vector3)
+            {
+                Vector3 vec = vectorProp.vector3Value;
+                currentFloatValue = axisIndex == 0 ? vec.x : axisIndex == 1 ? vec.y : vec.z;
+            }
+            int currentValue = Mathf.RoundToInt(currentFloatValue);
+            
+            // Get enum names and values
+            string[] names = System.Enum.GetNames(enumType);
+            System.Array values = System.Enum.GetValues(enumType);
+            
+            // Find current selection
+            int selectedIndex = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                int enumValue = (int)values.GetValue(i);
+                if (enumValue == currentValue)
+                {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            
+            // Show dropdown
+            EditorGUI.BeginChangeCheck();
+            int newIndex = EditorGUILayout.Popup(selectedIndex, names);
+            bool changed = EditorGUI.EndChangeCheck();
+            
+            if (changed)
+            {
+                int newValue = (int)values.GetValue(newIndex);
+                Vector3 vec = vectorProp.vector3Value;
+                if (axisIndex == 0) vec.x = newValue;
+                else if (axisIndex == 1) vec.y = newValue;
+                else vec.z = newValue;
+                vectorProp.vector3Value = vec;
+            }
+            
+            EditorGUILayout.EndHorizontal();
+            return changed;
+        }
+        
+        /// <summary>
+        /// Detect if a property path resolves to a struct with enum fields.
+        /// If detected, show enum helper UI.
+        /// </summary>
+        public static void ShowEnumHelperIfApplicable(Component comp, string propertyPath, SerializedProperty fromProp, SerializedProperty toProp)
+        {
+            if (comp == null || string.IsNullOrEmpty(propertyPath))
+                return;
+                
+            // Try to resolve the member type
+            Type memberType = ResolveMemberTypeStatic(comp, propertyPath);
+            if (memberType == null)
+                return;
+                
+            // Check if it's a struct with enum fields (like Nova.Alignment)
+            if (!memberType.IsValueType || memberType.IsPrimitive || memberType.IsEnum)
+                return;
+                
+            var fields = memberType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var enumFields = fields.Where(f => f.FieldType.IsEnum).ToArray();
+            
+            if (enumFields.Length == 0)
+                return;
+                
+            // Show enum helper UI
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField($"Enum Helper: {memberType.Name}", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox($"Detected {enumFields.Length} enum field(s). Use dropdowns to select values.", MessageType.Info);
+            
+            // Show dropdown for each enum field
+            for (int i = 0; i < enumFields.Length && i < 3; i++)
+            {
+                var field = enumFields[i];
+                string axis = i == 0 ? "X" : i == 1 ? "Y" : "Z";
+                
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"{field.Name} ({axis})", GUILayout.Width(100));
+                
+                ShowEnumSelector(fromProp, field.FieldType, axis, "From");
+                ShowEnumSelector(toProp, field.FieldType, axis, "To");
+                
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+        
+        private static Type ResolveMemberTypeStatic(object root, string path)
+        {
+            if (root == null || string.IsNullOrEmpty(path)) return null;
+            Type currentType = root.GetType();
+            
+            foreach (var segment in path.Split('.'))
+            {
+                if (string.IsNullOrEmpty(segment)) return null;
+                
+                var pi = currentType.GetProperty(segment, BindingFlags.Public | BindingFlags.Instance);
+                if (pi != null)
+                {
+                    currentType = pi.PropertyType;
+                    
+                    // Handle ref-return properties
+                    if (currentType.Name.EndsWith("&"))
+                    {
+                        string baseTypeName = currentType.Name.TrimEnd('&');
+                        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                        var targetAssemblies = new[] 
+                        { 
+                            currentType.Assembly, 
+                            assemblies.FirstOrDefault(a => a.GetName().Name == "Nova") 
+                        }.Where(a => a != null).ToArray();
+                        
+                        foreach (var asm in targetAssemblies)
+                        {
+                            var refType = asm.GetType(currentType.Namespace + "." + baseTypeName);
+                            if (refType != null)
+                            {
+                                currentType = refType;
+                                break;
+                            }
+                        }
+                    }
+                    continue;
+                }
+                
+                var fi = currentType.GetField(segment, BindingFlags.Public | BindingFlags.Instance);
+                if (fi != null)
+                {
+                    currentType = fi.FieldType;
+                    continue;
+                }
+                
+                return null;
+            }
+            
+            return currentType;
         }
     }
 }
