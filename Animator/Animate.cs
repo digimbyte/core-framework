@@ -1338,55 +1338,95 @@ namespace Animator
                     if (!string.IsNullOrEmpty(resolvedPath) && resolvedPath.EndsWith(backingSuffix, StringComparison.Ordinal))
                         resolvedPath = resolvedPath.Substring(0, resolvedPath.Length - backingSuffix.Length);
 
-                    // Fast-path: direct UIBlock Size handling (avoids ref-return reflection issues)
-                    if ((comp is Nova.UIBlock || comp is Nova.UIBlock2D || comp is Nova.UIBlock3D) && (resolvedPath == "Size.Percent" || resolvedPath == "Size.Raw"))
+                    // Fast-path: UIBlock Size handling (avoids ref-return reflection issues and handles mixed Raw/Percent axis types)
+                    if (comp is Nova.UIBlock sizeBlock)
                     {
-                        bool isPercent = resolvedPath.EndsWith("Percent");
-                        
-                        // Generic handler works for all UIBlock types since Size property is the same
-                        // Store references to get both values for masking to work with mixed Raw/Percent
-                        Func<Vector3> getter = () => 
+                        // Allow both "Size.*" and "Layout.Size.*" paths
+                        string sizePath = resolvedPath;
+                        const string layoutPrefix = "Layout.";
+                        if (!string.IsNullOrEmpty(sizePath) && sizePath.StartsWith(layoutPrefix, StringComparison.Ordinal))
                         {
-                            Nova.Length3 size;
-                            if (comp is Nova.UIBlock3D ub3d)
-                                size = ub3d.Size;
-                            else if (comp is Nova.UIBlock2D ub2d)
-                                size = ub2d.Size;
-                            else
-                                size = ((Nova.UIBlock)comp).Size;
-                            
-                            var block = comp as Nova.UIBlock;
-                            if (block == null) return Vector3.zero;
-                            return isPercent ? block.GetSizePercentUI() : block.GetSizeValueUnits();
-                        };
-                        
-                        Action<Vector3> setter = v =>
-                        {
-                            // Only set axes that are in the mask; null means "do not change"
-                            float? setX = e.vectorMask.HasFlag(ComponentMask.X) ? (float?)v.x : null;
-                            float? setY = e.vectorMask.HasFlag(ComponentMask.Y) ? (float?)v.y : null;
-                            float? setZ = e.vectorMask.HasFlag(ComponentMask.Z) ? (float?)v.z : null;
+                            sizePath = sizePath.Substring(layoutPrefix.Length);
+                        }
 
-                            var block = comp as Nova.UIBlock;
-                            if (block == null) return;
-
-                            block.SetSizeAxes(setX, setY, setZ,
-                                isPercent ? Nova.Length3Extensions.LengthInputSpace.PercentUI_0_100 : Nova.Length3Extensions.LengthInputSpace.ValueUnits);
-                        };
-                        
-                        ComponentMask mask = e.vectorMask;
-                        if (mask == ComponentMask.None)
-                            mask = ComponentMask.All;
-                        
-                        Action<Vector3> maskedSetter = v =>
+                        // Vector3 size accessors
+                        if (sizePath == "Size.Percent" || sizePath == "Size.Raw")
                         {
-                            Vector3 current = getter();
-                            if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
-                            if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
-                            if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
-                            setter(v);
-                        };
-                        return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                            bool isPercent = sizePath.EndsWith("Percent", StringComparison.Ordinal);
+
+                            Func<Vector3> getter = () => isPercent ? sizeBlock.GetSizePercentUI() : sizeBlock.GetSizeValueUnits();
+
+                            Action<Vector3> setter = v =>
+                            {
+                                // Only set axes that are in the mask; null means "do not change"
+                                float? setX = e.vectorMask.HasFlag(ComponentMask.X) ? (float?)v.x : null;
+                                float? setY = e.vectorMask.HasFlag(ComponentMask.Y) ? (float?)v.y : null;
+                                float? setZ = e.vectorMask.HasFlag(ComponentMask.Z) ? (float?)v.z : null;
+
+                                sizeBlock.SetSizeAxes(setX, setY, setZ,
+                                    isPercent ? Nova.Length3Extensions.LengthInputSpace.PercentUI_0_100 : Nova.Length3Extensions.LengthInputSpace.ValueUnits);
+                            };
+
+                            ComponentMask mask = e.vectorMask;
+                            if (mask == ComponentMask.None)
+                                mask = ComponentMask.All;
+
+                            Action<Vector3> maskedSetter = v =>
+                            {
+                                Vector3 current = getter();
+                                if (!mask.HasFlag(ComponentMask.X)) v.x = current.x;
+                                if (!mask.HasFlag(ComponentMask.Y)) v.y = current.y;
+                                if (!mask.HasFlag(ComponentMask.Z)) v.z = current.z;
+                                setter(v);
+                            };
+
+                            return TweenVec3WithSourceDeferred(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
+                        }
+
+                        // Float per-axis size paths (common from property pickers): Size.X.Raw / Size.X.Percent etc.
+                        if (!string.IsNullOrEmpty(sizePath) && sizePath.StartsWith("Size.", StringComparison.Ordinal))
+                        {
+                            // Expect: Size.<Axis>.<Raw|Percent>
+                            // Axis in {X,Y,Z}
+                            // Mode in {Raw,Percent}
+                            string[] parts = sizePath.Split('.');
+                            if (parts.Length == 3)
+                            {
+                                string axisPart = parts[1];
+                                string modePart = parts[2];
+
+                                int axis = axisPart == "X" ? 0 : axisPart == "Y" ? 1 : axisPart == "Z" ? 2 : -1;
+                                bool isPercent = modePart == "Percent";
+                                bool isRaw = modePart == "Raw";
+
+                                if (axis >= 0 && (isPercent || isRaw))
+                                {
+                                    Func<float> getter = () =>
+                                    {
+                                        Vector3 v = isPercent ? sizeBlock.GetSizePercentUI() : sizeBlock.GetSizeValueUnits();
+                                        return axis == 0 ? v.x : axis == 1 ? v.y : v.z;
+                                    };
+
+                                    Action<float> setter = v =>
+                                    {
+                                        float? setX = axis == 0 ? (float?)v : null;
+                                        float? setY = axis == 1 ? (float?)v : null;
+                                        float? setZ = axis == 2 ? (float?)v : null;
+
+                                        sizeBlock.SetSizeAxes(setX, setY, setZ,
+                                            isPercent ? Nova.Length3Extensions.LengthInputSpace.PercentUI_0_100 : Nova.Length3Extensions.LengthInputSpace.ValueUnits);
+                                    };
+
+                                    if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                                    {
+                                        StartCoroutine(ApplyActionAfterSeconds(() => setter(e.toFloat), e.duration));
+                                        return null;
+                                    }
+
+                                    return TweenFloatWithSourceDeferred(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                                }
+                            }
+                        }
                     }
 
                     // Fast-path: Position ref-return handling  
@@ -2030,6 +2070,68 @@ namespace Animator
         private Coroutine TweenVec3WithSource(Func<Vector3> getter, Action<Vector3> setter, Vector3 to, float duration, AnimationCurve curve, StartSource source, Vector3 explicitFrom)
         {
             return ApplyStartSource(getter, setter, to, duration, Vector3.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        /// <summary>
+        /// Like <see cref="TweenVec3WithSource"/>, but defers sampling the current value (Start/End)
+        /// until end-of-frame. This is important for layout-driven values (e.g. UIBlock Size/Position)
+        /// where the correct relative sizes may not be available until the engine update completes.
+        /// </summary>
+        private Coroutine TweenVec3WithSourceDeferred(Func<Vector3> getter, Action<Vector3> setter, Vector3 to, float duration, AnimationCurve curve, StartSource source, Vector3 explicitFrom)
+        {
+            return ApplyStartSourceDeferred(getter, setter, to, duration, Vector3.LerpUnclamped, curve, source, explicitFrom);
+        }
+
+        /// <summary>
+        /// Like <see cref="TweenFloatWithSource"/>, but defers sampling the current value (Start/End)
+        /// until end-of-frame.
+        /// </summary>
+        private Coroutine TweenFloatWithSourceDeferred(Func<float> getter, Action<float> setter, float to, float duration, AnimationCurve curve, StartSource source, float explicitFrom)
+        {
+            Func<float, float, float, float> lerp = Mathf.LerpUnclamped;
+            return ApplyStartSourceDeferred(getter, setter, to, duration, lerp, curve, source, explicitFrom);
+        }
+
+        private Coroutine ApplyStartSourceDeferred<T>(Func<T> getter, Action<T> setter, T to, float duration, Func<T, T, float, T> lerpFunc, AnimationCurve curve, StartSource source, T explicitFrom)
+        {
+            // No need to defer if we're not sampling "current".
+            if (source == StartSource.Ignore)
+            {
+                return Tween(getter, setter, explicitFrom, to, duration, lerpFunc, curve);
+            }
+
+            curve ??= AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+            IEnumerator routine = ApplyStartSourceDeferredCoroutine(getter, setter, to, duration, lerpFunc, curve, source, explicitFrom);
+            Coroutine c = StartCoroutine(routine);
+            activeTweens.Add(c);
+            return c;
+        }
+
+        private IEnumerator ApplyStartSourceDeferredCoroutine<T>(Func<T> getter, Action<T> setter, T to, float duration, Func<T, T, float, T> lerpFunc, AnimationCurve curve, StartSource source, T explicitFrom)
+        {
+            // Wait for the engine to update layout + calculated values for this frame.
+            yield return new WaitForEndOfFrame();
+
+            T from;
+            T end;
+
+            switch (source)
+            {
+                case StartSource.Start:
+                    from = getter();
+                    end = to;
+                    break;
+                case StartSource.End:
+                    from = explicitFrom;
+                    end = getter();
+                    break;
+                default:
+                    yield break;
+            }
+
+            // Run the actual tween (this yields WaitForEndOfFrame internally).
+            yield return TweenCoroutine(getter, setter, from, end, duration, curve, lerpFunc, onComplete: null);
         }
 
         private Coroutine TweenQuatWithSource(Func<Quaternion> getter, Action<Quaternion> setter, Quaternion to, float duration, Func<Quaternion, Quaternion, float, Quaternion> slerp, AnimationCurve curve, StartSource source, Quaternion explicitFrom)

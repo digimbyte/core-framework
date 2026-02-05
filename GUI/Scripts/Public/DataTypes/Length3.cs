@@ -723,8 +723,10 @@ namespace Nova
                         // current is Value units: we must convert percent -> units to preserve type
                         if (!relativeValid)
                         {
-                            // Can't safely convert yet (layout not ready). Preserve current.
-                            return current;
+                            // Can't safely convert yet (layout not ready). Fall back to storing as Percent.
+                            // This ensures callers can still set an intended size/position without being blocked
+                            // by an unavailable relativeTo.
+                            return Length.Percentage(p);
                         }
 
                         return Length.FixedValue(p * relativeTo);
@@ -743,8 +745,8 @@ namespace Nova
                         // current is Percent: we must convert units -> percent to preserve type
                         if (!relativeValid)
                         {
-                            // Can't safely convert yet (layout not ready). Preserve current.
-                            return current;
+                            // Can't safely convert yet (layout not ready). Fall back to storing as Value.
+                            return Length.FixedValue(v);
                         }
 
                         return Length.Percentage(v / relativeTo);

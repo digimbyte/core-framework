@@ -27,6 +27,7 @@ namespace Animator
         [Tooltip("If true, restart typing from the beginning when this object becomes enabled (including when a parent enables it).")]
         [SerializeField] private bool restartOnEnable = false;
         [SerializeField] private float charactersPerSecond = 32f;
+        private const float MaxCharactersPerSecond = 125f;
         [Tooltip("Sound played for each typed character.")]
         [SerializeField] private AudioClip typeSound = null;
         [Tooltip("Sound played when a character is deleted/backspaced.")]
@@ -115,7 +116,8 @@ namespace Animator
         /// </summary>
         public void Type()
         {
-            StartTyping("", true);
+            // Use configured/existing source. Append=true means "merge/fill" behavior (do not clear) when possible.
+            StartTyping(null, true);
         }
 
         /// <summary>
@@ -137,18 +139,32 @@ namespace Animator
                 cursorCoroutine = null;
             }
 
-            string source;
-            if (overrideText != null)
+            // Base source comes from configuration / captured target
+            string baseSource;
+            if (useExistingTextAsSource && capturedSource != null)
             {
-                source = overrideText;
-            }
-            else if (useExistingTextAsSource && capturedSource != null)
-            {
-                source = capturedSource;
+                baseSource = capturedSource;
             }
             else
             {
-                source = textToType;
+                baseSource = textToType;
+            }
+
+            // Append semantics:
+            // - append=false: overrideText replaces the base source
+            // - append=true : overrideText is appended to the base source ("type base + extra")
+            // Treat empty-string override as "no override" so "" and null behave the same.
+            string extra = string.IsNullOrEmpty(overrideText) ? string.Empty : overrideText;
+
+            string source = append ? (baseSource + extra) : (string.IsNullOrEmpty(overrideText) ? baseSource : overrideText);
+
+            // Instant mode: cps == 0 is explicit "dump" behavior. Also treat overly high cps as dump.
+            bool instant = charactersPerSecond <= 0f || charactersPerSecond > MaxCharactersPerSecond;
+            if (instant)
+            {
+                StopTyping(manualStop: false);
+                target.text = source;
+                return;
             }
 
             // Clear text if not appending
@@ -252,22 +268,37 @@ namespace Animator
         {
             isTyping = true;
 
+            // In TypeRoutine we assume non-instant mode; StartTyping short-circuits the instant case.
+            float cps = Mathf.Min(charactersPerSecond, MaxCharactersPerSecond);
+
+            // Strip any visible cursor from existing text before we use it as a base
+            string existing = StripCursor(target.text);
+
             StringBuilder output;
-            int idx = 0;
+            int idx;
+
             if (append)
             {
-                // Append mode (forced insert mode): start with existing rendered text and resume typing from its length
-                output = new StringBuilder(target.text);
-                idx = target.text.Length;  // Start typing after what's already rendered
+                // Merge/fill behavior: keep what's already in the target, but skip the leading characters
+                // that already match the intended source (so we don't retype them).
+                output = new StringBuilder(existing);
+                idx = FindLongestMatchingPrefixLength(existing, source);
             }
             else
             {
-                // Fresh overwrite mode: start empty
-                output = new StringBuilder();
+                if (insertMode && prefillWhitespace && !string.IsNullOrEmpty(source))
+                {
+                    output = new StringBuilder(new string(' ', source.Length));
+                }
+                else
+                {
+                    output = new StringBuilder();
+                }
+
                 idx = 0;
             }
 
-            float charDelay = charactersPerSecond > 0 ? 1f / charactersPerSecond : 0f;
+            float charDelay = cps > 0f ? 1f / cps : 0f;
             float backspaceDelay = backspacePerSecond > 0 ? 1f / backspacePerSecond : 0f;
             while (idx < source.Length)
             {
@@ -316,6 +347,26 @@ namespace Animator
 
             isTyping = false;
             cursorVisible = false;
+
+            // If we started from pre-existing text (append/merge), we may have extra trailing characters.
+            // Remove them at backspace speed so we always converge exactly to the intended source.
+            while (output.Length > source.Length)
+            {
+                output.Length = Mathf.Max(0, output.Length - 1);
+                UpdateTarget(output);
+                PlayDeleteSound();
+
+                if (backspaceDelay > 0f)
+                {
+                    yield return new WaitForSeconds(backspaceDelay);
+                }
+                else
+                {
+                    // Backspace speed invalid => delete tail immediately.
+                    continue;
+                }
+            }
+
             UpdateTarget(output); // final write without cursor
         }
 
@@ -363,6 +414,35 @@ namespace Animator
             {
                 target.text = content.ToString();
             }
+        }
+
+        private string StripCursor(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            // Only strip a trailing cursor character if configured to show the cursor
+            if (showCursor && text.Length > 0 && text[text.Length - 1] == cursorChar)
+            {
+                return text.Substring(0, text.Length - 1);
+            }
+
+            return text;
+        }
+
+        private int FindLongestMatchingPrefixLength(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
+                return 0;
+
+            int len = Mathf.Min(a.Length, b.Length);
+            int i = 0;
+            for (; i < len; i++)
+            {
+                if (a[i] != b[i])
+                    break;
+            }
+            return i;
         }
 
         private void PlayTypeSound()
