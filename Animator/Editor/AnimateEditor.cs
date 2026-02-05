@@ -8,10 +8,9 @@ using Animator;
 
 namespace Animator
 {
-    public struct NestedEntry { public string path; public string display; public string typeName; }
-
-    [CustomEditor(typeof(Animate))]
-    public partial class AnimateEditor : Editor
+    // Legacy IMGUI inspector (kept for reference). Odin is now responsible for drawing Animate.
+    // NOTE: Intentionally NOT a CustomEditor anymore.
+    public partial class AnimateLegacyEditor : Editor
     {
         private SerializedProperty configuredTweensProp;
         private SerializedProperty playAllOnStartProp;
@@ -201,20 +200,12 @@ namespace Animator
                                 if (GUILayout.Button("Browse", GUILayout.Width(80)))
                                 {
                                     // ONLY collect nested members when button is clicked, not every frame
-                                    var nested = CollectNestedMembers(compObj, 3);
-                                    if (nested.Count > 0)
+                                    MemberPathBrowserWindow.Show(compObj, 3, selectedEntry =>
                                     {
-                                        PropertySearchWindow.ShowWindow(nested, selectedEntry =>
-                                        {
-                                            e.FindPropertyRelative("propertyName").stringValue = selectedEntry.path;
-                                            e.FindPropertyRelative("detectedPropertyType").stringValue = selectedEntry.typeName;
-                                            serializedObject.ApplyModifiedProperties();
-                                        });
-                                    }
-                                    else
-                                    {
-                                        EditorUtility.DisplayDialog("No Properties Found", "No nested public fields/properties found on this component.", "OK");
-                                    }
+                                        e.FindPropertyRelative("propertyName").stringValue = selectedEntry.path;
+                                        e.FindPropertyRelative("detectedPropertyType").stringValue = selectedEntry.typeName;
+                                        serializedObject.ApplyModifiedProperties();
+                                    });
                                 }
                                 EditorGUILayout.EndHorizontal();
                             }
@@ -361,7 +352,6 @@ namespace Animator
                 e.FindPropertyRelative("targetObject").objectReferenceValue = null;
                 e.FindPropertyRelative("targetComponent").objectReferenceValue = null;
                 e.FindPropertyRelative("type").enumValueIndex = (int)Animate.TweenType.Position;
-                e.FindPropertyRelative("playOnStart").boolValue = false;
                 e.FindPropertyRelative("startSource").enumValueIndex = (int)Animate.StartSource.Ignore;
                 e.FindPropertyRelative("local").boolValue = true;
 
@@ -430,7 +420,6 @@ namespace Animator
             CopyProperty(source, target, "targetObject", p => p.objectReferenceValue, (p, v) => p.objectReferenceValue = (UnityEngine.Object)v);
             CopyProperty(source, target, "targetComponent", p => p.objectReferenceValue, (p, v) => p.objectReferenceValue = (UnityEngine.Object)v);
             CopyEnumSafe(source, target, "type");
-            CopyProperty(source, target, "playOnStart", p => p.boolValue, (p, v) => p.boolValue = (bool)v);
             CopyEnumSafe(source, target, "startSource");
             CopyProperty(source, target, "local", p => p.boolValue, (p, v) => p.boolValue = (bool)v);
             
@@ -498,142 +487,6 @@ namespace Animator
             }
         }
 
-        private List<NestedEntry> CollectNestedMembers(Component root, int maxDepth)
-        {
-            var results = new List<NestedEntry>();
-            if (root == null) return results;
-
-            void Recurse(object owner, string prefix, int depth, HashSet<object> seen)
-            {
-                if (owner == null || depth > maxDepth) return;
-                Type t = owner.GetType();
-
-                var props = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead
-                                && p.PropertyType != typeof(Matrix4x4)
-                                && !p.Name.Contains("Matrix"));
-                var fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(f => f.FieldType != typeof(Matrix4x4) && !f.Name.Contains("Matrix"));
-                var methods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(m => m.GetParameters().Length == 0 && m.ReturnType == typeof(void));
-
-                // Add all properties
-                foreach (var p in props)
-                {
-                    string path = string.IsNullOrEmpty(prefix) ? p.Name : prefix + "." + p.Name;
-                    object val = null;
-                    Type propType = p.PropertyType;
-                    Type refStructType = null;
-                    
-                    try 
-                    { 
-                        val = p.GetValue(owner, null);
-                    } 
-                    catch { val = "<err>"; }
-                    
-                    // Check if return type is a ref struct or managed ref (ends with &)
-                    bool isRefReturn = propType.Name.EndsWith("&");
-                    if (isRefReturn)
-                    {
-                        // For ref returns, try to get the base type
-                        string baseTypeName = propType.Name.TrimEnd('&');
-                        // Look in current assembly and Nova assemblies (by name)
-                        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-                        var targetAssemblies = new[] 
-                        { 
-                            propType.Assembly, 
-                            assemblies.FirstOrDefault(a => a.GetName().Name == "Nova") 
-                        }.Where(a => a != null).ToArray();
-                        foreach (var asm in targetAssemblies)
-                        {
-                            refStructType = asm.GetType(propType.Namespace + "." + baseTypeName);
-                            if (refStructType != null) break;
-                        }
-                    }
-                    else if (!propType.IsPrimitive && propType != typeof(string))
-                    {
-                        refStructType = propType;
-                    }
-                    
-                    string valStr = val?.ToString() ?? "null";
-                    string typeName_display = propType.Name;
-                    results.Add(new NestedEntry { path = path, display = $"{path} : {valStr} ({typeName_display})", typeName = typeName_display });
-
-                    // For ref structs and complex types, enumerate their public properties
-                    if (refStructType != null && depth < maxDepth)
-                    {
-                        try
-                        {
-                            var nestedProps = refStructType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                .Where(rp => rp.GetIndexParameters().Length == 0 && rp.CanRead && !rp.PropertyType.IsGenericType);
-                            
-                            foreach (var nestedProp in nestedProps)
-                            {
-                                string nestedPath = path + "." + nestedProp.Name;
-                                object nestedVal = null;
-                                try
-                                {
-                                    // For ref returns, we can't actually call GetValue, so just add the property
-                                    if (!isRefReturn && val != null)
-                                        nestedVal = nestedProp.GetValue(val);
-                                }
-                                catch { }
-                                
-                                string nestedValStr = nestedVal?.ToString() ?? (isRefReturn ? "(ref)" : "null");
-                                string nestedTypeName = nestedProp.PropertyType.Name;
-                                results.Add(new NestedEntry { path = nestedPath, display = $"{nestedPath} : {nestedValStr} ({nestedTypeName})", typeName = nestedTypeName });
-                            }
-                        }
-                        catch { }
-                    }
-                    // Regular struct/class recursion
-                    else if (depth < maxDepth && !p.PropertyType.IsPrimitive && p.PropertyType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(p.PropertyType))
-                    {
-                        if (val != null && !seen.Contains(val))
-                        {
-                            try
-                            {
-                                seen.Add(val);
-                                Recurse(val, path, depth + 1, seen);
-                            }
-                            catch { }
-                        }
-                    }
-                }
-
-                // Add all fields
-                foreach (var f in fields)
-                {
-                    string path = string.IsNullOrEmpty(prefix) ? f.Name : prefix + "." + f.Name;
-                    object val = null;
-                    try { val = f.GetValue(owner); } catch { val = "<err>"; }
-                    string valStr = val?.ToString() ?? "null";
-                    string typeName = f.FieldType.Name;
-                    results.Add(new NestedEntry { path = path, display = $"{path} : {valStr} ({typeName})", typeName = typeName });
-
-                    // Recurse into non-primitive fields (structs, classes)
-                    if (val != null && depth < maxDepth && !f.FieldType.IsPrimitive && f.FieldType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(f.FieldType))
-                    {
-                        if (!seen.Contains(val))
-                        {
-                            seen.Add(val);
-                            Recurse(val, path, depth + 1, seen);
-                        }
-                    }
-                }
-                
-                // Add methods (only once, not per-property)
-                foreach (var m in methods)
-                {
-                    string methodPath = string.IsNullOrEmpty(prefix) ? m.Name : prefix + "." + m.Name;
-                    string display = $"{methodPath} () (Method)";
-                    results.Add(new NestedEntry { path = methodPath, display = display, typeName = "Void" });
-                }
-            }
-
-            Recurse(root, string.Empty, 0, new HashSet<object>());
-            return results;
-        }
 
         private void LogMaterialColorProps(GameObject go, int materialIndex)
         {
@@ -660,6 +513,7 @@ namespace Animator
             }
 
 #if UNITY_EDITOR
+#pragma warning disable 0618
             int count = ShaderUtil.GetPropertyCount(mat.shader);
             for (int i = 0; i < count; i++)
             {
@@ -671,6 +525,7 @@ namespace Animator
                     Debug.Log($"[Animate] Material '{mat.name}' prop '{propName}' ({type}) = {c} (material idx {materialIndex})", go);
                 }
             }
+#pragma warning restore 0618
 #else
             Debug.Log($"[Animate] Shader property logging only available in editor for '{go.name}'.");
 #endif
@@ -758,86 +613,6 @@ namespace Animator
         }
     }
 
-    public class PropertySearchWindow : EditorWindow
-    {
-        private Vector2 scrollPosition;
-        private string searchText = "";
-        private string lastSearchText = null;
-        private List<NestedEntry> allProperties = new List<NestedEntry>();
-        private List<NestedEntry> cachedFiltered = new List<NestedEntry>();
-        private System.Action<NestedEntry> onSelected;
-
-        public static void ShowWindow(List<NestedEntry> properties, System.Action<NestedEntry> onSelect)
-        {
-            var window = GetWindow<PropertySearchWindow>("Select Property");
-            window.allProperties = properties;
-            window.cachedFiltered = new List<NestedEntry>(properties);
-            window.onSelected = onSelect;
-            window.minSize = new Vector2(400, 300);
-            window.Show();
-        }
-
-        private void OnGUI()
-        {
-            EditorGUILayout.LabelField("Search Properties", EditorStyles.boldLabel);
-            searchText = EditorGUILayout.TextField("Search:", searchText);
-            EditorGUILayout.Space();
-
-            // Only refilter if search text changed
-            if (searchText != lastSearchText)
-            {
-                lastSearchText = searchText;
-                cachedFiltered.Clear();
-                foreach (var p in allProperties)
-                {
-                    if (string.IsNullOrEmpty(searchText) || p.path.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) >= 0)
-                        cachedFiltered.Add(p);
-                }
-                cachedFiltered.Sort((a, b) => a.path.CompareTo(b.path));
-            }
-
-            EditorGUILayout.LabelField($"Found: {cachedFiltered.Count} properties");
-            EditorGUILayout.Space();
-
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-
-            for (int i = 0; i < cachedFiltered.Count; i++)
-            {
-                var entry = cachedFiltered[i];
-                
-                // Get rect for this row to detect hover
-                Rect rowRect = EditorGUILayout.BeginHorizontal();
-                
-                // Highlight on hover
-                bool isHovered = rowRect.Contains(Event.current.mousePosition);
-                if (isHovered)
-                {
-                    EditorGUI.DrawRect(rowRect, new Color(0.3f, 0.5f, 0.8f, 0.3f));
-                    Repaint(); // Ensure hover updates smoothly
-                }
-                
-                EditorGUILayout.LabelField(entry.display, GUILayout.ExpandWidth(true));
-                
-                // Allow clicking anywhere on the row to select
-                if (isHovered && Event.current.type == EventType.MouseDown && Event.current.button == 0)
-                {
-                    onSelected?.Invoke(entry);
-                    Close();
-                    Event.current.Use();
-                }
-                
-                if (GUILayout.Button("Select", GUILayout.Width(80)))
-                {
-                    onSelected?.Invoke(entry);
-                    Close();
-                }
-                
-                EditorGUILayout.EndHorizontal();
-            }
-
-            EditorGUILayout.EndScrollView();
-        }
-    }
     
     /// <summary>
     /// Generic enum helper for Animate editor.

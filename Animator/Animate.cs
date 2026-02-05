@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Nova;
+using Sirenix.OdinInspector;
 
 namespace Animator
 {
@@ -31,8 +32,16 @@ namespace Animator
         private PreviewTweenState currentPreviewTween = null;
 #endif
 
-        [Header("Configured Tweens (Inspector)")]
+        [BoxGroup("Global", ShowLabel = true)]
+        [PropertyOrder(-100)]
+        [LabelText("Play On Start")]
+        public bool playAllOnStart = true;
+
+        [FoldoutGroup("Tweens", Expanded = true)]
+        [PropertyOrder(10)]
         [SerializeField]
+        [LabelText("Configured Tweens")]
+        [ListDrawerSettings(DraggableItems = true, Expanded = true, ShowFoldout = false)]
         private List<TweenEntry> configuredTweens = new List<TweenEntry>();
 
         [Serializable]
@@ -50,64 +59,306 @@ namespace Animator
             CustomProperty
         }
 
-        public bool playAllOnStart = true;
-
         void Start()
         {
             if (playAllOnStart)
             {
                 PlayAllConfigured();
-                return;
-            }
-
-            // Legacy per-entry flag support
-            foreach (var e in configuredTweens)
-            {
-                if (e != null && e.playOnStart)
-                    PlayEntry(e);
             }
         }
 
         [Serializable]
+        [InlineProperty]
+        [HideReferenceObjectPicker]
         public class TweenEntry
         {
-            public string name;
-            public GameObject targetObject;
-            public Component targetComponent;
-            public TweenType type = TweenType.Position;
-            public bool playOnStart = false;
-            public StartSource startSource = StartSource.Ignore;
-            public bool local = true; // used for position/rotation
+            public TweenEntry Clone()
+            {
+                var c = new TweenEntry();
 
-            [Tooltip("If enabled, this tween will not start until the previous configured tween has finished.")]
+                c.chainAfterPrevious = chainAfterPrevious;
+                c.name = name;
+
+                c.targetObject = targetObject;
+                c.targetComponent = targetComponent;
+                c.type = type;
+
+                c.startSource = startSource;
+                c.local = local;
+
+                c.fromVec3 = fromVec3;
+                c.toVec3 = toVec3;
+
+                c.fromColor = fromColor;
+                c.toColor = toColor;
+
+                c.fromFloat = fromFloat;
+                c.toFloat = toFloat;
+
+                c.materialProperty = materialProperty;
+                c.materialIndex = materialIndex;
+                c.materialColorProperties = materialColorProperties != null ? materialColorProperties.ToArray() : Array.Empty<string>();
+
+                c.fromBool = fromBool;
+                c.toBool = toBool;
+
+                c.propertyName = propertyName;
+                c.propertyMode = propertyMode;
+                c.methodInvokeTiming = methodInvokeTiming;
+                c.detectedPropertyType = detectedPropertyType;
+
+                c.vectorMask = vectorMask;
+                c.enumFieldMask = enumFieldMask;
+
+                c.delayMode = delayMode;
+                c.delayValue = delayValue;
+                c.duration = duration;
+                c.curve = curve;
+
+                return c;
+            }
+            // ----------------
+            // Header
+            // ----------------
+            [HorizontalGroup("Header", Width = 18)]
+            [HideLabel]
+            [Tooltip("If enabled, this tween waits for the previous tween to finish. Ignored on the first item.")]
+            [PropertyOrder(-100)]
             public bool chainAfterPrevious = false;
 
+            [HorizontalGroup("Header")]
+            [HideLabel]
+            [PropertyOrder(-99)]
+            public string name;
+
+            // ----------------
+            // Target / Type
+            // ----------------
+            [BoxGroup("A Target", ShowLabel = true)]
+            [PropertyOrder(0)]
+            public TweenType type = TweenType.Position;
+
+            [BoxGroup("A Target")]
+            [PropertyOrder(1)]
+            public GameObject targetObject;
+
+            [BoxGroup("A Target")]
+            [ShowIf("@IsCustomProperty")]
+            [PropertyOrder(2)]
+            public Component targetComponent;
+
+
+            // ----------------
+            // Custom property selection
+            // ----------------
+            [BoxGroup("B Custom Property", ShowLabel = true)]
+            [ShowIf("@IsCustomProperty")]
+            [PropertyOrder(10)]
+            [LabelText("Property")]
+            public string propertyName;
+
+            [BoxGroup("B Custom Property")]
+            [ShowIf("@IsCustomProperty")]
+            [PropertyOrder(11)]
+            public CustomPropertyMode propertyMode = CustomPropertyMode.AutoTween;
+
+            [BoxGroup("B Custom Property")]
+            [ShowIf("@IsCustomProperty")]
+            [PropertyOrder(12)]
+            public MethodInvokeTiming methodInvokeTiming = MethodInvokeTiming.OnEnd;
+
+            [BoxGroup("B Custom Property")]
+            [ShowIf("@IsCustomProperty")]
+            [PropertyOrder(13)]
+            [ReadOnly]
+            [LabelText("Detected Type")]
+            public string detectedPropertyType;
+
+            // ----------------
+            // Values
+            // ----------------
+            [BoxGroup("C Values", ShowLabel = true)]
+            [ShowIf("@UsesStartSource")]
+            [PropertyOrder(20)]
+            [LabelText("Initial Value")]
+            public StartSource startSource = StartSource.Ignore;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesLocalSpace")]
+            [PropertyOrder(21)]
+            public bool local = true;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesVec3")]
+            [PropertyOrder(22)]
+            [LabelText("Start Value")]
             public Vector3 fromVec3;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesVec3")]
+            [PropertyOrder(23)]
+            [LabelText("End Value")]
             public Vector3 toVec3;
 
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesFloat")]
+            [PropertyOrder(24)]
+            [LabelText("Start Value")]
+            public float fromFloat = 0f;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesFloat")]
+            [PropertyOrder(25)]
+            [LabelText("End Value")]
+            public float toFloat = 1f;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesColor")]
+            [PropertyOrder(26)]
+            [LabelText("Start Color")]
             public Color fromColor = Color.white;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesColor")]
+            [PropertyOrder(27)]
+            [LabelText("End Color")]
             public Color toColor = Color.white;
 
-            public float fromFloat = 0f;
-            public float toFloat = 1f;
-            public string materialProperty = "_Glossiness";
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesBool")]
+            [PropertyOrder(28)]
+            [LabelText("Start")]
+            public bool fromBool = false;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesBool")]
+            [PropertyOrder(29)]
+            [LabelText("End")]
+            public bool toBool = true;
+
+            // ----------------
+            // Masks / Material
+            // ----------------
+            [BoxGroup("D Options", ShowLabel = true)]
+            [ShowIf("@UsesVectorMask")]
+            [PropertyOrder(30)]
+            [LabelText("Component Mask")]
+            public ComponentMask vectorMask = ComponentMask.All;
+
+            [BoxGroup("D Options")]
+            [ShowIf("@UsesEnumFieldMask")]
+            [PropertyOrder(31)]
+            [LabelText("Enum Field Mask")]
+            public ComponentMask enumFieldMask = ComponentMask.None;
+
+            [BoxGroup("D Options")]
+            [ShowIf("@IsRendererColor")]
+            [PropertyOrder(32)]
+            [LabelText("Material Index")]
             public int materialIndex = 0;
+
+            [BoxGroup("D Options")]
+            [ShowIf("@UsesMaterialProperty")]
+            [PropertyOrder(33)]
+            [LabelText("Material Property")]
+            [Tooltip("RendererColor defaults to _Color when empty.")]
+            public string materialProperty = "_Glossiness";
+
+            [BoxGroup("D Options")]
+            [ShowIf("@IsRendererColor")]
+            [PropertyOrder(34)]
             [Tooltip("Optional additional material color properties to set alongside materialProperty (e.g. _EmissionColor, _SpecColor).")]
             public string[] materialColorProperties = Array.Empty<string>();
 
-            public bool fromBool = false;
-            public bool toBool = true;
-            public string propertyName;
-            public CustomPropertyMode propertyMode = CustomPropertyMode.AutoTween;
-            public MethodInvokeTiming methodInvokeTiming = MethodInvokeTiming.OnEnd;
-            public string detectedPropertyType;
-            public ComponentMask vectorMask = ComponentMask.All;
-            public ComponentMask enumFieldMask = ComponentMask.None; // Enum field selection mask (X=field 0, Y=field 1, Z=field 2, W=field 3)
-
+            // ----------------
+            // Timing
+            // ----------------
+            [BoxGroup("E Timing", ShowLabel = true)]
+            [PropertyOrder(40)]
             public DelayMode delayMode = DelayMode.None;
-            public float delayValue = 0f;  // Frames (if Frames mode) or Seconds (if Seconds mode)
+
+            [BoxGroup("E Timing")]
+            [ShowIf("@UsesDelayValue")]
+            [PropertyOrder(41)]
+            [LabelText("Delay")]
+            public float delayValue = 0f;
+
+            [BoxGroup("E Timing")]
+            [PropertyOrder(42)]
             public float duration = 1f;
-            public AnimationCurve curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); // Smooth easing (slerp-like)
+
+            [BoxGroup("E Timing")]
+            [ShowIf("@UsesCurve")]
+            [PropertyOrder(43)]
+            public AnimationCurve curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+            // ----------------
+            // Odin helpers
+            // ----------------
+            private bool IsCustomProperty => type == TweenType.CustomProperty;
+            private bool IsRendererColor => type == TweenType.RendererColor;
+            private bool IsMaterialFloat => type == TweenType.MaterialFloat;
+            private bool UsesMaterialProperty => type == TweenType.RendererColor || type == TweenType.MaterialFloat;
+
+            private string Det => string.IsNullOrEmpty(detectedPropertyType) ? string.Empty : detectedPropertyType;
+
+            private bool UsesLocalSpace => type == TweenType.Position || type == TweenType.LocalPosition || type == TweenType.RotationEuler || type == TweenType.LocalRotationEuler;
+            private bool UsesStartSource => type != TweenType.Float;
+            private bool UsesDelayValue => delayMode == DelayMode.Frames || delayMode == DelayMode.Seconds;
+
+            private bool UsesVec3
+            {
+                get
+                {
+                    if (type == TweenType.Position || type == TweenType.LocalPosition) return true;
+                    if (type == TweenType.RotationEuler || type == TweenType.LocalRotationEuler) return true;
+                    if (type == TweenType.Scale) return true;
+
+                    if (type == TweenType.CustomProperty)
+                    {
+                        // Vector3 / Vector4 / Quaternion / enum-struct helpers are all vec3-backed in this inspector.
+                        return Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && Det != "Boolean" && Det != "Void");
+                    }
+
+                    return false;
+                }
+            }
+
+            private bool UsesColor => type == TweenType.RendererColor || (type == TweenType.CustomProperty && Det == "Color");
+
+            private bool UsesFloat
+            {
+                get
+                {
+                    if (type == TweenType.CanvasGroupAlpha) return true;
+                    if (type == TweenType.MaterialFloat) return true;
+                    if (type == TweenType.CustomProperty) return Det == "Single" || Det == "Double" || Det == "Int32";
+                    return false;
+                }
+            }
+
+            private bool UsesBool => type == TweenType.CustomProperty && Det == "Boolean";
+
+            private bool UsesVectorMask => type == TweenType.CustomProperty && (Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && Det != "Boolean" && Det != "Void"));
+
+            private bool UsesEnumFieldMask => type == TweenType.CustomProperty && (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Vector3" && Det != "Vector4" && Det != "Quaternion" && Det != "Color" && Det != "Boolean" && Det != "Void");
+
+            private bool UsesCurve
+            {
+                get
+                {
+                    if (type == TweenType.CustomProperty)
+                    {
+                        // SetAtEnd/ToggleAtHalf don't evaluate the curve.
+                        if (propertyMode != CustomPropertyMode.AutoTween) return false;
+
+                        // Methods only use the curve when invoke timing is OnCurve.
+                        if (Det == "Void" && methodInvokeTiming != MethodInvokeTiming.OnCurve) return false;
+                    }
+
+                    return true;
+                }
+            }
         }
 
         public enum CustomPropertyMode
@@ -839,6 +1090,18 @@ namespace Animator
             onComplete?.Invoke();
         }
 
+        private IEnumerator ApplyActionAfterSeconds(Action action, float seconds)
+        {
+            if (action == null) yield break;
+            float startTime = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - startTime < seconds)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+            action();
+            yield return new WaitForEndOfFrame();
+        }
+
         // ----------------
         // Tween management
         // ----------------
@@ -909,6 +1172,46 @@ namespace Animator
         {
             if (index < 0 || index >= configuredTweens.Count) return;
             PlayEntry(configuredTweens[index]);
+        }
+
+        public void CloneConfiguredTween(int index)
+        {
+            if (index < 0 || index >= configuredTweens.Count) return;
+
+#if UNITY_EDITOR
+            UnityEditor.Undo.RecordObject(this, "Clone Tween");
+#endif
+
+            var src = configuredTweens[index];
+            if (src == null)
+            {
+                configuredTweens.Insert(index + 1, null);
+            }
+            else
+            {
+                var clone = src.Clone();
+                clone.name = string.IsNullOrEmpty(clone.name) ? "(Clone)" : (clone.name + " (Clone)");
+                configuredTweens.Insert(index + 1, clone);
+            }
+
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        }
+
+        public void RemoveConfiguredTween(int index)
+        {
+            if (index < 0 || index >= configuredTweens.Count) return;
+
+#if UNITY_EDITOR
+            UnityEditor.Undo.RecordObject(this, "Remove Tween");
+#endif
+
+            configuredTweens.RemoveAt(index);
+
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
         }
 
         /// <summary>
@@ -1195,6 +1498,11 @@ namespace Animator
                                 getter = () => baseGetter() * 100f;          // engine -> UI
                                 setter = v => baseSetter(v * 0.01f);         // UI -> engine
                             }
+                            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                            {
+                                StartCoroutine(ApplyActionAfterSeconds(() => setter(e.toFloat), e.duration));
+                                return null;
+                            }
                             return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
                         }
 
@@ -1204,6 +1512,13 @@ namespace Animator
                             Type underlying = Enum.GetUnderlyingType(memberType);
                             Func<float> getter = () => Convert.ToSingle(Convert.ChangeType(GetMemberValue(owner, memberInfo), underlying));
                             Action<float> setter = v => SetMemberValue(owner, memberInfo, Enum.ToObject(memberType, Convert.ChangeType(v, underlying)));
+
+                            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                            {
+                                StartCoroutine(ApplyActionAfterSeconds(() => setter(e.toFloat), e.duration));
+                                return null;
+                            }
+
                             return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
                         }
 
@@ -1356,6 +1671,11 @@ namespace Animator
                                 setter(v);
                             };
 
+                            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                            {
+                                StartCoroutine(ApplyActionAfterSeconds(() => maskedSetter(e.toVec3), e.duration));
+                                return null;
+                            }
                             return TweenVec3WithSource(getter, maskedSetter, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
                         }
 
@@ -1398,6 +1718,11 @@ namespace Animator
                                 setter = v => SetMemberValue(owner, memberInfo, v);
                             }
                             
+                            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                            {
+                                StartCoroutine(ApplyActionAfterSeconds(() => setter(e.toColor), e.duration));
+                                return null;
+                            }
                             return TweenColorWithSource(getter, setter, e.toColor, e.duration, e.curve, e.startSource, e.fromColor);
                         }
 
@@ -1443,11 +1768,28 @@ namespace Animator
                             Func<Quaternion, Quaternion, float, Quaternion> slerp = (a, b, t) => Quaternion.SlerpUnclamped(a, b, t);
                             Quaternion toQ = Quaternion.Euler(e.toVec3);
                             Quaternion fromQ = Quaternion.Euler(e.fromVec3);
+                            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                            {
+                                StartCoroutine(ApplyActionAfterSeconds(() => setter(toQ), e.duration));
+                                return null;
+                            }
                             return TweenQuatWithSource(getter, setter, toQ, e.duration, slerp, e.curve, e.startSource, fromQ);
                         }
 
                         if (memberType == typeof(bool))
                         {
+                            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                            {
+                                StartCoroutine(ApplyActionAfterSeconds(() => SetMemberValue(owner, memberInfo, e.toBool), e.duration));
+                                return null;
+                            }
+                            if (e.propertyMode == CustomPropertyMode.ToggleAtHalf)
+                            {
+                                SetMemberValue(owner, memberInfo, e.fromBool);
+                                StartCoroutine(ApplyActionAfterSeconds(() => SetMemberValue(owner, memberInfo, e.toBool), e.duration * 0.5f));
+                                return null;
+                            }
+
                             StartCoroutine(DriveBoolWithCurve(owner, memberInfo, e.fromBool, e.toBool, e.duration, e.curve));
                             return null;
                         }
