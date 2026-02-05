@@ -390,6 +390,7 @@ namespace Nova
         /// </remarks>
         public Bounds HierarchyBounds => new Bounds(HierarchyCenter, HierarchySize);
 
+
         /// <summary>
         /// The <see cref="Length3"/> configuration used to calculate <see cref="CalculatedPosition">Calculated Position</see>. Describes a per-axis offset from its <see cref="Alignment">Alignment</see>.</summary>
         /// <remarks>
@@ -419,6 +420,7 @@ namespace Nova
             }
         }
 
+
         /// <summary>
         /// Update <see cref="Position"/> per-axis while preserving unmodified axes.
         /// Supports mixed <see cref="LengthType.Value"/> and <see cref="LengthType.Percent"/> per axis.
@@ -433,12 +435,17 @@ namespace Nova
             Vector3 relativeTo = Parent != null ? Parent.PaddedSize : Vector3.one;
             ref Length3 pos = ref Position;
 
-            if (x.HasValue)
+            bool changedX = x.HasValue;
+            bool changedY = y.HasValue;
+            bool changedZ = z.HasValue;
+
+            if (changedX)
                 pos.X = Length3Extensions.SetLengthPreserveType(pos.X, x.Value, inputSpace, relativeTo.x);
-            if (y.HasValue)
+            if (changedY)
                 pos.Y = Length3Extensions.SetLengthPreserveType(pos.Y, y.Value, inputSpace, relativeTo.y);
-            if (z.HasValue)
+            if (changedZ)
                 pos.Z = Length3Extensions.SetLengthPreserveType(pos.Z, z.Value, inputSpace, relativeTo.z);
+
         }
 
         /// <summary>

@@ -99,6 +99,13 @@ namespace Nova
         [SerializeField]
         public bool RotateSize;
 
+        /// <summary>
+        /// If <see langword="true"/>, percent-based <see cref="Position"/> offsets are calculated relative to the available in-bounds size
+        /// (parent padded size minus this element's size on that axis) so that 100% lands at the last in-bounds position.
+        /// </summary>
+        [SerializeField]
+        public bool OffsetBySize;
+
         [SerializeField, HideInInspector]
         [NotKeyable]
         internal Vector3 AspectRatio;
@@ -128,6 +135,7 @@ namespace Nova
                    lhs.Alignment == rhs.Alignment &&
                    lhs.AutoSize.Equals(rhs.AutoSize) &&
                    lhs.RotateSize == rhs.RotateSize &&
+                   lhs.OffsetBySize == rhs.OffsetBySize &&
                    lhs.AspectRatio == rhs.AspectRatio &&
                    lhs.AspectRatioAxis == rhs.AspectRatioAxis;
         }
@@ -151,6 +159,7 @@ namespace Nova
                    lhs.Alignment != rhs.Alignment ||
                    !lhs.AutoSize.Equals(rhs.AutoSize) ||
                    lhs.RotateSize != rhs.RotateSize ||
+                   lhs.OffsetBySize != rhs.OffsetBySize ||
                    lhs.AspectRatio != rhs.AspectRatio ||
                    lhs.AspectRatioAxis != rhs.AspectRatioAxis;
         }
@@ -172,6 +181,7 @@ namespace Nova
             hash = (hash * 7) + Alignment.GetHashCode();
             hash = (hash * 7) + AutoSize.GetHashCode();
             hash = (hash * 7) + RotateSize.GetHashCode();
+            hash = (hash * 7) + OffsetBySize.GetHashCode();
             hash = (hash * 7) + AspectRatio.GetHashCode();
             hash = (hash * 7) + AspectRatioAxis.GetHashCode();
             return hash;

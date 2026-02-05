@@ -30,6 +30,8 @@ namespace Nova.Internal.Layouts
             [NativeDisableParallelForRestriction]
             public NativeList<bool> UseRotations;
             [NativeDisableParallelForRestriction]
+            public NativeList<bool> OffsetBySize;
+            [NativeDisableParallelForRestriction]
             public NativeList<float3> Alignments;
             [NativeDisableParallelForRestriction]
             public NativeList<AutoSize3> AutoSizes;
@@ -96,6 +98,7 @@ namespace Nova.Internal.Layouts
                 childLayout.WrapAutoSizes(ref AutoSizes);
                 childLayout.WrapAlignments(ref Alignments);
                 childLayout.WrapUseRotations(ref UseRotations);
+                childLayout.WrapOffsetBySize(ref OffsetBySize);
                 childLayout.WrapAspectRatios(ref AspectRatios);
                 childLayout.WrapRelativeSizes(ref ParentSizes);
 
@@ -133,7 +136,8 @@ namespace Nova.Internal.Layouts
                     float3 marginOffset = childLayout.CalculatedMargin.Offset;
 
                     float3 childPosition = LayoutUtils.LocalPositionToLayoutOffset(LocalPositions[layoutIndex], totalSize, marginOffset, parentSize, parentPaddingOffset, Alignments[layoutIndex]);
-                    float3 rawPosition = Length3.GetRawFromValue(childPosition, ref childLayout.Position, ref childLayout.PositionMinMax, parentSize);
+                    float3 posRelativeTo = childLayout.OffsetBySize ? math.max(parentSize - childLayout.CalculatedSize.Value, 0) : parentSize;
+                    float3 rawPosition = Length3.GetRawFromValue(childPosition, ref childLayout.Position, ref childLayout.PositionMinMax, posRelativeTo);
 
                     childLayout.Position.Raw = math.select(rawPosition, childLayout.Position.Raw, parentAutoLayoutAxes);
 

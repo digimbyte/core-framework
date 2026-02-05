@@ -29,6 +29,7 @@ namespace Nova.Internal.Layouts
             public NativeList<Length3.Calculated> CalculatedLengths;
             public NativeList<float3> Alignments;
             public NativeList<bool> UseRotations;
+            public NativeList<bool> OffsetBySize;
             public NativeList<bool> UsingTransformPositions;
             public NativeList<AutoSize3> AutoSizes;
             public NativeList<AspectRatio> AspectRatios;
@@ -172,6 +173,7 @@ namespace Nova.Internal.Layouts
                 getDependencies.LengthConfigs = LengthConfigs;
                 getDependencies.LengthRanges = LengthRanges;
                 getDependencies.UseRotations = UseRotations;
+                getDependencies.OffsetBySize = OffsetBySize;
                 getDependencies.TransformRotations = TransformRotations;
                 getDependencies.Alignments = Alignments;
                 getDependencies.AutoLayouts = AutoLayouts;
@@ -199,6 +201,7 @@ namespace Nova.Internal.Layouts
                 rootToLeaf.LengthRanges = LengthRanges;
                 rootToLeaf.CalculatedLengths = CalculatedLengths;
                 rootToLeaf.UseRotations = UseRotations;
+                rootToLeaf.OffsetBySize = OffsetBySize;
                 rootToLeaf.Alignments = Alignments;
                 rootToLeaf.AutoSizes = AutoSizes;
                 rootToLeaf.ParentSizes = ParentSizes;
@@ -223,6 +226,7 @@ namespace Nova.Internal.Layouts
                 leafToRoot.LengthRanges = LengthRanges;
                 leafToRoot.CalculatedLengths = CalculatedLengths;
                 leafToRoot.UseRotations = UseRotations;
+                leafToRoot.OffsetBySize = OffsetBySize;
                 leafToRoot.Alignments = Alignments;
                 leafToRoot.AutoSizes = AutoSizes;
                 leafToRoot.ParentSizes = ParentSizes;

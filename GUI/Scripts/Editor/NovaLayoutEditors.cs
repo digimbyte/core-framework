@@ -184,6 +184,12 @@ namespace Nova.Editor.GUIs
                     }
                 }
 
+                SerializedProperty offsetBySize = layout.SerializedProperty.FindPropertyRelative("OffsetBySize");
+                if (offsetBySize != null)
+                {
+                    NovaGUI.ToggleField(Labels.Position.OffsetBySize, offsetBySize);
+                }
+
                 EditorGUI.EndDisabledGroup();
             }
         }

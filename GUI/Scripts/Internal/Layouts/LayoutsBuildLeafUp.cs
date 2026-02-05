@@ -29,6 +29,8 @@ namespace Nova.Internal.Layouts
             [NativeDisableParallelForRestriction]
             public NativeList<bool> UseRotations;
             [NativeDisableParallelForRestriction]
+            public NativeList<bool> OffsetBySize;
+            [NativeDisableParallelForRestriction]
             public NativeList<float3> Alignments;
             [NativeDisableParallelForRestriction]
             public NativeList<AutoSize3> AutoSizes;
@@ -235,6 +237,7 @@ namespace Nova.Internal.Layouts
                 childLayout.WrapAspectRatios(ref AspectRatios);
                 childLayout.WrapRelativeSizes(ref ParentSizes);
                 childLayout.WrapAlignments(ref Alignments);
+                childLayout.WrapOffsetBySize(ref OffsetBySize);
                 childLayout.WrapRotations(ref Rotations);
                 childLayout.WrapUseRotations(ref UseRotations);
 
@@ -488,6 +491,8 @@ namespace Nova.Internal.Layouts
                 childLayout.WrapAutoSizes(ref AutoSizes);
                 childLayout.WrapAspectRatios(ref AspectRatios);
                 childLayout.WrapRelativeSizes(ref ParentSizes);
+                childLayout.WrapAlignments(ref Alignments);
+                childLayout.WrapOffsetBySize(ref OffsetBySize);
 
                 int childCount = ctx.ParentElement.ChildCount;
 

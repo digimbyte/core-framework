@@ -125,6 +125,7 @@ namespace Nova.Internal.Layouts
                 AutoSizes = LayoutDataStore.Instance.AutoSizes,
                 Alignments = LayoutDataStore.Instance.Alignments,
                 UseRotations = LayoutDataStore.Instance.UseRotations,
+                OffsetBySize = LayoutDataStore.Instance.OffsetBySize,
                 AspectRatios = LayoutDataStore.Instance.AspectRatios,
 
                 AutoLayouts = LayoutDataStore.Instance.AutoLayouts,

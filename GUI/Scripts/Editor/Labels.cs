@@ -294,11 +294,12 @@ namespace Nova.Editor.GUIs
             public static readonly GUIContent RotateSize = EditorGUIUtility.TrTextContent("Rotate Size", "Specifies whether or not to include the UI Block's rotation when calculating size.");
         }
 
-        public static class Position
-        {
-            public static readonly GUIContent Label = EditorGUIUtility.TrTextContent("Position", "The position of the UI Block.");
-            public static readonly GUIContent Alignment = EditorGUIUtility.TrTextContent("Alignment", "The alignment relative to parent's padded size.");
-        }
+            public static class Position
+            {
+                public static readonly GUIContent Label = EditorGUIUtility.TrTextContent("Position", "The position of the UI Block.");
+                public static readonly GUIContent Alignment = EditorGUIUtility.TrTextContent("Alignment", "The alignment relative to parent's padded size.");
+                public static readonly GUIContent OffsetBySize = EditorGUIUtility.TrTextContent("Offset by Size", "When enabled, percent-based Position offsets are calculated relative to the available in-bounds size (parent padded size minus this UI Block's size on that axis), so 100% lands at the last in-bounds position.");
+            }
 
         public static class ItemView
         {

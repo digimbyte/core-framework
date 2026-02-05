@@ -105,6 +105,12 @@ namespace Nova.Internal
         public bool RotateSize;
 
         /// <summary>
+        /// If true, percent-based Position offsets are calculated relative to the available in-bounds size
+        /// (parent padded size minus this element's size on that axis) so that 100% lands at the last in-bounds position.
+        /// </summary>
+        public bool OffsetBySize;
+
+        /// <summary>
         /// The aspect ratio of this UIBlock
         /// </summary>
         public AspectRatio AspectRatio;

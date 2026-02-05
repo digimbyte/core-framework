@@ -48,6 +48,7 @@ namespace Nova.Internal.Layouts
         public NativeList<Length3.Calculated> CalculatedLengths;
 
         public NativeList<bool> UseRotations;
+        public NativeList<bool> OffsetBySize;
         public NativeList<float3> Alignments;
         public NativeList<AutoSize3> AutoSizes;
 
@@ -89,6 +90,7 @@ namespace Nova.Internal.Layouts
         private Length2.Calculated* calcSpacingPtr;
 
         private bool* useRotationsPtr;
+        private bool* offsetBySizePtr;
         private float3* alignmentsPtr;
         private AutoSize3* autosizesPtr;
         private AutoLayout* autoLayoutsPtr;
@@ -375,6 +377,7 @@ namespace Nova.Internal.Layouts
             calcPropertiesPtr = registerRunner.CalcPropertiesPtr;
 
             useRotationsPtr = registerRunner.UseRotationsPtr;
+            offsetBySizePtr = registerRunner.OffsetBySizePtr;
             alignmentsPtr = registerRunner.AlignmentsPtr;
             autosizesPtr = registerRunner.AutosizesPtr;
             aspectRatiosPtr = registerRunner.AspectRatiosPtr;
@@ -419,6 +422,7 @@ namespace Nova.Internal.Layouts
             layout.WrapAutoSizes(autosizesPtr);
             layout.WrapAlignments(alignmentsPtr);
             layout.WrapUseRotations(useRotationsPtr);
+            layout.WrapOffsetBySize(offsetBySizePtr);
             layout.WrapAspectRatios(aspectRatiosPtr);
         }
 
@@ -569,6 +573,7 @@ namespace Nova.Internal.Layouts
             CalculatedLengths = new NativeList<Length3.Calculated>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
 
             UseRotations = new NativeList<bool>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
+            OffsetBySize = new NativeList<bool>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             Alignments = new NativeList<float3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             AutoSizes = new NativeList<AutoSize3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             AspectRatios = new NativeList<AspectRatio>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
@@ -579,6 +584,7 @@ namespace Nova.Internal.Layouts
             calcPropertiesPtr = (Length3.Calculated*)LengthConfigs.GetRawPtr();
 
             useRotationsPtr = UseRotations.GetRawPtr();
+            offsetBySizePtr = OffsetBySize.GetRawPtr();
             alignmentsPtr = Alignments.GetRawPtr();
             autosizesPtr = AutoSizes.GetRawPtr();
 
@@ -609,6 +615,7 @@ namespace Nova.Internal.Layouts
                 LengthRanges = LengthMinMaxes,
 
                 UseRotations = UseRotations,
+                OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 Autosizes = AutoSizes,
                 AspectRatios = AspectRatios,
@@ -657,6 +664,7 @@ namespace Nova.Internal.Layouts
                 CalculatedLengths = CalculatedLengths,
 
                 UseRotations = UseRotations,
+                OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 AutoSizes = AutoSizes,
 
@@ -696,6 +704,7 @@ namespace Nova.Internal.Layouts
                 CalculatedLengths = CalculatedLengths,
 
                 UseRotations = UseRotations,
+                OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 AutoSizes = AutoSizes,
 
@@ -745,6 +754,7 @@ namespace Nova.Internal.Layouts
                 Lengths = LengthConfigs,
                 Ranges = LengthMinMaxes,
                 UseRotations = UseRotations,
+                OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 AutoSizes = AutoSizes,
                 AspectRatios = AspectRatios,
@@ -768,6 +778,7 @@ namespace Nova.Internal.Layouts
             CalculatedLengths.Dispose();
 
             UseRotations.Dispose();
+            OffsetBySize.Dispose();
             Alignments.Dispose();
             AutoSizes.Dispose();
             AspectRatios.Dispose();
