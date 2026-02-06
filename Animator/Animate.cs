@@ -521,11 +521,11 @@ namespace Animator
             return args;
         }
 
-        private IEnumerator InvokeMethodWithTiming(MemberInfo member, object owner, float duration, AnimationCurve curve, MethodInvokeTiming timing)
+        private IEnumerator InvokeMethodWithTiming(MemberInfo member, object owner, object[] argsOverride, float duration, AnimationCurve curve, MethodInvokeTiming timing)
         {
             if (member is not MethodInfo mi) yield break;
 
-            object[] args = BuildInvokeArgsOrNull(mi);
+            object[] args = argsOverride ?? BuildInvokeArgsOrNull(mi);
 
             switch (timing)
             {
@@ -1412,13 +1412,6 @@ namespace Animator
                     if (!string.IsNullOrEmpty(resolvedPath) && resolvedPath.EndsWith(backingSuffix, StringComparison.Ordinal))
                         resolvedPath = resolvedPath.Substring(0, resolvedPath.Length - backingSuffix.Length);
 
-                    // Special handler: Typer component
-                    // If the user explicitly targets a Typer, start typing the configured end string.
-                    if (comp is Typer typer)
-                    {
-                        typer.StartTyping(e.toString ?? string.Empty, append: e.typerAppend);
-                        return null;
-                    }
 
                     // Fast-path: UIBlock Size handling (avoids ref-return reflection issues and handles mixed Raw/Percent axis types)
                     if (comp is Nova.UIBlock sizeBlock)
@@ -1928,8 +1921,15 @@ namespace Animator
                         }
                         if (memberType == typeof(void) && memberInfo is MethodInfo method)
                         {
-                            // Invoke method based on configured timing
-                            StartCoroutine(InvokeMethodWithTiming(method, owner, e.duration, e.curve, e.methodInvokeTiming));
+                            // Invoke method based on configured timing.
+                            // Special-case: Typer.StartTyping uses tween entry inputs (Text + Append).
+                            object[] argsOverride = null;
+                            if (comp is Typer && string.Equals(method.Name, "StartTyping", StringComparison.Ordinal))
+                            {
+                                argsOverride = new object[] { e.toString ?? string.Empty, e.typerAppend };
+                            }
+
+                            StartCoroutine(InvokeMethodWithTiming(method, owner, argsOverride, e.duration, e.curve, e.methodInvokeTiming));
                             return null;
                         }
 

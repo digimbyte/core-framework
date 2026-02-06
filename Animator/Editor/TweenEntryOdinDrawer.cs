@@ -103,8 +103,8 @@ namespace Animator
 
                         DrawReadOnlyIf(detectedTypeProp, "Detected Type");
 
-                        // propertyMode is only meaningful for value types. Methods use methodInvokeTiming.
-                        if (!string.Equals(det, "Void", StringComparison.Ordinal))
+                        // propertyMode is not meaningful for strings; methods use methodInvokeTiming.
+                        if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal))
                         {
                             DrawIf(propertyModeProp, "Property Mode");
                         }
@@ -118,8 +118,16 @@ namespace Animator
 
                 DrawSection("Values", () =>
                 {
-                    // Start source is relevant for most value tweens.
-                    if (isCustom || tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale || isCanvasAlpha || isRendererColor || isMaterialFloat)
+                    Component comp = null;
+                    try { comp = targetComponentProp?.ValueEntry?.WeakSmartValue as Component; } catch { }
+                    bool isTyper = isCustom && comp is Typer;
+
+                    // Start source is relevant only for continuous value tweens.
+                    bool startSourceRelevant =
+                        (tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale || isCanvasAlpha || isRendererColor || isMaterialFloat)
+                        || (isCustom && !isTyper && det != "Void" && det != "String" && det != "Boolean");
+
+                    if (startSourceRelevant)
                     {
                         DrawIf(startSourceProp, "Initial Value");
                     }
@@ -148,14 +156,19 @@ namespace Animator
                     }
                     else if (isCustom)
                     {
-                        Component comp = null;
-                        try { comp = targetComponentProp?.ValueEntry?.WeakSmartValue as Component; } catch { }
-
-                        // Typer: explicit UI (text + append) regardless of detected type / property selection.
-                        if (comp is Typer)
+                        // Typer: explicit UI when selecting StartTyping.
+                        // NOTE: toString has [ShowIf(UsesString)] on the data model, which is false for methods (Void).
+                        // So we draw the value manually here.
+                        if (isTyper)
                         {
-                            DrawIf(toStringProp, "Text");
-                            DrawIf(typerAppendProp, "Append");
+                            string selectedPath = null;
+                            try { selectedPath = propertyNameProp?.ValueEntry?.WeakSmartValue as string; } catch { }
+
+                            if (string.Equals(selectedPath, "StartTyping", StringComparison.Ordinal))
+                            {
+                                DrawWrappedTextArea(toStringProp, "Text", minLines: 3f);
+                                DrawIf(typerAppendProp, "Append");
+                            }
                         }
                         else if (det == "Color")
                         {
@@ -172,8 +185,9 @@ namespace Animator
                         }
                         else if (det == "String")
                         {
-                            DrawIf(fromStringProp, "Start Value");
-                            DrawIf(toStringProp, "End Value");
+                            // Strings are set at end; no meaningful start value.
+                            // Draw manually to ensure long lines word-wrap and don't blow out the inspector width.
+                            DrawWrappedTextArea(toStringProp, "End Value", minLines: 3f);
                         }
                         else if (det == "Single" || det == "Double" || det == "Int32")
                         {
@@ -230,9 +244,16 @@ namespace Animator
                     else if (delayMode == Animate.DelayMode.Seconds)
                         DrawIf(delayValueProp, "Delay (s)");
 
-                    DrawIf(durationProp, "Duration (s)");
+                    // For void methods invoked OnStart, duration is meaningless.
+                    bool durationRelevant = !(isCustom && string.Equals(det, "Void", StringComparison.Ordinal) && invokeTiming == Animate.MethodInvokeTiming.OnStart);
+                    if (durationRelevant)
+                    {
+                        DrawIf(durationProp, "Duration (s)");
+                    }
 
-                    if (UsesCurve(tweenType, det, mode, invokeTiming))
+                    // Curve isn't applicable for strings (set-at-end).
+                    bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming);
+                    if (curveRelevant)
                     {
                         DrawIf(curveProp, "Curve");
                     }
@@ -348,6 +369,30 @@ namespace Animator
             GUI.enabled = false;
             prop.Draw(new GUIContent(labelOverride));
             GUI.enabled = true;
+        }
+
+        private static void DrawWrappedTextArea(InspectorProperty prop, string label, float minLines = 3f)
+        {
+            if (prop?.ValueEntry == null) return;
+
+            string current = string.Empty;
+            try { current = prop.ValueEntry.WeakSmartValue as string ?? string.Empty; } catch { }
+
+            EditorGUILayout.LabelField(label);
+
+            // Word-wrap only affects display. The stored string is unchanged.
+            var style = new GUIStyle(EditorStyles.textArea)
+            {
+                wordWrap = true
+            };
+
+            float minHeight = EditorGUIUtility.singleLineHeight * Mathf.Max(1f, minLines);
+            string next = EditorGUILayout.TextArea(current, style, GUILayout.MinHeight(minHeight), GUILayout.ExpandWidth(true));
+
+            if (!string.Equals(next, current, StringComparison.Ordinal))
+            {
+                try { prop.ValueEntry.WeakSmartValue = next; } catch { }
+            }
         }
 
         private static string GetString(InspectorProperty prop)
