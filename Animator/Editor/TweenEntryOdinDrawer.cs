@@ -38,6 +38,9 @@ namespace Animator
             var toColorProp = Find("toColor");
             var fromBoolProp = Find("fromBool");
             var toBoolProp = Find("toBool");
+            var fromStringProp = Find("fromString");
+            var toStringProp = Find("toString");
+            var typerAppendProp = Find("typerAppend");
 
             var vectorMaskProp = Find("vectorMask");
             var enumFieldMaskProp = Find("enumFieldMask");
@@ -96,7 +99,7 @@ namespace Animator
                     DrawSection("Custom Property", () =>
                     {
                         DrawIf(propertyNameProp, "Property");
-                        DrawBrowseRefreshRow(targetComponentProp, propertyNameProp, detectedTypeProp);
+                        DrawBrowseRefreshRow(targetObjectProp, targetComponentProp, propertyNameProp, detectedTypeProp);
 
                         DrawReadOnlyIf(detectedTypeProp, "Detected Type");
 
@@ -145,7 +148,16 @@ namespace Animator
                     }
                     else if (isCustom)
                     {
-                        if (det == "Color")
+                        Component comp = null;
+                        try { comp = targetComponentProp?.ValueEntry?.WeakSmartValue as Component; } catch { }
+
+                        // Typer: explicit UI (text + append) regardless of detected type / property selection.
+                        if (comp is Typer)
+                        {
+                            DrawIf(toStringProp, "Text");
+                            DrawIf(typerAppendProp, "Append");
+                        }
+                        else if (det == "Color")
                         {
                             DrawIf(fromColorProp, "Start Color");
                             DrawIf(toColorProp, "End Color");
@@ -157,6 +169,11 @@ namespace Animator
 
                             // For bool, propertyMode matters (AutoTween vs SetAtEnd vs ToggleAtHalf)
                             DrawIf(propertyModeProp, "Property Mode");
+                        }
+                        else if (det == "String")
+                        {
+                            DrawIf(fromStringProp, "Start Value");
+                            DrawIf(toStringProp, "End Value");
                         }
                         else if (det == "Single" || det == "Double" || det == "Int32")
                         {
@@ -388,17 +405,23 @@ namespace Animator
             return true;
         }
 
-        private static void DrawBrowseRefreshRow(InspectorProperty targetComponentProp, InspectorProperty propertyNameProp, InspectorProperty detectedTypeProp)
+        private static void DrawBrowseRefreshRow(InspectorProperty targetObjectProp, InspectorProperty targetComponentProp, InspectorProperty propertyNameProp, InspectorProperty detectedTypeProp)
         {
+            GameObject go = null;
             Component comp = null;
+            try { go = targetObjectProp?.ValueEntry?.WeakSmartValue as GameObject; } catch { }
             try { comp = targetComponentProp?.ValueEntry?.WeakSmartValue as Component; } catch { }
+
+            // If a component is selected, browse ONLY that component.
+            // If no component is selected, browse the target GameObject.
+            UnityEngine.Object root = comp != null ? (UnityEngine.Object)comp : (UnityEngine.Object)go;
 
             EditorGUILayout.BeginHorizontal();
             {
-                GUI.enabled = comp != null;
+                GUI.enabled = root != null;
                 if (GUILayout.Button("Browse", GUILayout.Width(80)))
                 {
-                    MemberPathBrowserWindow.Show(comp, 3, selected =>
+                    MemberPathBrowserWindow.Show(root, 3, selected =>
                     {
                         try
                         {
@@ -416,7 +439,7 @@ namespace Animator
                     try
                     {
                         string path = propertyNameProp?.ValueEntry?.WeakSmartValue as string;
-                        var t = (comp != null && !string.IsNullOrEmpty(path)) ? MemberPathBrowser.ResolveMemberType(comp, path) : null;
+                        var t = (root != null && !string.IsNullOrEmpty(path)) ? MemberPathBrowser.ResolveMemberType(root, path) : null;
                         if (detectedTypeProp?.ValueEntry != null)
                             detectedTypeProp.ValueEntry.WeakSmartValue = t != null ? t.Name : string.Empty;
                     }

@@ -10,8 +10,9 @@ using Sirenix.OdinInspector;
 namespace Animator
 {
     /// <summary>
-    /// General purpose animator/tween component. Supports animating arbitrary values
-    /// via getter/setter delegates and provides convenience helpers for common
+    /// General purpose animator/tween component.
+    /// Inspector/UI is drawn with Odin Inspector (attributes on this type + custom drawers in the Editor folder).
+    /// Supports animating arbitrary values via getter/setter delegates and provides convenience helpers for common
     /// Unity types (float, Vector3, Quaternion, Color).
     /// - Can use the current value as the start or force a provided start value.
     /// - Uses an <see cref="AnimationCurve"/> for easing.
@@ -101,6 +102,10 @@ namespace Animator
 
                 c.fromBool = fromBool;
                 c.toBool = toBool;
+
+                c.fromString = fromString;
+                c.toString = toString;
+                c.typerAppend = typerAppend;
 
                 c.propertyName = propertyName;
                 c.propertyMode = propertyMode;
@@ -236,6 +241,26 @@ namespace Animator
             [LabelText("End")]
             public bool toBool = true;
 
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesString")]
+            [PropertyOrder(30)]
+            [LabelText("Start Value")]
+            [TextArea]
+            public string fromString = string.Empty;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@UsesString")]
+            [PropertyOrder(31)]
+            [LabelText("End Value")]
+            [TextArea]
+            public string toString = string.Empty;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@IsCustomProperty")]
+            [PropertyOrder(32)]
+            [LabelText("Append")]
+            public bool typerAppend = false;
+
             // ----------------
             // Masks / Material
             // ----------------
@@ -338,6 +363,7 @@ namespace Animator
             }
 
             private bool UsesBool => type == TweenType.CustomProperty && Det == "Boolean";
+            private bool UsesString => type == TweenType.CustomProperty && Det == "String";
 
             private bool UsesVectorMask => type == TweenType.CustomProperty && (Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && Det != "Boolean" && Det != "Void"));
 
@@ -460,17 +486,54 @@ namespace Animator
             yield return new WaitForEndOfFrame();
         }
 
+        private static object[] BuildInvokeArgsOrNull(MethodInfo mi)
+        {
+            if (mi == null) return null;
+
+            var ps = mi.GetParameters();
+            if (ps == null || ps.Length == 0) return null;
+
+            var args = new object[ps.Length];
+            for (int i = 0; i < ps.Length; i++)
+            {
+                var p = ps[i];
+
+                // For optional params, DefaultValue is typically usable (null/0/false/etc.).
+                // When it's not present, Type.Missing lets reflection apply the default.
+                object dv;
+                try { dv = p.DefaultValue; }
+                catch { dv = Type.Missing; }
+
+                if (dv == null)
+                {
+                    args[i] = null;
+                }
+                else if (ReferenceEquals(dv, DBNull.Value) || ReferenceEquals(dv, Missing.Value))
+                {
+                    args[i] = Type.Missing;
+                }
+                else
+                {
+                    args[i] = dv;
+                }
+            }
+
+            return args;
+        }
+
         private IEnumerator InvokeMethodWithTiming(MemberInfo member, object owner, float duration, AnimationCurve curve, MethodInvokeTiming timing)
         {
             if (member is not MethodInfo mi) yield break;
-            
+
+            object[] args = BuildInvokeArgsOrNull(mi);
+
             switch (timing)
             {
                 case MethodInvokeTiming.OnStart:
-                    mi.Invoke(owner, null);
+                    mi.Invoke(owner, args);
                     yield return new WaitForEndOfFrame();
                     break;
-                    
+
                 case MethodInvokeTiming.OnEnd:
                     {
                         float elapsed = 0f;
@@ -479,27 +542,27 @@ namespace Animator
                             elapsed += Time.deltaTime;
                             yield return new WaitForEndOfFrame();
                         }
-                        mi.Invoke(owner, null);
+                        mi.Invoke(owner, args);
                         yield return new WaitForEndOfFrame();
                     }
                     break;
-                    
+
                 case MethodInvokeTiming.StartAndEnd:
                     {
-                        mi.Invoke(owner, null);
+                        mi.Invoke(owner, args);
                         yield return new WaitForEndOfFrame();
-                        
+
                         float elapsed = 0f;
                         while (elapsed < duration)
                         {
                             elapsed += Time.deltaTime;
                             yield return new WaitForEndOfFrame();
                         }
-                        mi.Invoke(owner, null);
+                        mi.Invoke(owner, args);
                         yield return new WaitForEndOfFrame();
                     }
                     break;
-                    
+
                 case MethodInvokeTiming.OnCurve:
                     {
                         // Execute method invocations based on curve threshold with retrigger support
@@ -512,7 +575,7 @@ namespace Animator
                             float v = curve.Evaluate(t);
                             if (!fired && v >= MethodInvokeThreshold)
                             {
-                                mi.Invoke(owner, null);
+                                mi.Invoke(owner, args);
                                 fired = true;
                             }
                             if (fired && v < MethodInvokeThreshold)
@@ -619,8 +682,18 @@ namespace Animator
                     continue;
                 }
 
-                var mi = t.GetMethod(part, BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
-                if (mi != null && mi.GetParameters().Length == 0 && mi.ReturnType == typeof(void))
+                // Methods: prefer an exact parameterless void match; otherwise allow "all optional params" void methods.
+                var methods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(m => m.Name == part && m.ReturnType == typeof(void) && !m.IsSpecialName);
+
+                var mi = methods.FirstOrDefault(m => m.GetParameters().Length == 0)
+                      ?? methods.FirstOrDefault(m =>
+                      {
+                          var ps = m.GetParameters();
+                          return ps.Length > 0 && ps.All(p => p.IsOptional);
+                      });
+
+                if (mi != null)
                 {
                     if (i == parts.Length - 1)
                     {
@@ -628,7 +701,8 @@ namespace Animator
                         memberType = typeof(void);
                         return true;
                     }
-                    owner = mi.Invoke(owner, null);
+
+                    owner = mi.Invoke(owner, BuildInvokeArgsOrNull(mi));
                     continue;
                 }
 
@@ -1338,6 +1412,14 @@ namespace Animator
                     if (!string.IsNullOrEmpty(resolvedPath) && resolvedPath.EndsWith(backingSuffix, StringComparison.Ordinal))
                         resolvedPath = resolvedPath.Substring(0, resolvedPath.Length - backingSuffix.Length);
 
+                    // Special handler: Typer component
+                    // If the user explicitly targets a Typer, start typing the configured end string.
+                    if (comp is Typer typer)
+                    {
+                        typer.StartTyping(e.toString ?? string.Empty, append: e.typerAppend);
+                        return null;
+                    }
+
                     // Fast-path: UIBlock Size handling (avoids ref-return reflection issues and handles mixed Raw/Percent axis types)
                     if (comp is Nova.UIBlock sizeBlock)
                     {
@@ -1490,6 +1572,17 @@ namespace Animator
                     if (TryResolveMember(comp, resolvedPath, out var owner, out var memberInfo, out var memberType))
                     {
                         // handle numeric types
+                        if (memberType == typeof(string))
+                        {
+                            // Strings are not continuous values.
+                            // Requirement: strings are set on end.
+                            Action<string> setter = v => SetMemberValue(owner, memberInfo, v);
+
+                            string to = e.toString ?? string.Empty;
+                            StartCoroutine(ApplyActionAfterSeconds(() => setter(to), e.duration));
+                            return null;
+                        }
+
                         if (memberType == typeof(float) || memberType == typeof(double) || memberType == typeof(int))
                         {
                             Func<float> getter;
@@ -1538,6 +1631,7 @@ namespace Animator
                                 getter = () => baseGetter() * 100f;          // engine -> UI
                                 setter = v => baseSetter(v * 0.01f);         // UI -> engine
                             }
+
                             if (e.propertyMode == CustomPropertyMode.SetAtEnd)
                             {
                                 StartCoroutine(ApplyActionAfterSeconds(() => setter(e.toFloat), e.duration));
@@ -1545,7 +1639,6 @@ namespace Animator
                             }
                             return TweenFloatWithSource(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
                         }
-
                         // handle enums by tweening over their underlying numeric value
                         if (memberType.IsEnum)
                         {

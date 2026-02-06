@@ -181,6 +181,7 @@ namespace Animator
             typingCoroutine = StartCoroutine(TypeRoutine(source, append));
         }
 
+
         /// <summary>
         /// Immediately finishes typing and shows the full text.
         /// </summary>

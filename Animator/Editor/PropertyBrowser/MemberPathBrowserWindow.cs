@@ -17,7 +17,7 @@ namespace Animator
 
     public static class MemberPathBrowser
     {
-        public static List<NestedEntry> CollectNestedMembers(Component root, int maxDepth)
+        public static List<NestedEntry> CollectNestedMembers(UnityEngine.Object root, int maxDepth)
         {
             var results = new List<NestedEntry>();
             if (root == null) return results;
@@ -25,16 +25,90 @@ namespace Animator
             void Recurse(object owner, string prefix, int depth, HashSet<object> seen)
             {
                 if (owner == null || depth > maxDepth) return;
-                Type t = owner.GetType();
 
-                var props = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead
-                                && p.PropertyType != typeof(Matrix4x4)
-                                && !p.Name.Contains("Matrix"));
-                var fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(f => f.FieldType != typeof(Matrix4x4) && !f.Name.Contains("Matrix"));
-                var methods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(m => m.GetParameters().Length == 0 && m.ReturnType == typeof(void));
+                bool rootIsComponent = root is UnityEngine.Component;
+                bool isRootOwner = ReferenceEquals(owner, root);
+
+                IEnumerable<PropertyInfo> props;
+                IEnumerable<FieldInfo> fields;
+                IEnumerable<MethodInfo> methods;
+
+                if (rootIsComponent && isRootOwner)
+                {
+                    // Component root: only members declared on the component type and its non-Unity base types.
+                    // (Prevents expanding into gameObject/camera/collider/etc.)
+                    var propsList = new List<PropertyInfo>();
+                    var fieldsList = new List<FieldInfo>();
+                    var methodsList = new List<MethodInfo>();
+
+                    Type rootType = owner.GetType();
+
+                    // Always include the selected component type.
+                    propsList.AddRange(rootType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                        .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead
+                                    && p.PropertyType != typeof(Matrix4x4)
+                                    && !p.Name.Contains("Matrix")));
+
+                    fieldsList.AddRange(rootType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                        .Where(f => f.FieldType != typeof(Matrix4x4) && !f.Name.Contains("Matrix")));
+
+                    methodsList.AddRange(rootType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                        .Where(m => m.ReturnType == typeof(void) && !m.IsSpecialName)
+                        .Where(m =>
+                        {
+                            var ps = m.GetParameters();
+                            if (ps.Length == 0) return true;
+                            return ps.All(p => p.IsOptional);
+                        }));
+
+                    // Include non-Unity base types (user/Nova/etc), but stop once we hit UnityEngine types.
+                    for (Type cur = rootType.BaseType; cur != null; cur = cur.BaseType)
+                    {
+                        if (string.Equals(cur.Namespace, "UnityEngine", StringComparison.Ordinal))
+                            break;
+
+                        propsList.AddRange(cur.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                            .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead
+                                        && p.PropertyType != typeof(Matrix4x4)
+                                        && !p.Name.Contains("Matrix")));
+
+                        fieldsList.AddRange(cur.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                            .Where(f => f.FieldType != typeof(Matrix4x4) && !f.Name.Contains("Matrix")));
+
+                        methodsList.AddRange(cur.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                            .Where(m => m.ReturnType == typeof(void) && !m.IsSpecialName)
+                            .Where(m =>
+                            {
+                                var ps = m.GetParameters();
+                                if (ps.Length == 0) return true;
+                                return ps.All(p => p.IsOptional);
+                            }));
+                    }
+
+                    props = propsList;
+                    fields = fieldsList;
+                    methods = methodsList;
+                }
+                else
+                {
+                    Type t = owner.GetType();
+                    props = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead
+                                    && p.PropertyType != typeof(Matrix4x4)
+                                    && !p.Name.Contains("Matrix"));
+
+                    fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance)
+                        .Where(f => f.FieldType != typeof(Matrix4x4) && !f.Name.Contains("Matrix"));
+
+                    methods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                        .Where(m => m.ReturnType == typeof(void) && !m.IsSpecialName)
+                        .Where(m =>
+                        {
+                            var ps = m.GetParameters();
+                            if (ps.Length == 0) return true;
+                            return ps.All(p => p.IsOptional);
+                        });
+                }
 
                 foreach (var p in props)
                 {
@@ -63,8 +137,9 @@ namespace Animator
                             if (recurseType != null) break;
                         }
                     }
-                    else if (!propType.IsPrimitive && propType != typeof(string))
+                    else if (!propType.IsPrimitive && propType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(propType))
                     {
+                        // Never recurse into UnityEngine.Object graphs.
                         recurseType = propType;
                     }
 
@@ -97,9 +172,9 @@ namespace Animator
                         }
                         catch { }
                     }
-                    else if (depth < maxDepth && !p.PropertyType.IsPrimitive && p.PropertyType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(p.PropertyType))
+                    else if (depth < maxDepth && val != null && !p.PropertyType.IsPrimitive && p.PropertyType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(p.PropertyType))
                     {
-                        if (val != null && !seen.Contains(val))
+                        if (!seen.Contains(val))
                         {
                             try
                             {
@@ -185,8 +260,18 @@ namespace Animator
                     continue;
                 }
 
-                var mi = currentType.GetMethod(segment, BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
-                if (mi != null && mi.GetParameters().Length == 0 && mi.ReturnType == typeof(void))
+                // Methods: prefer an exact parameterless void match; otherwise allow "all optional params" void methods.
+                var methods = currentType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(m => m.Name == segment && m.ReturnType == typeof(void) && !m.IsSpecialName);
+
+                var mi = methods.FirstOrDefault(m => m.GetParameters().Length == 0)
+                      ?? methods.FirstOrDefault(m =>
+                      {
+                          var ps = m.GetParameters();
+                          return ps.Length > 0 && ps.All(p => p.IsOptional);
+                      });
+
+                if (mi != null)
                 {
                     return typeof(void);
                 }
@@ -207,12 +292,12 @@ namespace Animator
         private List<NestedEntry> cachedFiltered = new List<NestedEntry>();
         private Action<NestedEntry> onSelected;
 
-        public static void Show(Component component, int maxDepth, Action<NestedEntry> onSelect)
+        public static void Show(UnityEngine.Object root, int maxDepth, Action<NestedEntry> onSelect)
         {
-            if (component == null) return;
+            if (root == null) return;
 
             var window = GetWindow<MemberPathBrowserWindow>("Select Property");
-            window.allEntries = MemberPathBrowser.CollectNestedMembers(component, maxDepth);
+            window.allEntries = MemberPathBrowser.CollectNestedMembers(root, maxDepth);
             window.cachedFiltered = new List<NestedEntry>(window.allEntries);
             window.onSelected = onSelect;
             window.minSize = new Vector2(520, 340);
