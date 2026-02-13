@@ -447,7 +447,7 @@ namespace Nova.Internal.Layouts
         public ref LayoutPointer Access(ILayoutBlock val)
         {
             DataStoreIndex index = val.Index;
-
+            if (!index.IsValid || index >= AccessedLayouts.Length)
             if (!index.IsValid)
             {
                 return ref EmptyProperties;
