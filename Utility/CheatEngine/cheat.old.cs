@@ -12,13 +12,27 @@ public static class Cheats
     public static bool Active { get; internal set; } = false;
 
     /// <summary>Live values while active. Empty in builds.</summary>
-    public static readonly Dictionary<string, bool>  Bools  = new();
-    public static readonly Dictionary<string, int>   Ints   = new();
-    public static readonly Dictionary<string, float> Floats = new();
+    public static readonly Dictionary<string, bool> Bools = new Dictionary<string, bool>();
+    public static readonly Dictionary<string, int> Ints = new Dictionary<string, int>();
+    public static readonly Dictionary<string, float> Floats = new Dictionary<string, float>();
 
-    public static bool  Bool(string key, bool  fallback = false) => Bools.TryGetValue(key, out var v)  ? v : fallback;
-    public static int   Int (string key, int   fallback = 0)     => Ints.TryGetValue(key,  out var v)  ? v : fallback;
-    public static float Float(string key, float fallback = 0f)   => Floats.TryGetValue(key,out var v)  ? v : fallback;
+    public static bool Bool(string key, bool fallback = false)
+    {
+        bool v;
+        return Bools.TryGetValue(key, out v) ? v : fallback;
+    }
+
+    public static int Int(string key, int fallback = 0)
+    {
+        int v;
+        return Ints.TryGetValue(key, out v) ? v : fallback;
+    }
+
+    public static float Float(string key, float fallback = 0f)
+    {
+        float v;
+        return Floats.TryGetValue(key, out v) ? v : fallback;
+    }
 }
 
 #if UNITY_EDITOR
@@ -37,23 +51,23 @@ public class CheatToggleEditor : MonoBehaviour
     public bool showOverlay = true;
     [Range(0.5f, 3f)] public float overlayScale = 1.2f;
     [Tooltip("0..1 viewport anchor (x: left->right, y: top->bottom).")]
-    public Vector2 overlayAnchor = new(0.5f, 0.05f);
+    public Vector2 overlayAnchor = new Vector2(0.5f, 0.05f);
 
     [System.Serializable]
-    public struct BoolEntry  { public string key; public bool  offValue; public bool  onValue; }
+    public struct BoolEntry { public string key; public bool offValue; public bool onValue; }
     [System.Serializable]
-    public struct IntEntry   { public string key; public int   offValue; public int   onValue; }
+    public struct IntEntry { public string key; public int offValue; public int onValue; }
     [System.Serializable]
     public struct FloatEntry { public string key; public float offValue; public float onValue; }
 
     [Header("Values: Booleans")]
-    public List<BoolEntry> bools = new();
+    public List<BoolEntry> bools = new List<BoolEntry>();
 
     [Header("Values: Integers")]
-    public List<IntEntry> ints = new();
+    public List<IntEntry> ints = new List<IntEntry>();
 
     [Header("Values: Floats")]
-    public List<FloatEntry> floats = new();
+    public List<FloatEntry> floats = new List<FloatEntry>();
 
     void OnEnable()
     {
