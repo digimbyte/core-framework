@@ -7,7 +7,7 @@ using UnityEngine;
 using Nova;
 using Sirenix.OdinInspector;
 
-namespace Animator
+namespace Core.Animator
 {
     /// <summary>
     /// General purpose animator/tween component.
