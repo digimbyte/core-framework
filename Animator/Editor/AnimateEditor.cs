@@ -8,7 +8,7 @@ using UnityEngine;
 using Sirenix.OdinInspector.Editor;
 #endif
 
-namespace Animator
+namespace Core.Animator
 {
     /// <summary>
     /// Inspector for <see cref="Animate"/>.

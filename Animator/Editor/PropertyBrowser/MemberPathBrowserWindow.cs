@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Animator
+namespace Core.Animator
 {
     public struct NestedEntry
     {

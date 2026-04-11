@@ -4,7 +4,7 @@ using TMPro;
 using System.Collections;
 using UnityEngine;
 
-namespace Animator
+namespace Core.Animator
 {
     /// <summary>
     /// Universal text typing controller for TextMesh Pro.

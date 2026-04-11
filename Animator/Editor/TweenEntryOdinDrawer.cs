@@ -5,7 +5,7 @@ using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Animator
+namespace Core.Animator
 {
     // Custom layout for a single tween entry.
     // Keeps the inspector top-down: target/type -> custom property -> values -> options -> timing.
