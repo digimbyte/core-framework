@@ -10,7 +10,7 @@ public static class PurgeChildScriptsContextMenu
 	// ---------------------------
 	// 1) Right-click: Keep Root
 	// ---------------------------
-	[MenuItem("GameObject/Purge/Purge Child Scripts (Keep Root)", false, MENU_PRIORITY)]
+	[MenuItem("GameObject/Core/Purge/Purge Child Scripts (Keep Root)", false, MENU_PRIORITY)]
 	private static void PurgeChildren_KeepRoot(MenuCommand command)
 	{
 		var root = ResolveTarget(command);
@@ -18,14 +18,14 @@ public static class PurgeChildScriptsContextMenu
 		PurgeAllScripts(root, includeRoot: false);
 	}
 
-	[MenuItem("GameObject/Purge/Purge Child Scripts (Keep Root)", true)]
+	[MenuItem("GameObject/Core/Purge/Purge Child Scripts (Keep Root)", true)]
 	private static bool PurgeChildren_KeepRoot_Validate(MenuCommand command)
 		=> ResolveTarget(command) != null;
 
 	// ---------------------------
 	// 2) Right-click: Self + Children
 	// ---------------------------
-	[MenuItem("GameObject/Purge/Purge Scripts (Self + Children)", false, MENU_PRIORITY + 1)]
+	[MenuItem("GameObject/Core/Purge/Purge Scripts (Self + Children)", false, MENU_PRIORITY + 1)]
 	private static void PurgeSelfAndChildren(MenuCommand command)
 	{
 		var root = ResolveTarget(command);
@@ -33,14 +33,14 @@ public static class PurgeChildScriptsContextMenu
 		PurgeAllScripts(root, includeRoot: true);
 	}
 
-	[MenuItem("GameObject/Purge/Purge Scripts (Self + Children)", true)]
+	[MenuItem("GameObject/Core/Purge/Purge Scripts (Self + Children)", true)]
 	private static bool PurgeSelfAndChildren_Validate(MenuCommand command)
 		=> ResolveTarget(command) != null;
 
 	// ---------------------------
 	// 3) Right-click: Missing Only (Root + Children)
 	// ---------------------------
-	[MenuItem("GameObject/Purge/Purge Missing Scripts Only (Self + Children)", false, MENU_PRIORITY + 2)]
+	[MenuItem("GameObject/Core/Purge/Purge Missing Scripts Only (Self + Children)", false, MENU_PRIORITY + 2)]
 	private static void PurgeMissingOnly(MenuCommand command)
 	{
 		var root = ResolveTarget(command);
@@ -48,7 +48,7 @@ public static class PurgeChildScriptsContextMenu
 		PurgeMissingScriptsOnly(root, includeRoot: true);
 	}
 
-	[MenuItem("GameObject/Purge/Purge Missing Scripts Only (Self + Children)", true)]
+	[MenuItem("GameObject/Core/Purge/Purge Missing Scripts Only (Self + Children)", true)]
 	private static bool PurgeMissingOnly_Validate(MenuCommand command)
 		=> ResolveTarget(command) != null;
 
