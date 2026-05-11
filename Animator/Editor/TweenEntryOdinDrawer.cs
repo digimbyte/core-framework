@@ -57,6 +57,7 @@ namespace Core.Animator
             var chainProp = Find("chainAfterPrevious");
             var siblingShiftProp = Find("siblingShift");
             var siblingTimingProp = Find("siblingTiming");
+            var debugLoggingProp = Find("debugLogging");
 
             var tweenType = GetEnum<Animate.TweenType>(typeProp, Animate.TweenType.Position);
             bool isCustom = tweenType == Animate.TweenType.CustomProperty;
@@ -298,6 +299,8 @@ namespace Core.Animator
                     {
                         DrawIf(curveProp, "Curve");
                     }
+
+                    DrawIf(debugLoggingProp, "Debug Logging");
                 });
 
             }

@@ -341,6 +341,8 @@ namespace Core.Animator
                     bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming, siblingInvoke);
                     if (curveRelevant) lines += 1;
 
+                    lines += 1; // debugLogging
+
                     break;
             }
 
@@ -783,6 +785,10 @@ namespace Core.Animator
             bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming, siblingInvoke);
             if (curveRelevant)
                 EditorGUI.PropertyField(NextLine(ref rect), curveProp, new GUIContent("Curve"));
+
+            var debugLoggingProp = entry.FindPropertyRelative("debugLogging");
+            if (debugLoggingProp != null)
+                EditorGUI.PropertyField(NextLine(ref rect), debugLoggingProp, new GUIContent("Debug Logging", "Enable Console logs for this tween only (play start/stop + CustomProperty warnings)."));
         }
 
         private static bool UsesCurve(Animate.TweenType tweenType, string det, Animate.CustomPropertyMode mode, Animate.MethodInvokeTiming methodInvoke, Animate.MethodInvokeTiming siblingInvoke)
@@ -989,6 +995,8 @@ namespace Core.Animator
 
             SetEnum(entry, "siblingShift", (int)Animate.SiblingShift.Up);
             SetEnum(entry, "siblingTiming", (int)Animate.MethodInvokeTiming.OnEnd);
+
+            SetBool(entry, "debugLogging", false);
 
             // curve: leave whatever Unity assigns; if null it will serialize as empty.
         }

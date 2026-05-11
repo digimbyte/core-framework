@@ -280,7 +280,24 @@ namespace Core.Animator
                 }
             }
 
-            return results;
+            // Same logical path may appear twice (e.g. override + inherited DeclaredOnly), or nested prop+field.
+            return DedupeNestedEntriesByPath(results);
+        }
+
+        /// <summary>Preserves first occurrence (stable picker order).</summary>
+        private static List<NestedEntry> DedupeNestedEntriesByPath(List<NestedEntry> entries)
+        {
+            if (entries == null || entries.Count <= 1) return entries ?? new List<NestedEntry>();
+
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var filtered = new List<NestedEntry>(entries.Count);
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var e = entries[i];
+                if (!string.IsNullOrEmpty(e.path) && seen.Add(e.path))
+                    filtered.Add(e);
+            }
+            return filtered;
         }
 
         /// <summary>Resolve e.g. <c>ImageAdjustment&amp;</c> to the concrete <c>ImageAdjustment</c> type (C# ref-return properties).</summary>

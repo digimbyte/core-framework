@@ -139,6 +139,8 @@ namespace Core.Animator
                 c.siblingShift = siblingShift;
                 c.siblingTiming = siblingTiming;
 
+                c.debugLogging = debugLogging;
+
                 return c;
             }
             // ----------------
@@ -354,6 +356,11 @@ namespace Core.Animator
             [LabelText("Apply Timing")]
             [Tooltip("Used when Property Mode is AutoTween. OnCurve fires when the curve first crosses 0.9+ (retriggering allowed). OnStart, OnEnd, and StartAndEnd mirror bool/method custom tweens.")]
             public MethodInvokeTiming siblingTiming = MethodInvokeTiming.OnEnd;
+
+            [BoxGroup("E Timing")]
+            [PropertyOrder(46)]
+            [Tooltip("When enabled, this tween logs play start/stop messages and CustomProperty diagnostics to the Console.")]
+            public bool debugLogging = false;
 
             // ----------------
             // Odin helpers
@@ -955,6 +962,517 @@ namespace Core.Animator
         // Delegate type for ref-returning UIBlock2D.ImageAdjustment
         private delegate ref ImageAdjustment ImageAdjustmentGetter2D(Nova.UIBlock2D target);
 
+        // Getter-only ref-return Nova UIBlock2D accessors (no property setter — mutate through ref delegates).
+        private delegate ref Border UIBlock2DBorderRef(UIBlock2D target);
+        private delegate ref Shadow UIBlock2DShadowRef(UIBlock2D target);
+        private delegate ref RadialGradient UIBlock2DGradientRef(UIBlock2D target);
+        private delegate ref RadialFill UIBlock2DRadialFillRef(UIBlock2D target);
+        private delegate ref Length UIBlock2DCornerRadiusRef(UIBlock2D target);
+
+        private static float NovaUiBlock2ReadLeafAsSingle(object boxedStruct, MemberInfo leaf)
+        {
+            if (leaf is FieldInfo fi) return Convert.ToSingle(fi.GetValue(boxedStruct));
+            if (leaf is PropertyInfo pi && pi.CanRead) return Convert.ToSingle(pi.GetValue(boxedStruct));
+            return 0f;
+        }
+
+        private static void NovaUiBlock2WriteLeafFromSingle(object boxedStruct, MemberInfo leaf, float vIn, Type leafClrType)
+        {
+            object coerced = Convert.ChangeType(vIn, leafClrType);
+            if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, coerced);
+            else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, coerced);
+        }
+
+        private static Color NovaUiBlock2ReadLeafAsColor(object boxedStruct, MemberInfo leaf)
+        {
+            if (leaf is FieldInfo fi) return fi.GetValue(boxedStruct) is Color c ? c : default;
+            if (leaf is PropertyInfo pi && pi.CanRead && pi.GetValue(boxedStruct) is Color pc) return pc;
+            return Color.white;
+        }
+
+        private static void NovaUiBlock2WriteLeafAsColor(object boxedStruct, MemberInfo leaf, Color v)
+        {
+            if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, v);
+            else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, v);
+        }
+
+        private static Vector3 NovaUiBlock2ReadLeafAsVector3(object boxedStruct, MemberInfo leaf)
+        {
+            if (leaf is FieldInfo fi) return (Vector3)fi.GetValue(boxedStruct);
+            if (leaf is PropertyInfo pi && pi.CanRead) return (Vector3)pi.GetValue(boxedStruct);
+            return Vector3.zero;
+        }
+
+        private static void NovaUiBlock2WriteLeafAsVector3(object boxedStruct, MemberInfo leaf, Vector3 v)
+        {
+            if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, v);
+            else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, v);
+        }
+
+        private static Quaternion NovaUiBlock2ReadLeafAsQuaternion(object boxedStruct, MemberInfo leaf)
+        {
+            if (leaf is FieldInfo fi) return (Quaternion)fi.GetValue(boxedStruct);
+            if (leaf is PropertyInfo pi && pi.CanRead) return (Quaternion)pi.GetValue(boxedStruct);
+            return Quaternion.identity;
+        }
+
+        private static void NovaUiBlock2WriteLeafAsQuaternion(object boxedStruct, MemberInfo leaf, Quaternion v)
+        {
+            if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, v);
+            else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, v);
+        }
+
+        /// <returns><see langword="true"/> when <paramref name="marker"/> is a Nova <see cref="UIBlock2D"/> getter-only <c>ref</c> root we can mutate in place.</returns>
+        private static bool TryBindNovaUIBlock2DGetterOnlyLeafFloat(RefStructMarker marker, UIBlock2D block,
+            MemberInfo leafMember, Type leafClrType, out Func<float> getter, out Action<float> setter)
+        {
+            getter = null;
+            setter = null;
+            if (block == null || leafMember == null || leafClrType == null || marker.originalOwner != (object)block || marker.refProperty.CanWrite)
+                return false;
+            var gm = marker.refProperty.GetMethod;
+            if (gm == null || !marker.refProperty.PropertyType.Name.EndsWith("&"))
+                return false;
+
+            switch (marker.refProperty.Name)
+            {
+                case nameof(UIBlock2D.Border):
+                {
+                    var d = (UIBlock2DBorderRef)gm.CreateDelegate(typeof(UIBlock2DBorderRef));
+                    getter = () =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsSingle(box, leafMember);
+                    };
+                    setter = fv =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafFromSingle(box, leafMember, fv, leafClrType);
+                        s = (Border)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Shadow):
+                {
+                    var d = (UIBlock2DShadowRef)gm.CreateDelegate(typeof(UIBlock2DShadowRef));
+                    getter = () =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsSingle(box, leafMember);
+                    };
+                    setter = fv =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafFromSingle(box, leafMember, fv, leafClrType);
+                        s = (Shadow)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Gradient):
+                {
+                    var d = (UIBlock2DGradientRef)gm.CreateDelegate(typeof(UIBlock2DGradientRef));
+                    getter = () =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsSingle(box, leafMember);
+                    };
+                    setter = fv =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafFromSingle(box, leafMember, fv, leafClrType);
+                        s = (RadialGradient)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.RadialFill):
+                {
+                    var d = (UIBlock2DRadialFillRef)gm.CreateDelegate(typeof(UIBlock2DRadialFillRef));
+                    getter = () =>
+                    {
+                        ref RadialFill s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsSingle(box, leafMember);
+                    };
+                    setter = fv =>
+                    {
+                        ref RadialFill s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafFromSingle(box, leafMember, fv, leafClrType);
+                        s = (RadialFill)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.CornerRadius):
+                {
+                    var d = (UIBlock2DCornerRadiusRef)gm.CreateDelegate(typeof(UIBlock2DCornerRadiusRef));
+                    getter = () =>
+                    {
+                        ref Length s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsSingle(box, leafMember);
+                    };
+                    setter = fv =>
+                    {
+                        ref Length s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafFromSingle(box, leafMember, fv, leafClrType);
+                        s = (Length)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.ImageAdjustment):
+                {
+                    var d = (ImageAdjustmentGetter2D)gm.CreateDelegate(typeof(ImageAdjustmentGetter2D));
+                    getter = () =>
+                    {
+                        ref ImageAdjustment s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsSingle(box, leafMember);
+                    };
+                    setter = fv =>
+                    {
+                        ref ImageAdjustment s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafFromSingle(box, leafMember, fv, leafClrType);
+                        s = (ImageAdjustment)box;
+                    };
+                    return true;
+                }
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TryBindNovaUIBlock2DGetterOnlyLeafColor(RefStructMarker marker, UIBlock2D block,
+            MemberInfo leafMember, out Func<Color> getter, out Action<Color> setter)
+        {
+            getter = null;
+            setter = null;
+            if (block == null || leafMember == null || marker.originalOwner != (object)block || marker.refProperty.CanWrite)
+                return false;
+            var gm = marker.refProperty.GetMethod;
+            if (gm == null || !marker.refProperty.PropertyType.Name.EndsWith("&"))
+                return false;
+
+            switch (marker.refProperty.Name)
+            {
+                case nameof(UIBlock2D.Border):
+                {
+                    var d = (UIBlock2DBorderRef)gm.CreateDelegate(typeof(UIBlock2DBorderRef));
+                    getter = () =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsColor(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsColor(box, leafMember, v);
+                        s = (Border)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Shadow):
+                {
+                    var d = (UIBlock2DShadowRef)gm.CreateDelegate(typeof(UIBlock2DShadowRef));
+                    getter = () =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsColor(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsColor(box, leafMember, v);
+                        s = (Shadow)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Gradient):
+                {
+                    var d = (UIBlock2DGradientRef)gm.CreateDelegate(typeof(UIBlock2DGradientRef));
+                    getter = () =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsColor(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsColor(box, leafMember, v);
+                        s = (RadialGradient)box;
+                    };
+                    return true;
+                }
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TryBindNovaUIBlock2DGetterOnlyLeafVector3(RefStructMarker marker, UIBlock2D block,
+            MemberInfo leafMember, out Func<Vector3> getter, out Action<Vector3> setter)
+        {
+            getter = null;
+            setter = null;
+            if (block == null || leafMember == null || marker.originalOwner != (object)block || marker.refProperty.CanWrite)
+                return false;
+            var gm = marker.refProperty.GetMethod;
+            if (gm == null || !marker.refProperty.PropertyType.Name.EndsWith("&"))
+                return false;
+
+            switch (marker.refProperty.Name)
+            {
+                case nameof(UIBlock2D.Border):
+                {
+                    var d = (UIBlock2DBorderRef)gm.CreateDelegate(typeof(UIBlock2DBorderRef));
+                    getter = () =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsVector3(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsVector3(box, leafMember, v);
+                        s = (Border)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Shadow):
+                {
+                    var d = (UIBlock2DShadowRef)gm.CreateDelegate(typeof(UIBlock2DShadowRef));
+                    getter = () =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsVector3(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsVector3(box, leafMember, v);
+                        s = (Shadow)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Gradient):
+                {
+                    var d = (UIBlock2DGradientRef)gm.CreateDelegate(typeof(UIBlock2DGradientRef));
+                    getter = () =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsVector3(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsVector3(box, leafMember, v);
+                        s = (RadialGradient)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.RadialFill):
+                {
+                    var d = (UIBlock2DRadialFillRef)gm.CreateDelegate(typeof(UIBlock2DRadialFillRef));
+                    getter = () =>
+                    {
+                        ref RadialFill s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsVector3(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref RadialFill s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsVector3(box, leafMember, v);
+                        s = (RadialFill)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.CornerRadius):
+                {
+                    var d = (UIBlock2DCornerRadiusRef)gm.CreateDelegate(typeof(UIBlock2DCornerRadiusRef));
+                    getter = () =>
+                    {
+                        ref Length s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsVector3(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Length s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsVector3(box, leafMember, v);
+                        s = (Length)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.ImageAdjustment):
+                {
+                    var d = (ImageAdjustmentGetter2D)gm.CreateDelegate(typeof(ImageAdjustmentGetter2D));
+                    getter = () =>
+                    {
+                        ref ImageAdjustment s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsVector3(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref ImageAdjustment s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsVector3(box, leafMember, v);
+                        s = (ImageAdjustment)box;
+                    };
+                    return true;
+                }
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TryBindNovaUIBlock2DGetterOnlyLeafQuaternion(RefStructMarker marker, UIBlock2D block,
+            MemberInfo leafMember, out Func<Quaternion> getter, out Action<Quaternion> setter)
+        {
+            getter = null;
+            setter = null;
+            if (block == null || leafMember == null || marker.originalOwner != (object)block || marker.refProperty.CanWrite)
+                return false;
+            var gm = marker.refProperty.GetMethod;
+            if (gm == null || !marker.refProperty.PropertyType.Name.EndsWith("&"))
+                return false;
+
+            switch (marker.refProperty.Name)
+            {
+                case nameof(UIBlock2D.Border):
+                {
+                    var d = (UIBlock2DBorderRef)gm.CreateDelegate(typeof(UIBlock2DBorderRef));
+                    getter = () =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsQuaternion(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Border s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsQuaternion(box, leafMember, v);
+                        s = (Border)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Shadow):
+                {
+                    var d = (UIBlock2DShadowRef)gm.CreateDelegate(typeof(UIBlock2DShadowRef));
+                    getter = () =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsQuaternion(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Shadow s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsQuaternion(box, leafMember, v);
+                        s = (Shadow)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.Gradient):
+                {
+                    var d = (UIBlock2DGradientRef)gm.CreateDelegate(typeof(UIBlock2DGradientRef));
+                    getter = () =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsQuaternion(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref RadialGradient s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsQuaternion(box, leafMember, v);
+                        s = (RadialGradient)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.RadialFill):
+                {
+                    var d = (UIBlock2DRadialFillRef)gm.CreateDelegate(typeof(UIBlock2DRadialFillRef));
+                    getter = () =>
+                    {
+                        ref RadialFill s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsQuaternion(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref RadialFill s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsQuaternion(box, leafMember, v);
+                        s = (RadialFill)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.CornerRadius):
+                {
+                    var d = (UIBlock2DCornerRadiusRef)gm.CreateDelegate(typeof(UIBlock2DCornerRadiusRef));
+                    getter = () =>
+                    {
+                        ref Length s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsQuaternion(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref Length s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsQuaternion(box, leafMember, v);
+                        s = (Length)box;
+                    };
+                    return true;
+                }
+                case nameof(UIBlock2D.ImageAdjustment):
+                {
+                    var d = (ImageAdjustmentGetter2D)gm.CreateDelegate(typeof(ImageAdjustmentGetter2D));
+                    getter = () =>
+                    {
+                        ref ImageAdjustment s = ref d(block);
+                        object box = s;
+                        return NovaUiBlock2ReadLeafAsQuaternion(box, leafMember);
+                    };
+                    setter = v =>
+                    {
+                        ref ImageAdjustment s = ref d(block);
+                        object box = s;
+                        NovaUiBlock2WriteLeafAsQuaternion(box, leafMember, v);
+                        s = (ImageAdjustment)box;
+                    };
+                    return true;
+                }
+                default:
+                    return false;
+            }
+        }
+
         private object GetMemberValue(object owner, MemberInfo member)
         {
             // Handle ref struct marker
@@ -1522,7 +2040,7 @@ namespace Core.Animator
 
         private static void LogPlayStart(TweenEntry e, string context)
         {
-            if (e == null) return;
+            if (e == null || !e.debugLogging) return;
             string entryName = string.IsNullOrEmpty(e.name) ? "(unnamed)" : e.name;
             string targetName = e.targetObject != null ? e.targetObject.name : "(null)";
             Debug.Log($"[Animate] Play start — \"{entryName}\", {e.type}, target={targetName} — {context}");
@@ -1530,7 +2048,7 @@ namespace Core.Animator
 
         private static void LogPlayStop(TweenEntry e, string result)
         {
-            if (e == null) return;
+            if (e == null || !e.debugLogging) return;
             string entryName = string.IsNullOrEmpty(e.name) ? "(unnamed)" : e.name;
             string targetName = e.targetObject != null ? e.targetObject.name : "(null)";
             Debug.Log($"[Animate] Play stop — \"{entryName}\", {e.type}, target={targetName} — {result}");
@@ -1879,36 +2397,11 @@ namespace Core.Animator
                                     }
                                 };
                             }
-                            else if (owner is RefStructMarker imgMarker && imgMarker.refProperty.Name == "ImageAdjustment" && imgMarker.originalOwner is Nova.UIBlock2D imgBlock2D)
+                            else if (owner is RefStructMarker novaRb && novaRb.originalOwner is UIBlock2D ubNovaRb &&
+                                     TryBindNovaUIBlock2DGetterOnlyLeafFloat(novaRb, ubNovaRb, memberInfo, memberType, out var gfNova, out var sfNova))
                             {
-                                // ImageAdjustment is a ref-return-only property (no setter).
-                                // Use a typed delegate to get the live ref, then box/modify/assign-back.
-                                var imgGetterDel = (ImageAdjustmentGetter2D)imgMarker.refProperty.GetMethod.CreateDelegate(typeof(ImageAdjustmentGetter2D));
-
-                                getter = () =>
-                                {
-                                    ref Nova.ImageAdjustment adj = ref imgGetterDel(imgBlock2D);
-                                    object boxed = adj;
-                                    if (memberInfo is FieldInfo fiImg) return Convert.ToSingle(fiImg.GetValue(boxed));
-                                    if (memberInfo is PropertyInfo piImg) return Convert.ToSingle(piImg.GetValue(boxed));
-                                    return 0f;
-                                };
-
-                                setter = v =>
-                                {
-                                    ref Nova.ImageAdjustment adj = ref imgGetterDel(imgBlock2D);
-                                    object boxed = adj;
-                                    if (memberInfo is FieldInfo fiImg)
-                                    {
-                                        fiImg.SetValue(boxed, Convert.ChangeType(v, memberType));
-                                        adj = (Nova.ImageAdjustment)boxed;
-                                    }
-                                    else if (memberInfo is PropertyInfo piImg && piImg.CanWrite)
-                                    {
-                                        piImg.SetValue(boxed, Convert.ChangeType(v, memberType));
-                                        adj = (Nova.ImageAdjustment)boxed;
-                                    }
-                                };
+                                getter = gfNova;
+                                setter = sfNova;
                             }
                             else
                             {
@@ -1957,8 +2450,9 @@ namespace Core.Animator
 
                         if (memberType == typeof(Vector3))
                         {
-                            Func<Vector3> getter;
-                            Action<Vector3> setter;
+                            // Stubs satisfy definite assignment; skipped when !configured returns before tweening.
+                            Func<Vector3> getter = () => Vector3.zero;
+                            Action<Vector3> setter = _ => { };
                             bool configured = false;
 
                             if (owner is RefStructMarker marker && marker.refProperty.Name == "Size")
@@ -2039,7 +2533,14 @@ namespace Core.Animator
                                 }
                             }
 
-                            if (owner is RefStructMarker marker2)
+                            else if (owner is RefStructMarker novaV3 && novaV3.originalOwner is UIBlock2D ubNovaV3 &&
+                                     TryBindNovaUIBlock2DGetterOnlyLeafVector3(novaV3, ubNovaV3, memberInfo, out var gNv3, out var sNv3))
+                            {
+                                getter = gNv3;
+                                setter = sNv3;
+                                configured = true;
+                            }
+                            else if (owner is RefStructMarker marker2)
                             {
                                 // generic ref struct path
                                 getter = () =>
@@ -2110,7 +2611,13 @@ namespace Core.Animator
                             Func<Color> getter;
                             Action<Color> setter;
                             
-                            if (owner is RefStructMarker marker)
+                            if (owner is RefStructMarker colMarker && colMarker.originalOwner is UIBlock2D ubCol &&
+                                TryBindNovaUIBlock2DGetterOnlyLeafColor(colMarker, ubCol, memberInfo, out var gNovaCol, out var sNovaCol))
+                            {
+                                getter = gNovaCol;
+                                setter = sNovaCol;
+                            }
+                            else if (owner is RefStructMarker marker)
                             {
                                 getter = () =>
                                 {
@@ -2157,7 +2664,13 @@ namespace Core.Animator
                             Func<Quaternion> getter;
                             Action<Quaternion> setter;
                             
-                            if (owner is RefStructMarker marker)
+                            if (owner is RefStructMarker quatMarker && quatMarker.originalOwner is UIBlock2D ubQt &&
+                                TryBindNovaUIBlock2DGetterOnlyLeafQuaternion(quatMarker, ubQt, memberInfo, out var gNovaQt, out var sNovaQt))
+                            {
+                                getter = gNovaQt;
+                                setter = sNovaQt;
+                            }
+                            else if (owner is RefStructMarker marker)
                             {
                                 getter = () =>
                                 {
@@ -2233,11 +2746,13 @@ namespace Core.Animator
                             return null;
                         }
 
-                        Debug.LogWarning($"Animate: Unsupported property type '{memberType.Name}' for CustomProperty on {memberRoot.GetType().Name} (path '{e.propertyName}').");
+                        if (e.debugLogging)
+                            Debug.LogWarning($"Animate: Unsupported property type '{memberType.Name}' for CustomProperty on {memberRoot.GetType().Name} (path '{e.propertyName}').");
                         return null;
                     }
 
-                    Debug.LogWarning($"Animate: Property/Field path '{e.propertyName}' not found on {memberRoot.GetType().Name} '{go.name}'.");
+                    if (e.debugLogging)
+                        Debug.LogWarning($"Animate: Property/Field path '{e.propertyName}' not found on {memberRoot.GetType().Name} '{go.name}'.");
                     return null;
                 }
 
