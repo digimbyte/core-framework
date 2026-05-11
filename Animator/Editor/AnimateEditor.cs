@@ -171,6 +171,7 @@ namespace Core.Animator
             var targetComponentProp = entry.FindPropertyRelative("targetComponent");
             var propertyModeProp = entry.FindPropertyRelative("propertyMode");
             var methodInvokeTimingProp = entry.FindPropertyRelative("methodInvokeTiming");
+            var siblingTimingProp = entry.FindPropertyRelative("siblingTiming");
 
             var tweenType = (Animate.TweenType)typeProp.enumValueIndex;
             string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
@@ -180,6 +181,7 @@ namespace Core.Animator
             bool isRendererColor = tweenType == Animate.TweenType.RendererColor;
             bool isMaterialFloat = tweenType == Animate.TweenType.MaterialFloat;
             bool isCanvasAlpha = tweenType == Animate.TweenType.CanvasGroupAlpha;
+            bool isSibling = tweenType == Animate.TweenType.SiblingOrder;
 
             bool isTyper = false;
             try
@@ -191,6 +193,7 @@ namespace Core.Animator
 
             var mode = propertyModeProp != null ? (Animate.CustomPropertyMode)propertyModeProp.enumValueIndex : Animate.CustomPropertyMode.AutoTween;
             var invokeTiming = methodInvokeTimingProp != null ? (Animate.MethodInvokeTiming)methodInvokeTimingProp.enumValueIndex : Animate.MethodInvokeTiming.OnEnd;
+            var siblingInvoke = siblingTimingProp != null ? (Animate.MethodInvokeTiming)siblingTimingProp.enumValueIndex : Animate.MethodInvokeTiming.OnEnd;
 
             bool showSection = section switch
             {
@@ -226,7 +229,7 @@ namespace Core.Animator
                     lines += 3;
                     // propertyMode vs method timing
                     // (Boolean's propertyMode is shown alongside Start/End in the Values section to avoid duplication.)
-                    if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal) && !string.Equals(det, "Boolean", StringComparison.Ordinal))
+                    if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal) && !IsBooleanDetectedType(det))
                         lines += 1;
                     if (string.Equals(det, "Void", StringComparison.Ordinal))
                         lines += 1;
@@ -236,7 +239,8 @@ namespace Core.Animator
                     {
                         bool startSourceRelevant =
                             (tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale || isCanvasAlpha || isRendererColor || isMaterialFloat)
-                            || (isCustom && !isTyper && det != "Void" && det != "String" && det != "Boolean");
+                            || (isCustom && !isTyper && det != "Void" && det != "String" && !IsBooleanDetectedType(det));
+                        startSourceRelevant = startSourceRelevant && !isSibling;
 
                         if (startSourceRelevant) lines += 1;
 
@@ -249,6 +253,15 @@ namespace Core.Animator
                             lines += 2; // from/to float
                         else if (isRendererColor)
                             lines += 2; // from/to color
+                        else if (isSibling)
+                        {
+                            lines += 1; // propertyMode
+                            lines += 1; // siblingShift
+                            if (mode == Animate.CustomPropertyMode.ToggleAtHalf)
+                                lines += 2; // from + to
+                            else
+                                lines += 1; // toFloat order delta
+                        }
                         else if (isCustom)
                         {
                             if (isTyper && string.Equals(selectedPath, "StartTyping", StringComparison.Ordinal))
@@ -260,8 +273,13 @@ namespace Core.Animator
                             }
                             else if (det == "Color")
                                 lines += 2;
-                            else if (det == "Boolean")
-                                lines += 3; // from/to + propertyMode
+                            else if (IsBooleanDetectedType(det))
+                            {
+                                if (mode == Animate.CustomPropertyMode.SetAtEnd)
+                                    lines += 2; // propertyMode + toBool
+                                else
+                                    lines += 3; // propertyMode + from + to
+                            }
                             else if (det == "String")
                             {
                                 lines += 1;
@@ -278,8 +296,8 @@ namespace Core.Animator
                 case Section.Options:
                     if (isCustom)
                     {
-                        bool vectorMask = det == "Vector3" || det == "Vector4" || det == "Quaternion" || (!string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Color" && det != "Boolean" && det != "Void");
-                        bool enumMask = !string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Vector3" && det != "Vector4" && det != "Quaternion" && det != "Color" && det != "Boolean" && det != "Void";
+                        bool vectorMask = det == "Vector3" || det == "Vector4" || det == "Quaternion" || (!string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Color" && !IsBooleanDetectedType(det) && det != "Void");
+                        bool enumMask = !string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Vector3" && det != "Vector4" && det != "Quaternion" && det != "Color" && !IsBooleanDetectedType(det) && det != "Void";
 
                         if (vectorMask) lines += 1;
                         if (enumMask) lines += 1;
@@ -310,9 +328,17 @@ namespace Core.Animator
                         lines += 1;
 
                     bool durationRelevant = !(isCustom && string.Equals(det, "Void", StringComparison.Ordinal) && invokeTiming == Animate.MethodInvokeTiming.OnStart);
+                    if (tweenType == Animate.TweenType.SiblingOrder)
+                    {
+                        if (mode == Animate.CustomPropertyMode.AutoTween && siblingInvoke == Animate.MethodInvokeTiming.OnStart)
+                            durationRelevant = false;
+                    }
                     if (durationRelevant) lines += 1;
 
-                    bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming);
+                    if (tweenType == Animate.TweenType.SiblingOrder && mode == Animate.CustomPropertyMode.AutoTween)
+                        lines += 1; // apply timing (siblingTiming)
+
+                    bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming, siblingInvoke);
                     if (curveRelevant) lines += 1;
 
                     break;
@@ -467,7 +493,9 @@ namespace Core.Animator
             EditorGUI.PropertyField(NextLine(ref rect), targetObjectProp);
 
             if (isCustom)
-                EditorGUI.PropertyField(NextLine(ref rect), targetComponentProp);
+            {
+                EditorGUI.PropertyField(NextLine(ref rect), targetComponentProp, new GUIContent("Target component (optional)", "Optional. Leave empty to use Target Object (the GameObject) as the member path root. Set when the property lives on a specific component."));
+            }
         }
 
         private void DrawCustomPropertySection(ref Rect rect, SerializedProperty entry)
@@ -494,12 +522,13 @@ namespace Core.Animator
 
             DrawBrowseRefreshRow(ref rect, targetObjectProp, targetComponentProp, propertyNameProp, detectedTypeProp);
 
-            using (new EditorGUI.DisabledScope(true))
             {
-                EditorGUI.PropertyField(NextLine(ref rect), detectedTypeProp, new GUIContent("Detected Type"));
+                var detLabel = "Detected type (Browse/Refresh only — not typed)";
+                var detValue = detectedTypeProp != null ? (string.IsNullOrEmpty(detectedTypeProp.stringValue) ? "— not set —" : detectedTypeProp.stringValue) : "— not set —";
+                EditorGUI.LabelField(NextLine(ref rect), new GUIContent(detLabel), new GUIContent(detValue));
             }
 
-            if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal) && !string.Equals(det, "Boolean", StringComparison.Ordinal))
+            if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal) && !IsBooleanDetectedType(det))
             {
                 EditorGUI.PropertyField(NextLine(ref rect), propertyModeProp, new GUIContent("Property Mode"));
             }
@@ -528,6 +557,7 @@ namespace Core.Animator
             bool isRendererColor = tweenType == Animate.TweenType.RendererColor;
             bool isMaterialFloat = tweenType == Animate.TweenType.MaterialFloat;
             bool isCanvasAlpha = tweenType == Animate.TweenType.CanvasGroupAlpha;
+            bool isSibling = tweenType == Animate.TweenType.SiblingOrder;
 
             bool isTyper = false;
             try
@@ -550,12 +580,15 @@ namespace Core.Animator
             var toBoolProp = entry.FindPropertyRelative("toBool");
             var toStringProp = entry.FindPropertyRelative("toString");
             var typerAppendProp = entry.FindPropertyRelative("typerAppend");
+            var propertyModeProp = entry.FindPropertyRelative("propertyMode");
+            var siblingShiftProp = entry.FindPropertyRelative("siblingShift");
 
             DrawSectionHeader(ref rect, "Values");
 
             bool startSourceRelevant =
                 (tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale || isCanvasAlpha || isRendererColor || isMaterialFloat)
-                || (isCustom && !isTyper && det != "Void" && det != "String" && det != "Boolean");
+                || (isCustom && !isTyper && det != "Void" && det != "String" && !IsBooleanDetectedType(det));
+            startSourceRelevant = startSourceRelevant && !isSibling;
 
             if (startSourceRelevant)
                 EditorGUI.PropertyField(NextLine(ref rect), startSourceProp, new GUIContent("Initial Value"));
@@ -578,6 +611,25 @@ namespace Core.Animator
                 EditorGUI.PropertyField(NextLine(ref rect), fromColorProp, new GUIContent("Start Color"));
                 EditorGUI.PropertyField(NextLine(ref rect), toColorProp, new GUIContent("End Color"));
             }
+            else if (tweenType == Animate.TweenType.SiblingOrder)
+            {
+                if (propertyModeProp != null)
+                    EditorGUI.PropertyField(NextLine(ref rect), propertyModeProp, new GUIContent("Property Mode"));
+                if (siblingShiftProp != null)
+                    EditorGUI.PropertyField(NextLine(ref rect), siblingShiftProp, new GUIContent("Shift Direction"));
+                var sMode = propertyModeProp != null
+                    ? (Animate.CustomPropertyMode)propertyModeProp.enumValueIndex
+                    : Animate.CustomPropertyMode.AutoTween;
+                if (sMode == Animate.CustomPropertyMode.ToggleAtHalf)
+                {
+                    EditorGUI.PropertyField(NextLine(ref rect), fromFloatProp, new GUIContent("Start (order delta)"));
+                    EditorGUI.PropertyField(NextLine(ref rect), toFloatProp, new GUIContent("End (order delta)"));
+                }
+                else
+                {
+                    EditorGUI.PropertyField(NextLine(ref rect), toFloatProp, new GUIContent("Order delta"));
+                }
+            }
             else if (isCustom)
             {
                 if (isTyper && string.Equals(selectedPath, "StartTyping", StringComparison.Ordinal))
@@ -590,12 +642,27 @@ namespace Core.Animator
                     EditorGUI.PropertyField(NextLine(ref rect), fromColorProp, new GUIContent("Start Color"));
                     EditorGUI.PropertyField(NextLine(ref rect), toColorProp, new GUIContent("End Color"));
                 }
-                else if (det == "Boolean")
+                else if (IsBooleanDetectedType(det))
                 {
-                    var propertyModeProp = entry.FindPropertyRelative("propertyMode");
-                    EditorGUI.PropertyField(NextLine(ref rect), fromBoolProp, new GUIContent("Start"));
-                    EditorGUI.PropertyField(NextLine(ref rect), toBoolProp, new GUIContent("End"));
-                    EditorGUI.PropertyField(NextLine(ref rect), propertyModeProp, new GUIContent("Property Mode"));
+                    var propertyModeForBool = entry.FindPropertyRelative("propertyMode");
+                    var pMode = propertyModeForBool != null
+                        ? (Animate.CustomPropertyMode)propertyModeForBool.enumValueIndex
+                        : Animate.CustomPropertyMode.AutoTween;
+                    EditorGUI.PropertyField(NextLine(ref rect), propertyModeForBool, new GUIContent("Property Mode"));
+                    if (pMode == Animate.CustomPropertyMode.SetAtEnd)
+                    {
+                        EditorGUI.PropertyField(NextLine(ref rect), toBoolProp, new GUIContent("Set to (when duration elapses)"));
+                    }
+                    else if (pMode == Animate.CustomPropertyMode.ToggleAtHalf)
+                    {
+                        EditorGUI.PropertyField(NextLine(ref rect), fromBoolProp, new GUIContent("At t = 0"));
+                        EditorGUI.PropertyField(NextLine(ref rect), toBoolProp, new GUIContent("At t = 50% of duration"));
+                    }
+                    else
+                    {
+                        EditorGUI.PropertyField(NextLine(ref rect), fromBoolProp, new GUIContent("Value when curve is low (start side)"));
+                        EditorGUI.PropertyField(NextLine(ref rect), toBoolProp, new GUIContent("Value when curve is high (end side)"));
+                    }
                 }
                 else if (det == "String")
                 {
@@ -632,8 +699,8 @@ namespace Core.Animator
 
             if (isCustom)
             {
-                bool showVectorMask = det == "Vector3" || det == "Vector4" || det == "Quaternion" || (!string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Color" && det != "Boolean" && det != "Void");
-                bool showEnumMask = !string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Vector3" && det != "Vector4" && det != "Quaternion" && det != "Color" && det != "Boolean" && det != "Void";
+                bool showVectorMask = det == "Vector3" || det == "Vector4" || det == "Quaternion" || (!string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Color" && !IsBooleanDetectedType(det) && det != "Void");
+                bool showEnumMask = !string.IsNullOrEmpty(det) && det != "Single" && det != "Double" && det != "Int32" && det != "Vector3" && det != "Vector4" && det != "Quaternion" && det != "Color" && !IsBooleanDetectedType(det) && det != "Void";
 
                 var vectorMaskProp = entry.FindPropertyRelative("vectorMask");
                 var enumFieldMaskProp = entry.FindPropertyRelative("enumFieldMask");
@@ -679,10 +746,12 @@ namespace Core.Animator
             var detectedTypeProp = entry.FindPropertyRelative("detectedPropertyType");
             var propertyModeProp = entry.FindPropertyRelative("propertyMode");
             var methodInvokeTimingProp = entry.FindPropertyRelative("methodInvokeTiming");
+            var siblingTimingProp = entry.FindPropertyRelative("siblingTiming");
 
             string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
             var mode = propertyModeProp != null ? (Animate.CustomPropertyMode)propertyModeProp.enumValueIndex : Animate.CustomPropertyMode.AutoTween;
             var invokeTiming = methodInvokeTimingProp != null ? (Animate.MethodInvokeTiming)methodInvokeTimingProp.enumValueIndex : Animate.MethodInvokeTiming.OnEnd;
+            var siblingInvoke = siblingTimingProp != null ? (Animate.MethodInvokeTiming)siblingTimingProp.enumValueIndex : Animate.MethodInvokeTiming.OnEnd;
 
             var delayModeProp = entry.FindPropertyRelative("delayMode");
             var delayValueProp = entry.FindPropertyRelative("delayValue");
@@ -699,28 +768,49 @@ namespace Core.Animator
             else if (delayMode == Animate.DelayMode.Seconds)
                 EditorGUI.PropertyField(NextLine(ref rect), delayValueProp, new GUIContent("Delay (s)"));
 
+            if (tweenType == Animate.TweenType.SiblingOrder && mode == Animate.CustomPropertyMode.AutoTween)
+                EditorGUI.PropertyField(NextLine(ref rect), siblingTimingProp, new GUIContent("Apply Timing"));
+
             bool durationRelevant = !(tweenType == Animate.TweenType.CustomProperty && string.Equals(det, "Void", StringComparison.Ordinal) && invokeTiming == Animate.MethodInvokeTiming.OnStart);
+            if (tweenType == Animate.TweenType.SiblingOrder)
+            {
+                if (mode == Animate.CustomPropertyMode.AutoTween && siblingInvoke == Animate.MethodInvokeTiming.OnStart)
+                    durationRelevant = false;
+            }
             if (durationRelevant)
                 EditorGUI.PropertyField(NextLine(ref rect), durationProp, new GUIContent("Duration (s)"));
 
-            bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming);
+            bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming, siblingInvoke);
             if (curveRelevant)
                 EditorGUI.PropertyField(NextLine(ref rect), curveProp, new GUIContent("Curve"));
         }
 
-        private static bool UsesCurve(Animate.TweenType tweenType, string det, Animate.CustomPropertyMode mode, Animate.MethodInvokeTiming invokeTiming)
+        private static bool UsesCurve(Animate.TweenType tweenType, string det, Animate.CustomPropertyMode mode, Animate.MethodInvokeTiming methodInvoke, Animate.MethodInvokeTiming siblingInvoke)
         {
+            if (tweenType == Animate.TweenType.SiblingOrder)
+            {
+                if (mode != Animate.CustomPropertyMode.AutoTween) return false;
+                return siblingInvoke == Animate.MethodInvokeTiming.OnCurve;
+            }
             if (tweenType == Animate.TweenType.CustomProperty)
             {
                 // Methods only use the curve when timing is OnCurve.
                 if (string.Equals(det, "Void", StringComparison.Ordinal))
-                    return invokeTiming == Animate.MethodInvokeTiming.OnCurve;
+                    return methodInvoke == Animate.MethodInvokeTiming.OnCurve;
 
                 // SetAtEnd / ToggleAtHalf don't evaluate the curve.
                 if (mode != Animate.CustomPropertyMode.AutoTween)
                     return false;
             }
             return true;
+        }
+
+        private static bool IsBooleanDetectedType(string det)
+        {
+            if (string.IsNullOrEmpty(det)) return false;
+            if (det.Equals("Boolean", StringComparison.OrdinalIgnoreCase)) return true;
+            if (det.Equals("System.Boolean", StringComparison.Ordinal)) return true;
+            return det.EndsWith(".Boolean", StringComparison.Ordinal);
         }
 
         private void DrawBrowseRefreshRow(ref Rect rect, SerializedProperty targetObjectProp, SerializedProperty targetComponentProp, SerializedProperty propertyNameProp, SerializedProperty detectedTypeProp)
@@ -745,17 +835,49 @@ namespace Core.Animator
             {
                 if (GUI.Button(browseRect, "Browse"))
                 {
-                    MemberPathBrowserWindow.Show(root, 3, selected =>
+                    if (comp != null)
                     {
-                        try
+                        MemberPathBrowserWindow.Show(comp, 3, selected =>
                         {
-                            serializedObject.Update();
-                            if (propertyNameProp != null) propertyNameProp.stringValue = selected.path;
-                            if (detectedTypeProp != null) detectedTypeProp.stringValue = selected.typeName;
-                            serializedObject.ApplyModifiedProperties();
+                            try
+                            {
+                                serializedObject.Update();
+                                if (propertyNameProp != null) propertyNameProp.stringValue = selected.path;
+                                if (detectedTypeProp != null) detectedTypeProp.stringValue = selected.typeName;
+                                serializedObject.ApplyModifiedProperties();
+                            }
+                            catch { }
+                        });
+                    }
+                    else if (go != null)
+                    {
+                        var components = go.GetComponents<Component>();
+                        if (components != null && components.Length > 0)
+                        {
+                            var menu = new GenericMenu();
+                            foreach (var c in components)
+                            {
+                                var compLocal = c;
+                                if (compLocal == null) continue;
+                                menu.AddItem(new GUIContent(compLocal.GetType().Name), false, () =>
+                                {
+                                    MemberPathBrowserWindow.Show(compLocal, 3, selected =>
+                                    {
+                                        try
+                                        {
+                                            serializedObject.Update();
+                                            if (targetComponentProp != null) targetComponentProp.objectReferenceValue = compLocal;
+                                            if (propertyNameProp != null) propertyNameProp.stringValue = selected.path;
+                                            if (detectedTypeProp != null) detectedTypeProp.stringValue = selected.typeName;
+                                            serializedObject.ApplyModifiedProperties();
+                                        }
+                                        catch { }
+                                    });
+                                });
+                            }
+                            menu.ShowAsContext();
                         }
-                        catch { }
-                    });
+                    }
                 }
 
                 if (GUI.Button(refreshRect, "Refresh Type"))
@@ -864,6 +986,9 @@ namespace Core.Animator
             SetEnum(entry, "delayMode", (int)Animate.DelayMode.None);
             SetFloat(entry, "delayValue", 0f);
             SetFloat(entry, "duration", 1f);
+
+            SetEnum(entry, "siblingShift", (int)Animate.SiblingShift.Up);
+            SetEnum(entry, "siblingTiming", (int)Animate.MethodInvokeTiming.OnEnd);
 
             // curve: leave whatever Unity assigns; if null it will serialize as empty.
         }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,6 +18,14 @@ namespace Core.Animator
 
     public static class MemberPathBrowser
     {
+        /// <summary>Public setter (matches what tween assignment can do). Hides e.g. <c>activeSelf</c> while keeping <c>active</c>.</summary>
+        private static bool HasPublicSetter(PropertyInfo p) =>
+            p != null && p.GetSetMethod(false) != null;
+
+        /// <summary>Skips const and <c>readonly</c> instance fields (get-only in practice for external writes).</summary>
+        private static bool IsAssignableInstanceField(FieldInfo f) =>
+            f != null && !f.IsLiteral && !f.IsInitOnly;
+
         public static List<NestedEntry> CollectNestedMembers(UnityEngine.Object root, int maxDepth)
         {
             var results = new List<NestedEntry>();
@@ -113,39 +122,44 @@ namespace Core.Animator
                 foreach (var p in props)
                 {
                     string path = string.IsNullOrEmpty(prefix) ? p.Name : prefix + "." + p.Name;
-                    object val = null;
                     Type propType = p.PropertyType;
                     Type recurseType = null;
 
-                    try { val = p.GetValue(owner, null); }
-                    catch { val = "<err>"; }
-
                     bool isRefReturn = propType.Name.EndsWith("&");
+                    object val = null;
+
                     if (isRefReturn)
                     {
+                        // Don't attempt to call GetValue on ref-return properties (can throw); show as a ref marker instead.
+                        val = "(ref)";
+
                         string baseTypeName = propType.Name.TrimEnd('&');
                         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                        var targetAssemblies = new[]
+                        foreach (var asm in assemblies)
                         {
-                            propType.Assembly,
-                            assemblies.FirstOrDefault(a => a.GetName().Name == "Nova")
-                        }.Where(a => a != null).ToArray();
-
-                        foreach (var asm in targetAssemblies)
-                        {
+                            if (asm == null) continue;
                             recurseType = asm.GetType(propType.Namespace + "." + baseTypeName);
                             if (recurseType != null) break;
                         }
                     }
-                    else if (!propType.IsPrimitive && propType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(propType))
+                    else
                     {
-                        // Never recurse into UnityEngine.Object graphs.
-                        recurseType = propType;
+                        try { val = p.GetValue(owner, null); }
+                        catch { val = "<err>"; }
+
+                        if (!propType.IsPrimitive && propType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(propType))
+                        {
+                            // Never recurse into UnityEngine.Object graphs.
+                            recurseType = propType;
+                        }
                     }
 
                     string valStr = val?.ToString() ?? "null";
                     string typeNameDisplay = propType.Name;
-                    results.Add(new NestedEntry { path = path, display = $"{path} : {valStr} ({typeNameDisplay})", typeName = typeNameDisplay });
+                    if (HasPublicSetter(p))
+                    {
+                        results.Add(new NestedEntry { path = path, display = $"{path} : {valStr} ({typeNameDisplay})", typeName = typeNameDisplay });
+                    }
 
                     if (recurseType != null && depth < maxDepth)
                     {
@@ -156,19 +170,44 @@ namespace Core.Animator
 
                             foreach (var nestedProp in nestedProps)
                             {
+                                if (!HasPublicSetter(nestedProp))
+                                    continue;
                                 string nestedPath = path + "." + nestedProp.Name;
                                 object nestedVal = null;
-                                try
-                                {
-                                    if (!isRefReturn && val != null)
-                                        nestedVal = nestedProp.GetValue(val);
-                                }
-                                catch { }
+                                    try
+                                    {
+                                        if (!isRefReturn && val != null)
+                                            nestedVal = nestedProp.GetValue(val);
+                                    }
+                                    catch { }
 
-                                string nestedValStr = nestedVal?.ToString() ?? (isRefReturn ? "(ref)" : "null");
+                                    string nestedValStr = nestedVal?.ToString() ?? (isRefReturn ? "(ref)" : "null");
                                 string nestedTypeName = nestedProp.PropertyType.Name;
                                 results.Add(new NestedEntry { path = nestedPath, display = $"{nestedPath} : {nestedValStr} ({nestedTypeName})", typeName = nestedTypeName });
                             }
+                                // Also include public instance fields on the ref/struct type (fields like Rotation are commonly declared as fields)
+                                try
+                                {
+                                    var nestedFields = recurseType.GetFields(BindingFlags.Public | BindingFlags.Instance)
+                                        .Where(rf => !rf.FieldType.IsGenericType && IsAssignableInstanceField(rf));
+
+                                    foreach (var nestedField in nestedFields)
+                                    {
+                                        string nestedPath = path + "." + nestedField.Name;
+                                        object nestedVal = null;
+                                        try
+                                        {
+                                            if (!isRefReturn && val != null)
+                                                nestedVal = nestedField.GetValue(val);
+                                        }
+                                        catch { }
+
+                                        string nestedValStr = nestedVal?.ToString() ?? (isRefReturn ? "(ref)" : "null");
+                                        string nestedTypeName = nestedField.FieldType.Name;
+                                        results.Add(new NestedEntry { path = nestedPath, display = $"{nestedPath} : {nestedValStr} ({nestedTypeName})", typeName = nestedTypeName });
+                                    }
+                                }
+                                catch { }
                         }
                         catch { }
                     }
@@ -193,7 +232,10 @@ namespace Core.Animator
                     try { val = f.GetValue(owner); } catch { val = "<err>"; }
                     string valStr = val?.ToString() ?? "null";
                     string typeName = f.FieldType.Name;
-                    results.Add(new NestedEntry { path = path, display = $"{path} : {valStr} ({typeName})", typeName = typeName });
+                    if (IsAssignableInstanceField(f))
+                    {
+                        results.Add(new NestedEntry { path = path, display = $"{path} : {valStr} ({typeName})", typeName = typeName });
+                    }
 
                     if (val != null && depth < maxDepth && !f.FieldType.IsPrimitive && f.FieldType != typeof(string) && !typeof(UnityEngine.Object).IsAssignableFrom(f.FieldType))
                     {
@@ -213,7 +255,54 @@ namespace Core.Animator
             }
 
             Recurse(root, string.Empty, 0, new HashSet<object>());
+
+            // If reflection lists GameObject.active as get-only, we still tween it in Animate via SetActive — provide an explicit pick.
+            if (root is GameObject)
+            {
+                const string activePath = "active";
+                var have = false;
+                for (int i = 0; i < results.Count; i++)
+                {
+                    if (string.Equals(results[i].path, activePath, StringComparison.Ordinal))
+                    {
+                        have = true;
+                        break;
+                    }
+                }
+                if (!have)
+                {
+                    results.Insert(0, new NestedEntry
+                    {
+                        path = activePath,
+                        display = "active : (Boolean) — on/off (runtime uses SetActive; same as the inspector’s active state)",
+                        typeName = "Boolean"
+                    });
+                }
+            }
+
             return results;
+        }
+
+        /// <summary>Resolve e.g. <c>ImageAdjustment&amp;</c> to the concrete <c>ImageAdjustment</c> type (C# ref-return properties).</summary>
+        private static Type TryResolveRefReturnStructType(string qualifiedName, PropertyInfo forProperty)
+        {
+            if (string.IsNullOrEmpty(qualifiedName)) return null;
+            if (forProperty?.DeclaringType?.Assembly != null)
+            {
+                var t = forProperty.DeclaringType.Assembly.GetType(qualifiedName);
+                if (t != null) return t;
+            }
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (asm == null) continue;
+                try
+                {
+                    var t = asm.GetType(qualifiedName);
+                    if (t != null) return t;
+                }
+                catch { /* */ }
+            }
+            return null;
         }
 
         public static Type ResolveMemberType(object root, string path)
@@ -233,22 +322,12 @@ namespace Core.Animator
                     if (currentType.Name.EndsWith("&"))
                     {
                         string baseTypeName = currentType.Name.TrimEnd('&');
-                        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                        var targetAssemblies = new[]
-                        {
-                            currentType.Assembly,
-                            assemblies.FirstOrDefault(a => a.GetName().Name == "Nova")
-                        }.Where(a => a != null).ToArray();
-
-                        foreach (var asm in targetAssemblies)
-                        {
-                            var refType = asm.GetType(currentType.Namespace + "." + baseTypeName);
-                            if (refType != null)
-                            {
-                                currentType = refType;
-                                break;
-                            }
-                        }
+                        var qualified = string.IsNullOrEmpty(currentType.Namespace)
+                            ? baseTypeName
+                            : currentType.Namespace + "." + baseTypeName;
+                        var refResolved = TryResolveRefReturnStructType(qualified, pi);
+                        if (refResolved != null)
+                            currentType = refResolved;
                     }
                     continue;
                 }
@@ -280,6 +359,97 @@ namespace Core.Animator
             }
 
             return currentType;
+        }
+
+        // Detailed debug resolver that returns a step-by-step diagnostic string about how the path was resolved.
+        public static string ResolveMemberTypeDebug(object root, string path)
+        {
+            var sb = new StringBuilder();
+            if (root == null)
+            {
+                sb.AppendLine("Root is null");
+                return sb.ToString();
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                sb.AppendLine("Path is empty");
+                return sb.ToString();
+            }
+
+            Type currentType = root.GetType();
+            sb.AppendLine($"Start root type: {currentType.FullName}");
+
+            var segments = path.Split('.');
+            for (int i = 0; i < segments.Length; i++)
+            {
+                var segment = segments[i];
+                if (string.IsNullOrEmpty(segment))
+                {
+                    sb.AppendLine($"Segment {i + 1} is empty");
+                    return sb.ToString();
+                }
+
+                sb.AppendLine($"Segment {i + 1}: '{segment}' (current type: {currentType.FullName})");
+
+                var pi = currentType.GetProperty(segment, BindingFlags.Public | BindingFlags.Instance);
+                if (pi != null)
+                {
+                    sb.AppendLine($"  Found property '{pi.Name}' with PropertyType '{pi.PropertyType.FullName}'");
+                    var propType = pi.PropertyType;
+                    if (propType.Name.EndsWith("&"))
+                    {
+                        string baseTypeName = propType.Name.TrimEnd('&');
+                        var qualified = string.IsNullOrEmpty(propType.Namespace)
+                            ? baseTypeName
+                            : propType.Namespace + "." + baseTypeName;
+                        sb.AppendLine($"  Ref-return type '{propType.Name}' → looking up struct '{qualified}' (declaring assembly: {pi.DeclaringType?.Assembly?.GetName().Name ?? "?"}) first…");
+                        var resolved = TryResolveRefReturnStructType(qualified, pi);
+                        if (resolved != null)
+                        {
+                            currentType = resolved;
+                            sb.AppendLine($"  Resolved to: {currentType.FullName} ({currentType.Assembly.GetName().Name})");
+                            sb.AppendLine($"  Continuing traversal with resolved ref type: {currentType.FullName}");
+                            continue;
+                        }
+                        sb.AppendLine("  Failed to resolve ref-return base type.");
+                        return sb.ToString();
+                    }
+
+                    currentType = pi.PropertyType;
+                    continue;
+                }
+
+                var fi = currentType.GetField(segment, BindingFlags.Public | BindingFlags.Instance);
+                if (fi != null)
+                {
+                    sb.AppendLine($"  Found field '{fi.Name}' with FieldType '{fi.FieldType.FullName}'");
+                    currentType = fi.FieldType;
+                    continue;
+                }
+
+                var methods = currentType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(m => m.Name == segment && m.ReturnType == typeof(void) && !m.IsSpecialName);
+
+                var mi = methods.FirstOrDefault(m => m.GetParameters().Length == 0)
+                          ?? methods.FirstOrDefault(m =>
+                          {
+                              var ps = m.GetParameters();
+                              return ps.Length > 0 && ps.All(p => p.IsOptional);
+                          });
+
+                if (mi != null)
+                {
+                    sb.AppendLine($"  Found method '{mi.Name}' matching signature - resolved as 'void'");
+                    return sb.ToString();
+                }
+
+                sb.AppendLine($"  Segment '{segment}' not found on type '{currentType.FullName}'");
+                return sb.ToString();
+            }
+
+            sb.AppendLine($"Final resolved type: {currentType.FullName}");
+            return sb.ToString();
         }
     }
 

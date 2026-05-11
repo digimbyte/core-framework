@@ -29,6 +29,20 @@ namespace Core.Animator
             public TweenEntry entry;
             public float startTime;
             public object initialState;
+            // Delay (frames) — mirrors ExecuteEntryWithDelay when delayMode is Frames
+            public int s_PreTweenEditorTicks;
+            public float s_DelayedTweenStartWall;
+            // Sibling order editor preview: mirrors DriveTransformSiblingOrder / SiblingOrderInvokeWithTiming
+            public bool s_Undo;
+            public bool s_SetAtEndDone;
+            public bool s_ToggleA;
+            public bool s_ToggleB;
+            public bool s_InvOnStartFired;
+            public bool s_InvOnEndFired;
+            public bool s_InvSae1;
+            public bool s_InvSae2;
+            public bool s_OnCurveFired;
+            public bool s_OnCurveZeroFired;
         }
         private PreviewTweenState currentPreviewTween = null;
 #endif
@@ -57,7 +71,9 @@ namespace Core.Animator
             RendererColor,
             MaterialFloat,
             Float,
-            CustomProperty
+            CustomProperty,
+            [InspectorName("Order")]
+            SiblingOrder
         }
 
         void Start()
@@ -120,6 +136,9 @@ namespace Core.Animator
                 c.duration = duration;
                 c.curve = curve;
 
+                c.siblingShift = siblingShift;
+                c.siblingTiming = siblingTiming;
+
                 return c;
             }
             // ----------------
@@ -150,6 +169,8 @@ namespace Core.Animator
             [BoxGroup("A Target")]
             [ShowIf("@IsCustomProperty")]
             [PropertyOrder(2)]
+            [LabelText("Target component (optional)")]
+            [Tooltip("Optional. If empty, members are read/written on Target Object (the GameObject). If set, the property path is resolved on that component only.")]
             public Component targetComponent;
 
 
@@ -176,7 +197,7 @@ namespace Core.Animator
             [ShowIf("@IsCustomProperty")]
             [PropertyOrder(13)]
             [ReadOnly]
-            [LabelText("Detected Type")]
+            [LabelText("Detected type (auto)")]
             public string detectedPropertyType;
 
             // ----------------
@@ -206,13 +227,13 @@ namespace Core.Animator
             public Vector3 toVec3;
 
             [BoxGroup("C Values")]
-            [ShowIf("@UsesFloat")]
+            [ShowIf("@UsesFloat || ShowSiblingFromFloat")]
             [PropertyOrder(24)]
             [LabelText("Start Value")]
             public float fromFloat = 0f;
 
             [BoxGroup("C Values")]
-            [ShowIf("@UsesFloat")]
+            [ShowIf("@UsesFloat || IsSiblingOrder")]
             [PropertyOrder(25)]
             [LabelText("End Value")]
             public float toFloat = 1f;
@@ -229,14 +250,16 @@ namespace Core.Animator
             [LabelText("End Color")]
             public Color toColor = Color.white;
 
+            // Shown for CustomProperty + bool detection. Must stay visible in Odin (no [HideInInspector] — that hides
+            // InspectorProperty so TweenEntryOdinDrawer’s prop.Draw() draws nothing).
             [BoxGroup("C Values")]
-            [ShowIf("@UsesBool")]
+            [ShowIf("@IsBooleanProperty")]
             [PropertyOrder(28)]
             [LabelText("Start")]
             public bool fromBool = false;
 
             [BoxGroup("C Values")]
-            [ShowIf("@UsesBool")]
+            [ShowIf("@IsBooleanProperty")]
             [PropertyOrder(29)]
             [LabelText("End")]
             public bool toBool = true;
@@ -260,6 +283,12 @@ namespace Core.Animator
             [PropertyOrder(32)]
             [LabelText("Append")]
             public bool typerAppend = false;
+
+            [BoxGroup("C Values")]
+            [ShowIf("@IsSiblingOrder")]
+            [PropertyOrder(32)]
+            [LabelText("Shift Direction")]
+            public SiblingShift siblingShift = SiblingShift.Up;
 
             // ----------------
             // Masks / Material
@@ -300,12 +329,14 @@ namespace Core.Animator
             // ----------------
             [BoxGroup("E Timing", ShowLabel = true)]
             [PropertyOrder(40)]
+            [Tooltip("None = no start delay. Seconds = unscaled (real) time before the tween. Frames = update ticks at runtime; use whole numbers. Editor Play preview now respects the same rules.")]
             public DelayMode delayMode = DelayMode.None;
 
             [BoxGroup("E Timing")]
             [ShowIf("@UsesDelayValue")]
             [PropertyOrder(41)]
             [LabelText("Delay")]
+            [Tooltip("With Delay Mode = Seconds, this is wall-clock seconds (not affected by Time.timeScale at runtime). For 1.4 s, choose Seconds, not Frames.")]
             public float delayValue = 0f;
 
             [BoxGroup("E Timing")]
@@ -317,6 +348,13 @@ namespace Core.Animator
             [PropertyOrder(43)]
             public AnimationCurve curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+            [BoxGroup("E Timing")]
+            [ShowIf("@ShowSiblingApplyTiming")]
+            [PropertyOrder(44)]
+            [LabelText("Apply Timing")]
+            [Tooltip("Used when Property Mode is AutoTween. OnCurve fires when the curve first crosses 0.9+ (retriggering allowed). OnStart, OnEnd, and StartAndEnd mirror bool/method custom tweens.")]
+            public MethodInvokeTiming siblingTiming = MethodInvokeTiming.OnEnd;
+
             // ----------------
             // Odin helpers
             // ----------------
@@ -324,11 +362,21 @@ namespace Core.Animator
             private bool IsRendererColor => type == TweenType.RendererColor;
             private bool IsMaterialFloat => type == TweenType.MaterialFloat;
             private bool UsesMaterialProperty => type == TweenType.RendererColor || type == TweenType.MaterialFloat;
+            private bool IsSiblingOrder => type == TweenType.SiblingOrder;
 
             private string Det => string.IsNullOrEmpty(detectedPropertyType) ? string.Empty : detectedPropertyType;
 
+            // Matches RuntimeType.Name and member-browser strings: Boolean, System.Boolean (case/culture tolerant for "Boolean").
+            private static bool IsBooleanDet(string d)
+            {
+                if (string.IsNullOrEmpty(d)) return false;
+                if (d.Equals("Boolean", StringComparison.OrdinalIgnoreCase)) return true;
+                if (d.Equals("System.Boolean", StringComparison.Ordinal)) return true;
+                return d.EndsWith(".Boolean", StringComparison.Ordinal);
+            }
+
             private bool UsesLocalSpace => type == TweenType.Position || type == TweenType.LocalPosition || type == TweenType.RotationEuler || type == TweenType.LocalRotationEuler;
-            private bool UsesStartSource => type != TweenType.Float;
+            private bool UsesStartSource => type != TweenType.Float && type != TweenType.SiblingOrder;
             private bool UsesDelayValue => delayMode == DelayMode.Frames || delayMode == DelayMode.Seconds;
 
             private bool UsesVec3
@@ -342,7 +390,7 @@ namespace Core.Animator
                     if (type == TweenType.CustomProperty)
                     {
                         // Vector3 / Vector4 / Quaternion / enum-struct helpers are all vec3-backed in this inspector.
-                        return Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && Det != "Boolean" && Det != "Void");
+                        return Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && !IsBooleanDet(Det) && Det != "Void");
                     }
 
                     return false;
@@ -355,6 +403,7 @@ namespace Core.Animator
             {
                 get
                 {
+                    if (type == TweenType.SiblingOrder) return true;
                     if (type == TweenType.CanvasGroupAlpha) return true;
                     if (type == TweenType.MaterialFloat) return true;
                     if (type == TweenType.CustomProperty) return Det == "Single" || Det == "Double" || Det == "Int32";
@@ -362,17 +411,28 @@ namespace Core.Animator
                 }
             }
 
-            private bool UsesBool => type == TweenType.CustomProperty && Det == "Boolean";
+            private bool ShowSiblingFromFloat => IsSiblingOrder && propertyMode == CustomPropertyMode.ToggleAtHalf;
+            private bool ShowSiblingApplyTiming => IsSiblingOrder && propertyMode == CustomPropertyMode.AutoTween;
+
             private bool UsesString => type == TweenType.CustomProperty && Det == "String";
 
-            private bool UsesVectorMask => type == TweenType.CustomProperty && (Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && Det != "Boolean" && Det != "Void"));
+            /// <summary>CustomProperty whose resolved <see cref="detectedPropertyType"/> is a bool (e.g. <c>active</c>).</summary>
+            private bool IsBooleanProperty => type == TweenType.CustomProperty && IsBooleanDet(Det);
 
-            private bool UsesEnumFieldMask => type == TweenType.CustomProperty && (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Vector3" && Det != "Vector4" && Det != "Quaternion" && Det != "Color" && Det != "Boolean" && Det != "Void");
+            private bool UsesVectorMask => type == TweenType.CustomProperty && (Det == "Vector3" || Det == "Vector4" || Det == "Quaternion" || (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Color" && !IsBooleanDet(Det) && Det != "Void"));
+
+            private bool UsesEnumFieldMask => type == TweenType.CustomProperty && (!string.IsNullOrEmpty(Det) && Det != "Single" && Det != "Double" && Det != "Int32" && Det != "Vector3" && Det != "Vector4" && Det != "Quaternion" && Det != "Color" && !IsBooleanDet(Det) && Det != "Void");
 
             private bool UsesCurve
             {
                 get
                 {
+                    if (type == TweenType.SiblingOrder)
+                    {
+                        if (propertyMode != CustomPropertyMode.AutoTween) return false;
+                        return siblingTiming == MethodInvokeTiming.OnCurve;
+                    }
+
                     if (type == TweenType.CustomProperty)
                     {
                         // SetAtEnd/ToggleAtHalf don't evaluate the curve.
@@ -409,6 +469,15 @@ namespace Core.Animator
             None,           // No delay
             Frames,         // Delay by N frames (waits for next LateUpdate cycle)
             Seconds         // Delay by N seconds (real time)
+        }
+
+        [Serializable]
+        public enum SiblingShift
+        {
+            Up,     // Decrease sibling index by 1 (move toward first child)
+            Down,   // Increase sibling index by 1 (move toward last child)
+            First,  // SetAsFirstSibling
+            Last    // SetAsLastSibling
         }
 
         [System.Flags]
@@ -589,8 +658,145 @@ namespace Core.Animator
             }
         }
 
-        // Resolve a dot-separated member path starting from a root object (usually a Component).
-        // Returns the owner object that contains the final member and the MemberInfo for that member.
+        /// <summary>
+        /// Sibling / hierarchy order. For <see cref="SiblingShift.Up"/> / <see cref="SiblingShift.Down"/>, the float is the
+        /// <b>number of steps</b> (magnitude); <b>direction</b> comes from the shift (Up = toward first sibling = lower index).
+        /// e.g. Up + 4 with current index 12 → index 8 (if possible). First/Last ignore floats; 0 uses one step.
+        /// </summary>
+        private void ApplyTransformSiblingOrder(Transform t, TweenEntry e, bool useFromFloat)
+        {
+            if (t == null) return;
+            SiblingShift shift = e.siblingShift;
+            if (shift == SiblingShift.First)
+            {
+                t.SetAsFirstSibling();
+                return;
+            }
+            if (shift == SiblingShift.Last)
+            {
+                t.SetAsLastSibling();
+                return;
+            }
+            if (t.parent == null) return;
+            float f;
+            if (e.propertyMode == CustomPropertyMode.ToggleAtHalf)
+                f = useFromFloat ? e.fromFloat : e.toFloat;
+            else
+                f = e.toFloat;
+            int delta = SiblingIndexDeltaFromFloat(shift, f);
+            if (delta == 0) return;
+            int i = t.GetSiblingIndex();
+            int n = t.parent.childCount;
+            t.SetSiblingIndex(Mathf.Clamp(i + delta, 0, n - 1));
+        }
+
+        /// <summary>Maps shift + field value to a sibling <b>index</b> delta (Up = negative).</summary>
+        private static int SiblingIndexDeltaFromFloat(SiblingShift shift, float f)
+        {
+            if (shift == SiblingShift.Up || shift == SiblingShift.Down)
+            {
+                int mag = Mathf.Abs(Mathf.RoundToInt(f));
+                if (mag == 0) mag = 1;
+                return shift == SiblingShift.Up ? -mag : mag;
+            }
+            return 0;
+        }
+
+        private IEnumerator SiblingOrderInvokeWithTiming(Transform t, TweenEntry e, AnimationCurve curve, float duration)
+        {
+            if (t == null) yield break;
+
+            void apply() => ApplyTransformSiblingOrder(t, e, useFromFloat: false);
+
+            switch (e.siblingTiming)
+            {
+                case MethodInvokeTiming.OnStart:
+                    apply();
+                    yield return new WaitForEndOfFrame();
+                    break;
+
+                case MethodInvokeTiming.OnEnd:
+                {
+                    float elapsed = 0f;
+                    while (elapsed < duration)
+                    {
+                        elapsed += Time.deltaTime;
+                        yield return new WaitForEndOfFrame();
+                    }
+                    apply();
+                    yield return new WaitForEndOfFrame();
+                }
+                break;
+
+                case MethodInvokeTiming.StartAndEnd:
+                {
+                    apply();
+                    yield return new WaitForEndOfFrame();
+
+                    float elapsed = 0f;
+                    while (elapsed < duration)
+                    {
+                        elapsed += Time.deltaTime;
+                        yield return new WaitForEndOfFrame();
+                    }
+                    apply();
+                    yield return new WaitForEndOfFrame();
+                }
+                break;
+
+                case MethodInvokeTiming.OnCurve:
+                {
+                    if (duration <= 0f)
+                    {
+                        float v0 = curve != null && curve.length > 0 ? curve.Evaluate(1f) : 1f;
+                        if (v0 >= MethodInvokeThreshold)
+                            apply();
+                        yield break;
+                    }
+                    float elapsed = 0f;
+                    bool fired = false;
+                    while (elapsed < duration)
+                    {
+                        elapsed += Time.deltaTime;
+                        float tNorm = Mathf.Clamp01(elapsed / duration);
+                        float v = curve.Evaluate(tNorm);
+                        if (!fired && v >= MethodInvokeThreshold)
+                        {
+                            apply();
+                            fired = true;
+                        }
+                        if (fired && v < MethodInvokeThreshold)
+                        {
+                            fired = false;
+                        }
+                        yield return new WaitForEndOfFrame();
+                    }
+                }
+                break;
+            }
+        }
+
+        private IEnumerator DriveTransformSiblingOrder(Transform t, TweenEntry e)
+        {
+            if (e == null || t == null) yield break;
+            var curve = e.curve ?? AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+            float duration = e.duration;
+            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+            {
+                yield return ApplyActionAfterSeconds(() => ApplyTransformSiblingOrder(t, e, useFromFloat: false), duration);
+                yield break;
+            }
+            if (e.propertyMode == CustomPropertyMode.ToggleAtHalf)
+            {
+                ApplyTransformSiblingOrder(t, e, useFromFloat: true);
+                yield return new WaitForEndOfFrame();
+                yield return ApplyActionAfterSeconds(() => ApplyTransformSiblingOrder(t, e, useFromFloat: false), duration * 0.5f);
+                yield break;
+            }
+            yield return SiblingOrderInvokeWithTiming(t, e, curve, duration);
+        }
+
+        // Resolve a dot-separated member path starting from a root object (usually a Component).        // Returns the owner object that contains the final member and the MemberInfo for that member.
         private bool TryResolveMember(object root, string path, out object owner, out MemberInfo member, out Type memberType)
         {
             owner = root;
@@ -746,6 +952,9 @@ namespace Core.Animator
         private delegate ref Length3 SizeGetter2D(Nova.UIBlock2D target);
         private delegate ref Length3 SizeGetter3D(Nova.UIBlock3D target);
 
+        // Delegate type for ref-returning UIBlock2D.ImageAdjustment
+        private delegate ref ImageAdjustment ImageAdjustmentGetter2D(Nova.UIBlock2D target);
+
         private object GetMemberValue(object owner, MemberInfo member)
         {
             // Handle ref struct marker
@@ -793,7 +1002,21 @@ namespace Core.Animator
             {
                 return SetRefStructMember(marker, member, value);
             }
-            
+
+            // GameObject active state: 'active' may be backed by SetActive; 'activeSelf' is read-only but maps to the same local state.
+            if (owner is GameObject go && member is PropertyInfo gpi && gpi.PropertyType == typeof(bool))
+            {
+                if (string.Equals(gpi.Name, "active", StringComparison.Ordinal) ||
+                    string.Equals(gpi.Name, "activeSelf", StringComparison.Ordinal))
+                {
+                    if (value is bool b)
+                    {
+                        go.SetActive(b);
+                        return true;
+                    }
+                }
+            }
+
             if (member is PropertyInfo pi)
             {
                 if (!pi.CanWrite) return false;
@@ -1297,19 +1520,63 @@ namespace Core.Animator
             if (e != null) PlayEntry(e);
         }
 
+        private static void LogPlayStart(TweenEntry e, string context)
+        {
+            if (e == null) return;
+            string entryName = string.IsNullOrEmpty(e.name) ? "(unnamed)" : e.name;
+            string targetName = e.targetObject != null ? e.targetObject.name : "(null)";
+            Debug.Log($"[Animate] Play start — \"{entryName}\", {e.type}, target={targetName} — {context}");
+        }
+
+        private static void LogPlayStop(TweenEntry e, string result)
+        {
+            if (e == null) return;
+            string entryName = string.IsNullOrEmpty(e.name) ? "(unnamed)" : e.name;
+            string targetName = e.targetObject != null ? e.targetObject.name : "(null)";
+            Debug.Log($"[Animate] Play stop — \"{entryName}\", {e.type}, target={targetName} — {result}");
+        }
+
         private Coroutine PlayEntry(TweenEntry e)
         {
             if (e == null || e.targetObject == null) return null;
-            
-            // For editor preview (when not playing), auto-reset after duration + 1 second
-            bool isPreview = !Application.isPlaying;
-            if (isPreview)
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
             {
-                StartCoroutine(PreviewTweenWithReset(e));
+                // In edit mode, StartCoroutine preview often never runs. Register EditorApplication.update instead.
+                if (currentPreviewTween != null)
+                {
+                    var prevE = currentPreviewTween.entry;
+                    LogPlayStop(prevE, "replaced by new Play");
+                    UnityEditor.EditorApplication.update -= UpdatePreviewTweenFrame;
+                    if (prevE != null && prevE.targetObject != null)
+                        RestoreGameObjectState(prevE.targetObject, prevE.type, currentPreviewTween.initialState);
+                }
+                var go = e.targetObject;
+                currentPreviewTween = new PreviewTweenState
+                {
+                    entry = e,
+                    startTime = Time.realtimeSinceStartup,
+                    initialState = CaptureGameObjectState(go, e.type)
+                };
+                UnityEditor.EditorApplication.update += UpdatePreviewTweenFrame;
+                LogPlayStart(e, "editor preview");
                 return null;
             }
-            
-            return ExecuteEntry(e);
+#endif
+            return StartCoroutine(PlayEntryWithLog(e));
+        }
+
+        private IEnumerator PlayEntryWithLog(TweenEntry e)
+        {
+            LogPlayStart(e, "play mode");
+            Coroutine c = ExecuteEntry(e);
+            if (c == null)
+            {
+                LogPlayStop(e, "no running tween (returned null)");
+                yield break;
+            }
+            yield return c;
+            LogPlayStop(e, "finished");
         }
 
         private Coroutine ExecuteEntry(TweenEntry e)
@@ -1338,8 +1605,8 @@ namespace Core.Animator
             }
             else if (e.delayMode == DelayMode.Seconds)
             {
-                // Wait by real time
-                yield return new WaitForSeconds(e.delayValue);
+                // Unscaled: matches inspector tooltip and avoids blocked delay when timeScale=0
+                yield return new WaitForSecondsRealtime(e.delayValue);
             }
             
             var c = ExecuteEntryImmediate(e);
@@ -1371,6 +1638,9 @@ namespace Core.Animator
                 case TweenType.Scale:
                     return TweenScaleWithSource(go.transform, e.toVec3, e.duration, e.curve, e.startSource, e.fromVec3);
 
+                case TweenType.SiblingOrder:
+                    return StartCoroutine(DriveTransformSiblingOrder(go.transform, e));
+
                 case TweenType.CanvasGroupAlpha:
                 {
                     var cg = go.GetComponent<CanvasGroup>();
@@ -1399,12 +1669,11 @@ namespace Core.Animator
 
                 case TweenType.CustomProperty:
                 {
-                    Component comp = e.targetComponent ?? go.GetComponent<Component>();
-                    if (comp == null)
-                    {
-                        Debug.LogWarning($"Animate: CustomProperty entry '{e.name}' has no component assigned on {go.name}.");
-                        return null;
-                    }
+                    // When no component is assigned, resolve members on the GameObject (matches Browse when root = targetObject).
+                    // Do NOT use GetComponent<Component>() here: that picks an arbitrary first component (e.g. Transform) and breaks
+                    // paths picked on the GameObject itself (e.g. active / activeSelf, name, layer).
+                    Component comp = e.targetComponent;
+                    object memberRoot = comp != null ? (object)comp : (object)go;
 
                     // support nested member path via dot notation; strip enum backing-field suffix if user picked it
                     string resolvedPath = e.propertyName;
@@ -1562,7 +1831,7 @@ namespace Core.Animator
                         return null;
                     }
 
-                    if (TryResolveMember(comp, resolvedPath, out var owner, out var memberInfo, out var memberType))
+                    if (TryResolveMember(memberRoot, resolvedPath, out var owner, out var memberInfo, out var memberType))
                     {
                         // handle numeric types
                         if (memberType == typeof(string))
@@ -1607,6 +1876,37 @@ namespace Core.Animator
                                     {
                                         fi.SetValue(refStructInstance, Convert.ChangeType(v, memberType));
                                         SetRefStructMember(marker, marker.refProperty, refStructInstance);
+                                    }
+                                };
+                            }
+                            else if (owner is RefStructMarker imgMarker && imgMarker.refProperty.Name == "ImageAdjustment" && imgMarker.originalOwner is Nova.UIBlock2D imgBlock2D)
+                            {
+                                // ImageAdjustment is a ref-return-only property (no setter).
+                                // Use a typed delegate to get the live ref, then box/modify/assign-back.
+                                var imgGetterDel = (ImageAdjustmentGetter2D)imgMarker.refProperty.GetMethod.CreateDelegate(typeof(ImageAdjustmentGetter2D));
+
+                                getter = () =>
+                                {
+                                    ref Nova.ImageAdjustment adj = ref imgGetterDel(imgBlock2D);
+                                    object boxed = adj;
+                                    if (memberInfo is FieldInfo fiImg) return Convert.ToSingle(fiImg.GetValue(boxed));
+                                    if (memberInfo is PropertyInfo piImg) return Convert.ToSingle(piImg.GetValue(boxed));
+                                    return 0f;
+                                };
+
+                                setter = v =>
+                                {
+                                    ref Nova.ImageAdjustment adj = ref imgGetterDel(imgBlock2D);
+                                    object boxed = adj;
+                                    if (memberInfo is FieldInfo fiImg)
+                                    {
+                                        fiImg.SetValue(boxed, Convert.ChangeType(v, memberType));
+                                        adj = (Nova.ImageAdjustment)boxed;
+                                    }
+                                    else if (memberInfo is PropertyInfo piImg && piImg.CanWrite)
+                                    {
+                                        piImg.SetValue(boxed, Convert.ChangeType(v, memberType));
+                                        adj = (Nova.ImageAdjustment)boxed;
                                     }
                                 };
                             }
@@ -1933,11 +2233,11 @@ namespace Core.Animator
                             return null;
                         }
 
-                        Debug.LogWarning($"Animate: Unsupported property type '{memberType.Name}' for CustomProperty on {comp.GetType().Name} (path '{e.propertyName}').");
+                        Debug.LogWarning($"Animate: Unsupported property type '{memberType.Name}' for CustomProperty on {memberRoot.GetType().Name} (path '{e.propertyName}').");
                         return null;
                     }
 
-                    Debug.LogWarning($"Animate: Property/Field path '{e.propertyName}' not found on component {comp.GetType().Name}.");
+                    Debug.LogWarning($"Animate: Property/Field path '{e.propertyName}' not found on {memberRoot.GetType().Name} '{go.name}'.");
                     return null;
                 }
 
@@ -2232,31 +2532,37 @@ namespace Core.Animator
             return ApplyStartSource(getter, setter, to, duration, slerp, curve, source, explicitFrom);
         }
 
-        /// <summary>
-        /// Preview tween in editor that auto-resets after completion.
-        /// Captures current state before tweening and restores it after a delay.
-        /// </summary>
-        private IEnumerator PreviewTweenWithReset(TweenEntry e)
-        {
+        /// <summary>Wall time after Play button; -1 = still in pre-tween delay. Mirrors <see cref="ExecuteEntryWithDelay"/>.</summary>
 #if UNITY_EDITOR
-            var go = e.targetObject;
-            if (go == null) yield break;
-            
-            var initialState = CaptureGameObjectState(go, e.type);
-            currentPreviewTween = new PreviewTweenState
+        private static void GetEditorPreviewTweenRelativeTime(PreviewTweenState s, TweenEntry e, float startTime, out float tweenRel)
+        {
+            float wall = Time.realtimeSinceStartup - startTime;
+            tweenRel = wall;
+            if (e == null) return;
+            if (e.delayMode == DelayMode.None || e.delayValue <= 0f) return;
+
+            if (e.delayMode == DelayMode.Seconds)
             {
-                entry = e,
-                startTime = Time.realtimeSinceStartup,
-                initialState = initialState
-            };
-            
-            // Register update hook
-            UnityEditor.EditorApplication.update += UpdatePreviewTweenFrame;
-#endif
-            
-            yield return null;
+                if (wall < e.delayValue) { tweenRel = -1f; return; }
+                tweenRel = wall - e.delayValue;
+                return;
+            }
+            if (e.delayMode == DelayMode.Frames)
+            {
+                int need = Mathf.Max(1, Mathf.RoundToInt(e.delayValue));
+                if (s.s_PreTweenEditorTicks < need)
+                {
+                    s.s_PreTweenEditorTicks++;
+                    if (s.s_PreTweenEditorTicks < need) { tweenRel = -1f; return; }
+                    s.s_DelayedTweenStartWall = Time.realtimeSinceStartup;
+                    tweenRel = 0f;
+                    return;
+                }
+                tweenRel = Time.realtimeSinceStartup - s.s_DelayedTweenStartWall;
+            }
         }
-        
+#endif
+
         private void UpdatePreviewTweenFrame()
         {
 #if UNITY_EDITOR
@@ -2265,22 +2571,115 @@ namespace Core.Animator
             var e = currentPreviewTween.entry;
             if (e?.targetObject == null)
             {
+                if (e != null)
+                    LogPlayStop(e, "editor preview aborted (target became null)");
                 UnityEditor.EditorApplication.update -= UpdatePreviewTweenFrame;
                 currentPreviewTween = null;
                 return;
             }
             
-            float elapsed = Time.realtimeSinceStartup - currentPreviewTween.startTime;
+            GetEditorPreviewTweenRelativeTime(currentPreviewTween, e, currentPreviewTween.startTime, out float tweenRel);
+            if (e.type == TweenType.SiblingOrder && tweenRel >= 0f)
+                SiblingOrderEditorPreviewStep(currentPreviewTween, e, tweenRel);
             
-            // Tween is complete, wait 1 second then restore
-            if (elapsed >= e.duration + 1f)
+            if (tweenRel >= 0f && tweenRel >= e.duration + 1f)
             {
                 RestoreGameObjectState(e.targetObject, e.type, currentPreviewTween.initialState);
+                LogPlayStop(e, "editor preview complete (state restored)");
                 UnityEditor.EditorApplication.update -= UpdatePreviewTweenFrame;
                 currentPreviewTween = null;
             }
 #endif
         }
+
+#if UNITY_EDITOR
+        private void RecordSiblingOrderPreviewUndo(PreviewTweenState s, GameObject go)
+        {
+            if (s.s_Undo || go == null) return;
+            UnityEditor.Undo.RegisterFullObjectHierarchyUndo(go, "Animate: Sibling order preview");
+            s.s_Undo = true;
+        }
+
+        private void SiblingOrderEditorPreviewStep(PreviewTweenState s, TweenEntry e, float elapsed)
+        {
+            if (e.type != TweenType.SiblingOrder) return;
+            var go = e.targetObject;
+            if (go == null) return;
+            var t = go.transform;
+            if (t.parent == null) return;
+
+            var curve = e.curve ?? AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+            float d = e.duration;
+            if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+            {
+                if (s.s_SetAtEndDone || elapsed < d) return;
+                RecordSiblingOrderPreviewUndo(s, go);
+                ApplyTransformSiblingOrder(t, e, useFromFloat: false);
+                s.s_SetAtEndDone = true;
+                return;
+            }
+            if (e.propertyMode == CustomPropertyMode.ToggleAtHalf)
+            {
+                if (!s.s_ToggleA)
+                {
+                    RecordSiblingOrderPreviewUndo(s, go);
+                    ApplyTransformSiblingOrder(t, e, useFromFloat: true);
+                    s.s_ToggleA = true;
+                }
+                else if (!s.s_ToggleB && elapsed >= d * 0.5f)
+                {
+                    RecordSiblingOrderPreviewUndo(s, go);
+                    ApplyTransformSiblingOrder(t, e, useFromFloat: false);
+                    s.s_ToggleB = true;
+                }
+                return;
+            }
+
+            void apply()
+            {
+                RecordSiblingOrderPreviewUndo(s, go);
+                ApplyTransformSiblingOrder(t, e, useFromFloat: false);
+            }
+            switch (e.siblingTiming)
+            {
+                case MethodInvokeTiming.OnStart:
+                    if (s.s_InvOnStartFired) return;
+                    apply();
+                    s.s_InvOnStartFired = true;
+                    break;
+                case MethodInvokeTiming.OnEnd:
+                    if (s.s_InvOnEndFired || elapsed < d) return;
+                    apply();
+                    s.s_InvOnEndFired = true;
+                    break;
+                case MethodInvokeTiming.StartAndEnd:
+                    if (!s.s_InvSae1) { apply(); s.s_InvSae1 = true; }
+                    else if (!s.s_InvSae2 && elapsed >= d) { apply(); s.s_InvSae2 = true; }
+                    break;
+                case MethodInvokeTiming.OnCurve:
+                    if (d <= 0f)
+                    {
+                        if (s.s_OnCurveZeroFired) return;
+                        s.s_OnCurveZeroFired = true;
+                        float v0 = curve != null && curve.length > 0 ? curve.Evaluate(1f) : 1f;
+                        if (v0 >= MethodInvokeThreshold) apply();
+                        return;
+                    }
+                    float tNorm = Mathf.Clamp01(elapsed / d);
+                    float v = curve.Evaluate(tNorm);
+                    if (!s.s_OnCurveFired && v >= MethodInvokeThreshold)
+                    {
+                        apply();
+                        s.s_OnCurveFired = true;
+                    }
+                    else if (s.s_OnCurveFired && v < MethodInvokeThreshold)
+                    {
+                        s.s_OnCurveFired = false;
+                    }
+                    break;
+            }
+        }
+#endif
 
         private object CaptureGameObjectState(GameObject go, TweenType type)
         {
@@ -2297,6 +2696,12 @@ namespace Core.Animator
                     return go.transform.localRotation;
                 case TweenType.Scale:
                     return go.transform.localScale;
+                case TweenType.SiblingOrder:
+                {
+                    var tr = go.transform;
+                    if (tr.parent == null) return 0;
+                    return tr.GetSiblingIndex();
+                }
                 case TweenType.CanvasGroupAlpha:
                     var cg = go.GetComponent<CanvasGroup>();
                     return cg != null ? cg.alpha : 1f;
@@ -2329,6 +2734,17 @@ namespace Core.Animator
                 case TweenType.Scale:
                     go.transform.localScale = (Vector3)state;
                     break;
+                case TweenType.SiblingOrder:
+                {
+                    var tr = go.transform;
+                    if (tr.parent == null) break;
+                    if (state is int idx)
+                    {
+                        int c = tr.parent.childCount;
+                        if (c > 0) tr.SetSiblingIndex(Mathf.Clamp(idx, 0, c - 1));
+                    }
+                }
+                break;
                 case TweenType.CanvasGroupAlpha:
                     var cg = go.GetComponent<CanvasGroup>();
                     if (cg != null) cg.alpha = (float)state;

@@ -14,8 +14,9 @@ namespace Core.Animator
     {
         protected override void DrawPropertyLayout(GUIContent label)
         {
-            int index = -1;
-            try { index = Property.Index; } catch { /* older Odin versions */ }
+            // List index: Odin's Property.Index is usually correct; if not, parse configuredTweens.Array.data[i] from the Unity property path
+            // so serialized propertyName / detectedPropertyType writes in Browse & Refresh work reliably.
+            int index = GetTweenListIndexForProperty(Property);
 
             var nameProp = Find("name");
             var typeProp = Find("type");
@@ -54,14 +55,17 @@ namespace Core.Animator
             var curveProp = Find("curve");
 
             var chainProp = Find("chainAfterPrevious");
+            var siblingShiftProp = Find("siblingShift");
+            var siblingTimingProp = Find("siblingTiming");
 
             var tweenType = GetEnum<Animate.TweenType>(typeProp, Animate.TweenType.Position);
             bool isCustom = tweenType == Animate.TweenType.CustomProperty;
             bool isRendererColor = tweenType == Animate.TweenType.RendererColor;
             bool isMaterialFloat = tweenType == Animate.TweenType.MaterialFloat;
             bool isCanvasAlpha = tweenType == Animate.TweenType.CanvasGroupAlpha;
+            bool isSiblingOrder = tweenType == Animate.TweenType.SiblingOrder;
 
-            string det = GetString(detectedTypeProp);
+            string det = GetResolvedDetectedTypeString(detectedTypeProp, index);
             var mode = GetEnum<Animate.CustomPropertyMode>(propertyModeProp, Animate.CustomPropertyMode.AutoTween);
             var invokeTiming = GetEnum<Animate.MethodInvokeTiming>(methodInvokeTimingProp, Animate.MethodInvokeTiming.OnEnd);
 
@@ -99,12 +103,13 @@ namespace Core.Animator
                     DrawSection("Custom Property", () =>
                     {
                         DrawIf(propertyNameProp, "Property");
-                        DrawBrowseRefreshRow(targetObjectProp, targetComponentProp, propertyNameProp, detectedTypeProp);
+                        DrawBrowseRefreshRow(index, targetObjectProp, targetComponentProp, propertyNameProp, detectedTypeProp);
 
-                        DrawReadOnlyIf(detectedTypeProp, "Detected Type");
+                        DrawDetectedTypeDisplayOnly(detectedTypeProp, index);
 
                         // propertyMode is not meaningful for strings; methods use methodInvokeTiming.
-                        if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal))
+                        // Booleans show Property Mode in Values (with Start/End) for trigger/threshold curve behaviour.
+                        if (!string.Equals(det, "Void", StringComparison.Ordinal) && !string.Equals(det, "String", StringComparison.Ordinal) && !IsBooleanDetectedType(det))
                         {
                             DrawIf(propertyModeProp, "Property Mode");
                         }
@@ -125,7 +130,8 @@ namespace Core.Animator
                     // Start source is relevant only for continuous value tweens.
                     bool startSourceRelevant =
                         (tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale || isCanvasAlpha || isRendererColor || isMaterialFloat)
-                        || (isCustom && !isTyper && det != "Void" && det != "String" && det != "Boolean");
+                        || (isCustom && !isTyper && det != "Void" && det != "String" && !IsBooleanDetectedType(det));
+                    startSourceRelevant = startSourceRelevant && !isSiblingOrder;
 
                     if (startSourceRelevant)
                     {
@@ -138,8 +144,22 @@ namespace Core.Animator
                         DrawIf(localProp, "Local");
                     }
 
+                    if (tweenType == Animate.TweenType.SiblingOrder)
+                    {
+                        DrawIf(propertyModeProp, "Property Mode");
+                        DrawIf(siblingShiftProp, "Shift Direction");
+                        if (mode == Animate.CustomPropertyMode.ToggleAtHalf)
+                        {
+                            DrawIf(fromFloatProp, "Start (order delta)");
+                            DrawIf(toFloatProp, "End (order delta)");
+                        }
+                        else
+                        {
+                            DrawIf(toFloatProp, "Order delta");
+                        }
+                    }
                     // Value fields are conditional based on tween type / detected type
-                    if (tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale)
+                    else if (tweenType == Animate.TweenType.Position || tweenType == Animate.TweenType.LocalPosition || tweenType == Animate.TweenType.RotationEuler || tweenType == Animate.TweenType.LocalRotationEuler || tweenType == Animate.TweenType.Scale)
                     {
                         DrawIf(fromVec3Prop, "Start Value");
                         DrawIf(toVec3Prop, "End Value");
@@ -175,13 +195,24 @@ namespace Core.Animator
                             DrawIf(fromColorProp, "Start Color");
                             DrawIf(toColorProp, "End Color");
                         }
-                        else if (det == "Boolean")
+                        else if (IsBooleanDetectedType(det))
                         {
-                            DrawIf(fromBoolProp, "Start");
-                            DrawIf(toBoolProp, "End");
-
-                            // For bool, propertyMode matters (AutoTween vs SetAtEnd vs ToggleAtHalf)
+                            // SetAtEnd: only toBool is applied. ToggleAtHalf: from at 0, to at 0.5*duration. AutoTween: from/to = states either side of curve thresholds.
                             DrawIf(propertyModeProp, "Property Mode");
+                            if (mode == Animate.CustomPropertyMode.SetAtEnd)
+                            {
+                                DrawIf(toBoolProp, "Set to (when duration elapses)");
+                            }
+                            else if (mode == Animate.CustomPropertyMode.ToggleAtHalf)
+                            {
+                                DrawIf(fromBoolProp, "At t = 0");
+                                DrawIf(toBoolProp, "At t = 50% of duration");
+                            }
+                            else
+                            {
+                                DrawIf(fromBoolProp, "Value when curve is low (start side)");
+                                DrawIf(toBoolProp, "Value when curve is high (end side)");
+                            }
                         }
                         else if (det == "String")
                         {
@@ -207,7 +238,7 @@ namespace Core.Animator
                 {
                     if (isCustom)
                     {
-                        if (!string.IsNullOrEmpty(det) && det != "Void" && det != "Color" && det != "Boolean" && det != "Single" && det != "Double" && det != "Int32")
+                        if (!string.IsNullOrEmpty(det) && det != "Void" && det != "Color" && !IsBooleanDetectedType(det) && det != "Single" && det != "Double" && det != "Int32")
                         {
                             // Vector-ish & enum-struct helpers
                             DrawIf(vectorMaskProp, "Component Mask");
@@ -244,15 +275,25 @@ namespace Core.Animator
                     else if (delayMode == Animate.DelayMode.Seconds)
                         DrawIf(delayValueProp, "Delay (s)");
 
-                    // For void methods invoked OnStart, duration is meaningless.
+                    var siblingInvoke = GetEnum<Animate.MethodInvokeTiming>(siblingTimingProp, Animate.MethodInvokeTiming.OnEnd);
+
+                    if (tweenType == Animate.TweenType.SiblingOrder && mode == Animate.CustomPropertyMode.AutoTween)
+                        DrawIf(siblingTimingProp, "Apply Timing");
+
+                    // For void methods invoked OnStart, duration is meaningless. Sibling/Auto/OnStart same idea.
                     bool durationRelevant = !(isCustom && string.Equals(det, "Void", StringComparison.Ordinal) && invokeTiming == Animate.MethodInvokeTiming.OnStart);
+                    if (tweenType == Animate.TweenType.SiblingOrder)
+                    {
+                        if (mode == Animate.CustomPropertyMode.AutoTween && siblingInvoke == Animate.MethodInvokeTiming.OnStart)
+                            durationRelevant = false;
+                    }
                     if (durationRelevant)
                     {
                         DrawIf(durationProp, "Duration (s)");
                     }
 
                     // Curve isn't applicable for strings (set-at-end).
-                    bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming);
+                    bool curveRelevant = !string.Equals(det, "String", StringComparison.Ordinal) && UsesCurve(tweenType, det, mode, invokeTiming, siblingInvoke);
                     if (curveRelevant)
                     {
                         DrawIf(curveProp, "Curve");
@@ -363,14 +404,6 @@ namespace Core.Animator
                 prop.Draw(new GUIContent(labelOverride));
         }
 
-        private static void DrawReadOnlyIf(InspectorProperty prop, string labelOverride)
-        {
-            if (prop == null) return;
-            GUI.enabled = false;
-            prop.Draw(new GUIContent(labelOverride));
-            GUI.enabled = true;
-        }
-
         private static void DrawWrappedTextArea(InspectorProperty prop, string label, float minLines = 3f)
         {
             if (prop?.ValueEntry == null) return;
@@ -407,6 +440,26 @@ namespace Core.Animator
             }
         }
 
+        /// <summary>Prefer Unity serialized string (authoritative) over Odin’s value entry so display matches Browse/Refresh.</summary>
+        private static string GetResolvedDetectedTypeString(InspectorProperty detectedTypeProp, int listIndex)
+        {
+            if (listIndex >= 0)
+            {
+                var s = GetTweenEntryMemberString(detectedTypeProp, listIndex, "detectedPropertyType");
+                if (!string.IsNullOrEmpty(s))
+                    return s;
+            }
+            return GetString(detectedTypeProp);
+        }
+
+        private static void DrawDetectedTypeDisplayOnly(InspectorProperty detectedTypeProp, int listIndex)
+        {
+            // Do not use LabelField(label, value) here: a long label + "Boolean" clips into garbage (e.g. "editaBoolean") in tight layouts.
+            string s = GetResolvedDetectedTypeString(detectedTypeProp, listIndex);
+            EditorGUILayout.LabelField("Resolved member type (set via Browse / Refresh Type)", EditorStyles.miniBoldLabel);
+            EditorGUILayout.LabelField(string.IsNullOrEmpty(s) ? "— not set —" : s, EditorStyles.wordWrappedLabel);
+        }
+
         private static bool GetBool(InspectorProperty prop)
         {
             try { return prop?.ValueEntry != null && (bool)prop.ValueEntry.WeakSmartValue; }
@@ -435,13 +488,26 @@ namespace Core.Animator
             }
         }
 
-        private static bool UsesCurve(Animate.TweenType tweenType, string det, Animate.CustomPropertyMode mode, Animate.MethodInvokeTiming invokeTiming)
+        private static bool IsBooleanDetectedType(string det)
         {
+            if (string.IsNullOrEmpty(det)) return false;
+            if (det.Equals("Boolean", StringComparison.OrdinalIgnoreCase)) return true;
+            if (det.Equals("System.Boolean", StringComparison.Ordinal)) return true;
+            return det.EndsWith(".Boolean", StringComparison.Ordinal);
+        }
+
+        private static bool UsesCurve(Animate.TweenType tweenType, string det, Animate.CustomPropertyMode mode, Animate.MethodInvokeTiming methodInvoke, Animate.MethodInvokeTiming siblingInvoke)
+        {
+            if (tweenType == Animate.TweenType.SiblingOrder)
+            {
+                if (mode != Animate.CustomPropertyMode.AutoTween) return false;
+                return siblingInvoke == Animate.MethodInvokeTiming.OnCurve;
+            }
             if (tweenType == Animate.TweenType.CustomProperty)
             {
                 // Methods only use the curve when timing is OnCurve.
                 if (string.Equals(det, "Void", StringComparison.Ordinal))
-                    return invokeTiming == Animate.MethodInvokeTiming.OnCurve;
+                    return methodInvoke == Animate.MethodInvokeTiming.OnCurve;
 
                 // SetAtEnd / ToggleAtHalf don't evaluate the curve.
                 if (mode != Animate.CustomPropertyMode.AutoTween)
@@ -450,7 +516,140 @@ namespace Core.Animator
             return true;
         }
 
-        private static void DrawBrowseRefreshRow(InspectorProperty targetObjectProp, InspectorProperty targetComponentProp, InspectorProperty propertyNameProp, InspectorProperty detectedTypeProp)
+        private const string TweenListPropertyName = "configuredTweens";
+
+        private static int GetTweenListIndexForProperty(InspectorProperty property)
+        {
+            if (property == null) return -1;
+            int idx = -1;
+            try { idx = property.Index; } catch { }
+            if (idx >= 0) return idx;
+            return ParseConfiguredTweensListIndexFromUnityPath(property.UnityPropertyPath);
+        }
+
+        private static int ParseConfiguredTweensListIndexFromUnityPath(string unityPath)
+        {
+            if (string.IsNullOrEmpty(unityPath)) return -1;
+            string marker = TweenListPropertyName + ".Array.data[";
+            int m = unityPath.IndexOf(marker, StringComparison.Ordinal);
+            if (m < 0) return -1;
+            int start = m + marker.Length;
+            int end = unityPath.IndexOf(']', start);
+            if (end < 0) return -1;
+            return int.TryParse(unityPath.Substring(start, end - start), out int n) ? n : -1;
+        }
+
+        private static string GetTweenEntryMemberString(InspectorProperty anyProp, int listIndex, string fieldName)
+        {
+            if (anyProp == null || listIndex < 0 || string.IsNullOrEmpty(fieldName)) return null;
+            var so = anyProp.Tree?.UnitySerializedObject;
+            if (so == null) return null;
+            var p = TweenListPropertyName + ".Array.data[" + listIndex + "]." + fieldName;
+            var sp = so.FindProperty(p);
+            if (sp == null || sp.propertyType != UnityEditor.SerializedPropertyType.String) return null;
+            return sp.stringValue;
+        }
+
+        private static bool TrySetTweenEntryMemberString(InspectorProperty anyProp, int listIndex, string fieldName, string value)
+        {
+            if (anyProp == null || listIndex < 0 || string.IsNullOrEmpty(fieldName)) return false;
+            var so = anyProp.Tree?.UnitySerializedObject;
+            if (so == null) return false;
+            var p = TweenListPropertyName + ".Array.data[" + listIndex + "]." + fieldName;
+            var sp = so.FindProperty(p);
+            if (sp == null || sp.propertyType != UnityEditor.SerializedPropertyType.String) return false;
+            sp.stringValue = value ?? string.Empty;
+            so.ApplyModifiedProperties();
+            if (so.targetObject is UnityEngine.Object uo)
+                EditorUtility.SetDirty(uo);
+            return true;
+        }
+
+        private static string ResolvePropertyPath(InspectorProperty propertyNameProp, int listIndex, InspectorProperty anyForSo)
+        {
+            // Prefer Unity serialized value (reliable) over Odin WeakSmartValue, which can lag behind.
+            if (listIndex >= 0)
+            {
+                var s = GetTweenEntryMemberString(anyForSo, listIndex, "propertyName");
+                if (!string.IsNullOrEmpty(s)) return s;
+            }
+            try
+            {
+                return propertyNameProp?.ValueEntry?.WeakSmartValue as string;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static void WritePropertyAndDetected(InspectorProperty propertyNameProp, InspectorProperty detectedTypeProp, int listIndex, string newPath, string newTypeName)
+        {
+            if (listIndex >= 0)
+            {
+                if (!string.IsNullOrEmpty(newPath))
+                    TrySetTweenEntryMemberString(propertyNameProp, listIndex, "propertyName", newPath);
+                if (newTypeName != null)
+                    TrySetTweenEntryMemberString(detectedTypeProp, listIndex, "detectedPropertyType", newTypeName);
+            }
+            if (propertyNameProp?.ValueEntry != null)
+            {
+                try { propertyNameProp.ValueEntry.WeakSmartValue = newPath; } catch { }
+            }
+            // detectedPropertyType is [ReadOnly] — do not assign WeakSmartValue; SerializedObject write already persists.
+            if (!string.IsNullOrEmpty(newTypeName) && listIndex < 0)
+            {
+                var uso = detectedTypeProp?.Tree?.UnitySerializedObject;
+                if (uso != null)
+                {
+                    try
+                    {
+                        var sp = uso.FindProperty(detectedTypeProp.Path);
+                        if (sp != null)
+                        {
+                            sp.stringValue = newTypeName;
+                            uso.ApplyModifiedProperties();
+                        }
+                    }
+                    catch { }
+                }
+                if (listIndex < 0)
+                {
+                    try
+                    {
+                        var ownerProp = detectedTypeProp?.Parent;
+                        var ownerObj = ownerProp?.ValueEntry?.WeakSmartValue;
+                        if (ownerObj != null)
+                        {
+                            var f2 = ownerObj.GetType().GetField("detectedPropertyType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            if (f2 != null) f2.SetValue(ownerObj, newTypeName);
+                        }
+                        ownerProp?.Tree?.UnitySerializedObject?.ApplyModifiedProperties();
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        /// <param name="debugText">If non-null, full MemberPathBrowser step trace (only for the Debug button; Browse/Refresh pass null to avoid log spam and extra work).</param>
+        private static void LogMemberResolve(string context, UnityEngine.Object root, string path, System.Type resolvedType, string debugText, bool wrote)
+        {
+            var tName = resolvedType != null ? resolvedType.Name : "null";
+            var tFull = resolvedType != null ? resolvedType.FullName : "null";
+            var summary = "[Animate] " + context + " — Path='" + (path ?? "") + "' Root='" + (root != null ? root.GetType().Name : "null") + "' — Resolved: " + tName + " (" + tFull + "), wrote detectedPropertyType: " + wrote;
+            if (string.IsNullOrEmpty(debugText))
+            {
+                Debug.Log(summary, root as UnityEngine.Object);
+                return;
+            }
+            Debug.Log(
+                "[MemberPathBrowser Debug] Path='" + (path ?? "") + "' Root='" + (root != null ? root.GetType().FullName : "null") + "'\n" +
+                debugText +
+                summary,
+                root as UnityEngine.Object);
+        }
+
+        private static void DrawBrowseRefreshRow(int listIndex, InspectorProperty targetObjectProp, InspectorProperty targetComponentProp, InspectorProperty propertyNameProp, InspectorProperty detectedTypeProp)
         {
             GameObject go = null;
             Component comp = null;
@@ -464,18 +663,34 @@ namespace Core.Animator
             EditorGUILayout.BeginHorizontal();
             {
                 GUI.enabled = root != null;
+
                 if (GUILayout.Button("Browse", GUILayout.Width(80)))
                 {
                     MemberPathBrowserWindow.Show(root, 3, selected =>
                     {
                         try
                         {
-                            if (propertyNameProp?.ValueEntry != null)
-                                propertyNameProp.ValueEntry.WeakSmartValue = selected.path;
-                            if (detectedTypeProp?.ValueEntry != null)
-                                detectedTypeProp.ValueEntry.WeakSmartValue = selected.typeName;
+                            WritePropertyAndDetected(propertyNameProp, detectedTypeProp, listIndex, selected.path, selected.typeName);
+                            if (listIndex < 0)
+                            {
+                                if (propertyNameProp?.ValueEntry != null)
+                                {
+                                    try { propertyNameProp.ValueEntry.WeakSmartValue = selected.path; } catch { }
+                                }
+                            }
+
+                            var pathForLog = ResolvePropertyPath(propertyNameProp, listIndex, detectedTypeProp ?? propertyNameProp);
+                            var t = (root != null && !string.IsNullOrEmpty(pathForLog)) ? MemberPathBrowser.ResolveMemberType(root, pathForLog) : null;
+                            string expected = selected.typeName ?? string.Empty;
+                            bool w = listIndex >= 0
+                                && string.Equals(GetTweenEntryMemberString(detectedTypeProp, listIndex, "detectedPropertyType"), expected, StringComparison.Ordinal);
+                            LogMemberResolve("Browse (member selected)", root, pathForLog, t, null, w);
+                            GUIHelper.RequestRepaint();
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Debug.LogException(ex);
+                        }
                     });
                 }
 
@@ -483,18 +698,79 @@ namespace Core.Animator
                 {
                     try
                     {
-                        string path = propertyNameProp?.ValueEntry?.WeakSmartValue as string;
+                        string path = ResolvePropertyPath(propertyNameProp, listIndex, detectedTypeProp ?? propertyNameProp);
                         var t = (root != null && !string.IsNullOrEmpty(path)) ? MemberPathBrowser.ResolveMemberType(root, path) : null;
-                        if (detectedTypeProp?.ValueEntry != null)
-                            detectedTypeProp.ValueEntry.WeakSmartValue = t != null ? t.Name : string.Empty;
+                        string typeName = t != null ? t.Name : string.Empty;
+                        bool wrote = listIndex >= 0 && TrySetTweenEntryMemberString(detectedTypeProp, listIndex, "detectedPropertyType", typeName);
+                        if (!wrote)
+                            wrote = TrySetDetectedViaOdinPathOrReflection(detectedTypeProp, t);
+                        LogMemberResolve("Refresh Type", root, path, t, null, wrote);
+                        GUIHelper.RequestRepaint();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Debug.LogException(ex);
+                    }
                 }
-                GUI.enabled = true;
 
+                if (GUILayout.Button("Debug", GUILayout.Width(60)))
+                {
+                    try
+                    {
+                        string path = ResolvePropertyPath(propertyNameProp, listIndex, detectedTypeProp ?? propertyNameProp);
+                        var debug = MemberPathBrowser.ResolveMemberTypeDebug(root, path);
+                        var t = (root != null && !string.IsNullOrEmpty(path)) ? MemberPathBrowser.ResolveMemberType(root, path) : null;
+                        LogMemberResolve("Debug (manual)", root, path, t, debug, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogException(ex);
+                    }
+                }
+
+                GUI.enabled = true;
                 GUILayout.FlexibleSpace();
             }
             EditorGUILayout.EndHorizontal();
+        }
+
+        private static bool TrySetDetectedViaOdinPathOrReflection(InspectorProperty detectedTypeProp, System.Type t)
+        {
+            if (detectedTypeProp == null) return false;
+            var typeName = t != null ? t.Name : string.Empty;
+            var uso = detectedTypeProp.Tree?.UnitySerializedObject;
+            if (uso != null)
+            {
+                try
+                {
+                    var sp = uso.FindProperty(detectedTypeProp.Path);
+                    if (sp != null)
+                    {
+                        sp.stringValue = typeName;
+                        uso.ApplyModifiedProperties();
+                        if (uso.targetObject is UnityEngine.Object uo)
+                            EditorUtility.SetDirty(uo);
+                        return true;
+                    }
+                }
+                catch { }
+            }
+            try
+            {
+                var ownerProp = detectedTypeProp.Parent;
+                var ownerObj = ownerProp?.ValueEntry?.WeakSmartValue;
+                if (ownerObj != null)
+                {
+                    var f2 = ownerObj.GetType().GetField("detectedPropertyType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (f2 != null) f2.SetValue(ownerObj, typeName);
+                }
+                ownerProp?.Tree?.UnitySerializedObject?.ApplyModifiedProperties();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static void DrawChainRow(InspectorProperty chainProp, int index)
