@@ -14,5 +14,5 @@ AssetOrigin:
   productId: 115308
   packageName: SQL for Unity Database
   packageVersion: 1.0.7
-  assetPath: Assets/SSSoftware/SQL4Unity/Scripts/mygamedb_playerpos.cs
+  assetPath: Assets/core-framework/Plugins/SQL4Unity/Scripts/mygamedb_playerpos.cs
   uploadId: 743976

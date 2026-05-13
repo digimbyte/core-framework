@@ -16,7 +16,8 @@ namespace Nova.Editor.GUIs
                 return EditorGUI.GetPropertyHeight(wrapper.SerializedProperty, label, false);
             }
 
-            return 9f * PropertyDrawerUtils.SingleLineHeight;
+            bool enabled = wrapper.AxisProp.boolValue;
+            return (enabled ? 12f : 2f) * PropertyDrawerUtils.SingleLineHeight;
         }
 
         protected override void OnGUI(Rect position, GUIContent label)
@@ -49,9 +50,14 @@ namespace Nova.Editor.GUIs
                     }
                 }
 
+                if (!enabled)
+                {
+                    EditorGUI.EndFoldoutHeaderGroup();
+                    return;
+                }
+
                 position.BumpLine();
 
-                EditorGUI.BeginDisabledGroup(!enabled);
                 float tripleButtonWidth = (position.width - EditorGUIUtility.labelWidth) / 3f;
                 EditorGUI.PrefixLabel(position, Labels.AutoLayout.Axis);
                 Rect axisPosition = new Rect(position.x + NovaGUI.LabelWidth, position.y, position.width - NovaGUI.LabelWidth, position.height);
@@ -65,7 +71,6 @@ namespace Nova.Editor.GUIs
                 {
                     wrapper.Axis = AxisIndex.GetAxis(layoutAxis);
                 }
-                EditorGUI.EndDisabledGroup();
 
                 position.BumpLine();
 
@@ -107,6 +112,12 @@ namespace Nova.Editor.GUIs
                 EditorGUI.PropertyField(position, wrapper.SpacingMinMaxProp);
                 position.BumpLine();
                 EditorGUI.PropertyField(position, wrapper.ExpandToGridProp);
+                position.BumpLine();
+                EditorGUI.PropertyField(position, wrapper.ColumnsProp, new GUIContent("Columns", "Items per row. 0 = unlimited."));
+                position.BumpLine();
+                EditorGUI.PropertyField(position, wrapper.RowsProp, new GUIContent("Rows", "Max rows. 0 = unlimited."));
+                position.BumpLine();
+                EditorGUI.PropertyField(position, wrapper.ResizeChildrenProp, new GUIContent("Resize Children", "Resize children to fill space evenly."));
             }
 
             EditorGUI.EndFoldoutHeaderGroup();

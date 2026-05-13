@@ -14,9 +14,7 @@ If this fails to resolve the problem please report it at https://stevesmith.soft
 or email SQL4Unity@stevesmith.software
 
 */
-#if (UNITY_EDITOR)
 using UnityEngine;
-#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;

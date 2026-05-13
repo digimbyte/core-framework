@@ -80,7 +80,8 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     float2 nPos = blockPos * nFactor;
     SetNPos(o, nPos);
 
-    float nCornerRadius = shaderData.CornerRadius * nFactor;
+    half rSel = NovaPickCornerRadius(blockPos.xy, (half4)shaderData.CornerRadii);
+    float nCornerRadius = (float)rSel * nFactor;
     SetNCornerRadius(o, nCornerRadius);
     float2 nCornerOrigin = nHalfSize - nCornerRadius;
     SetNCornerOrigin(o, nCornerOrigin);
@@ -110,7 +111,13 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     
     #if defined(NOVA_IMAGE)
         float2 uv = SafeDividePositive(blockPos, halfBlockSize);
-        float2 imageUV = uv * vert.UVZoom + vert.CenterUV;
+        // Apply zoom then rotate around the image center (vert.CenterUV)
+        float2 centeredZoomed = uv * vert.UVZoom;
+        float rotRad = vert.Rotation * 0.01745329252; // degrees -> radians
+        float s = sin(rotRad);
+        float c = cos(rotRad);
+        float2 rotated = float2(centeredZoomed.x * c - centeredZoomed.y * s, centeredZoomed.x * s + centeredZoomed.y * c);
+        float2 imageUV = rotated + vert.CenterUV;
         SetImageUV(o, imageUV);
     #endif
 
@@ -141,7 +148,8 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
         float2 nShadowSpacePos = nPos - nShadowOffset;
         SetNShadowSpacePos(o, nShadowSpacePos);
 
-        float shadowRadius = max(shaderData.ShadowBlur, shaderData.CornerRadius - shaderData.ShadowWidth);
+        half maxCorner = NovaMaxCornerRadius((half4)shaderData.CornerRadii);
+        float shadowRadius = max(shaderData.ShadowBlur, maxCorner - shaderData.ShadowWidth);
         float nShadowRadius = shadowRadius * nFactor;
         SetNShadowRadius(o, nShadowRadius);
         float nShadowBlur = shaderData.ShadowBlur * nFactor;
@@ -180,11 +188,21 @@ fixed4 NovaFrag(v2f i) : SV_Target
     #if defined(NOVA_DYNAMIC_IMAGE)
         fixed4 texColor = tex2D(_NovaDynamicTexture, ToUnityUV(GetImageUV(i)));
         color = ApplyColorTint(color, texColor);
+        fixed imageMask = texColor.a;
 
     #elif defined(NOVA_STATIC_IMAGE)
         fixed4 texColor = UNITY_SAMPLE_TEX2DARRAY(_NovaTextureArray, float3(ToUnityUV(GetImageUV(i)), GetTextureBufferIndex(i)));
         color = ApplyColorTint(color, texColor);
+        fixed imageMask = texColor.a;
+
+    #else
+        // No image: fully opaque mask
+        fixed imageMask = 1.0;
     #endif
+
+    // Threshold masks: 50% for shadow, 90% for border (sharp thresholds per request)
+    fixed shadowMask = imageMask >= 0.5 ? 1.0 : 0.0;
+    fixed borderMask = imageMask >= 0.9 ? 1.0 : 0.0;
 
     half2 clampedCornerSpace;
     half distanceOutsideBounds = DistanceFromCircleEdge(GetNPos(i), GetNCornerOrigin(i), GetNCornerRadius(i), clampedCornerSpace);
@@ -202,12 +220,16 @@ fixed4 NovaFrag(v2f i) : SV_Target
 
         fixed4 shadowColor = GetShadowColor(i);
         shadowColor *= shadowWeight;
+        // Apply a 50% alpha threshold for shadows (sharp by request)
+        shadowColor *= shadowMask;
         color = BlendPremul(color, shadowColor);
     #endif
 
     #if NOVA_BORDER
         // Need to correct the weight for when the border is very thin or has zero width
-        fixed4 borderColor = lerp(color, GetBorderColor(i), saturate(GetBorderNWidth(i) * softenInverse.x));
+        // Use 90% alpha clip for border mask
+        fixed borderBlendWeight = saturate(GetBorderNWidth(i) * softenInverse.x) * borderMask;
+        fixed4 borderColor = lerp(color, GetBorderColor(i), borderBlendWeight);
     #endif
 
     #if defined(NOVA_OUTER_BORDER)

@@ -100,6 +100,19 @@ namespace Nova.Editor
             }
         }
 
+        private const string SidesCornerRadiusKey = "SidesCornerRadiusKey";
+        public static bool DisplaySidesCornerRadius
+        {
+            get
+            {
+                return GetEditorPrefBool(SidesCornerRadiusKey, false);
+            }
+            set
+            {
+                SetEditorPrefBool(SidesCornerRadiusKey, value);
+            }
+        }
+
         private const string MinMaxMarginKey = "MinMaxMarginKey";
         public static bool DisplayMinMaxMargin
         {

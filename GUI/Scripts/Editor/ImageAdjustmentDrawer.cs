@@ -51,6 +51,8 @@ namespace Nova.Editor.GUIs
                 EditorGUI.PropertyField(position, wrapper.CenterUVProp);
                 position.BumpLine();
                 EditorGUI.PropertyField(position, wrapper.UVScaleProp);
+                position.BumpLine();
+                EditorGUI.PropertyField(position, wrapper.RotationProp);
             }
 
             EditorGUI.indentLevel--;

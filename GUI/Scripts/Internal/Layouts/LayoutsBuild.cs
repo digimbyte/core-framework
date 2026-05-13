@@ -32,6 +32,7 @@ namespace Nova.Internal.Layouts
             public NativeList<bool> OffsetBySize;
             public NativeList<bool> UsingTransformPositions;
             public NativeList<AutoSize3> AutoSizes;
+            public NativeList<int2> ExpandWeights;
             public NativeList<AspectRatio> AspectRatios;
 
             public NativeList<AutoLayout> AutoLayouts;
@@ -66,11 +67,16 @@ namespace Nova.Internal.Layouts
             public NativeList<DataStoreIndex> IndicesToProcess;
 
             public NativeList<bool> NeedsSecondPass;
+            public NativeReference<bool> RequestSecondPass;
+            public bool ForceSecondPass;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Execute()
             {
                 bool processingSingleElement = ElementID.IsValid;
+                // Shrink + TMP can request a second pass; allow one extra settle so nested
+                // shrink-to-children (e.g. list rows + labels) converges before transforms/render.
+                const int MaxSettleIterations = 3;
 
                 NativeList<DataStoreIndex> DepthLevelSortedIndices = IndicesToProcess;
                 int length = DepthLevelSortedIndices.Length;
@@ -87,8 +93,15 @@ namespace Nova.Internal.Layouts
                 }
 
                 InitRootToLeafStruct(out BuildRootDown rootToLeaf);
+                RequestSecondPass.Value = false;
 
-                bool needsSecondPass = false;
+                bool needsSecondPass = ForceSecondPass;
+
+                if (ForceSecondPass && processingSingleElement && HierarchyLookup.TryGetValue(ElementID, out DataStoreIndex forcedSecondPassIndex))
+                {
+                    NeedsSecondPass.ElementAt(forcedSecondPassIndex) = true;
+                }
+
                 for (int i = 0; i < length; ++i)
                 {
                     DataStoreIndex elementIndex = DepthLevelSortedIndices[i];
@@ -108,28 +121,46 @@ namespace Nova.Internal.Layouts
                     leafToRoot.Execute(DepthLevelSortedIndices[i], isSecondPass: false, forceRun: processingSingleElement);
                 }
 
+                needsSecondPass |= RequestSecondPass.Value;
+
                 if (needsSecondPass)
                 {
-                    for (int i = 0; i < length; ++i)
+                    for (int settleIteration = 0; settleIteration < MaxSettleIterations; ++settleIteration)
                     {
-                        DataStoreIndex elementIndex = DepthLevelSortedIndices[i];
-                        HierarchyElement element = Hierarchy.ElementAt(elementIndex);
-                        DataStoreID parentID = element.ParentID;
-                        DataStoreIndex parentIndex = parentID.IsValid ? HierarchyLookup[parentID] : DataStoreIndex.Invalid;
+                        RequestSecondPass.Value = false;
 
-                        bool hasRelativeSize = false;
-                        if (parentIndex.IsValid && NeedsSecondPass[parentIndex])
+                        for (int i = 0; i < length; ++i)
                         {
-                            _ = rootToLeaf.Execute(elementIndex, true, out _, out hasRelativeSize, forceRun: processingSingleElement);
+                            DataStoreIndex elementIndex = DepthLevelSortedIndices[i];
+                            HierarchyElement element = Hierarchy.ElementAt(elementIndex);
+                            DataStoreID parentID = element.ParentID;
+                            DataStoreIndex parentIndex = parentID.IsValid ? HierarchyLookup[parentID] : DataStoreIndex.Invalid;
+
+                            bool hasRelativeSize = false;
+                            if (parentIndex.IsValid && NeedsSecondPass[parentIndex])
+                            {
+                                _ = rootToLeaf.Execute(elementIndex, true, out _, out hasRelativeSize, forceRun: processingSingleElement);
+                            }
+
+                            ref bool secondPass = ref NeedsSecondPass.ElementAt(elementIndex);
+
+                            secondPass |= hasRelativeSize;
+
+                            if (secondPass)
+                            {
+                                leafToRoot.Execute(elementIndex, isSecondPass: true, forceRun: processingSingleElement);
+                            }
                         }
 
-                        ref bool secondPass = ref NeedsSecondPass.ElementAt(elementIndex);
-
-                        secondPass |= hasRelativeSize;
-
-                        if (secondPass)
+                        if (!RequestSecondPass.Value)
                         {
-                            leafToRoot.Execute(elementIndex, isSecondPass: true, forceRun: processingSingleElement);
+                            break;
+                        }
+
+                        // Continue settling all processed elements until shrink-driven changes stabilize.
+                        for (int i = 0; i < length; ++i)
+                        {
+                            NeedsSecondPass.ElementAt(DepthLevelSortedIndices[i]) = true;
                         }
                     }
                 }
@@ -170,6 +201,7 @@ namespace Nova.Internal.Layouts
                 getDependencies = default;
                 getDependencies.AspectRatios = AspectRatios;
                 getDependencies.AutoSizes = AutoSizes;
+                getDependencies.ExpandWeights = ExpandWeights;
                 getDependencies.LengthConfigs = LengthConfigs;
                 getDependencies.LengthRanges = LengthRanges;
                 getDependencies.UseRotations = UseRotations;
@@ -229,6 +261,7 @@ namespace Nova.Internal.Layouts
                 leafToRoot.OffsetBySize = OffsetBySize;
                 leafToRoot.Alignments = Alignments;
                 leafToRoot.AutoSizes = AutoSizes;
+                leafToRoot.ExpandWeights = ExpandWeights;
                 leafToRoot.ParentSizes = ParentSizes;
                 leafToRoot.AspectRatios = AspectRatios;
                 leafToRoot.Rotations = TransformRotations;
@@ -242,6 +275,7 @@ namespace Nova.Internal.Layouts
                 leafToRoot.ShrinkSizeOverrides = ShrinkSizeOverrides;
                 leafToRoot.AutoLayoutTrackCache = AutoLayoutTrackCache;
                 leafToRoot.AutoLayoutRangeCache = AutoLayoutRangeCache;
+                leafToRoot.RequestSecondPass = RequestSecondPass;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -298,7 +332,9 @@ namespace Nova.Internal.Layouts
             }
 
             data.ElementID = id;
+            data.ForceSecondPass = secondPass != 0;
             data.Execute();
+            data.ForceSecondPass = false;
             data.ElementID = DataStoreID.Invalid;
         }
     }

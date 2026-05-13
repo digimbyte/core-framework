@@ -2,10 +2,12 @@
 //#define RUN_JOB
 #define inline
 
+using Nova;
 using Nova.Compat;
 using Nova.Internal.Core;
 using Nova.Internal.Hierarchy;
 using Nova.Internal.Utilities;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -123,6 +125,7 @@ namespace Nova.Internal.Layouts
                 CalculatedLengths = LayoutDataStore.Instance.CalculatedLengths,
 
                 AutoSizes = LayoutDataStore.Instance.AutoSizes,
+                ExpandWeights = LayoutDataStore.Instance.ExpandWeights,
                 Alignments = LayoutDataStore.Instance.Alignments,
                 UseRotations = LayoutDataStore.Instance.UseRotations,
                 OffsetBySize = LayoutDataStore.Instance.OffsetBySize,
@@ -150,6 +153,7 @@ namespace Nova.Internal.Layouts
                 ParentSizes = LayoutDataStore.Instance.ParentSizes,
 
                 NeedsSecondPass = EngineCache.NeedsSecondPass,
+                RequestSecondPass = LayoutDataStore.Instance.NeedsSecondPass,
 
                 AutoLayoutTrackCache = EngineCache.AutoLayoutTrackCache,
                 AutoLayoutRangeCache = EngineCache.AutoLayoutRangeCache,
@@ -366,7 +370,90 @@ namespace Nova.Internal.Layouts
                 LayoutDataStore.Instance.TransformTracker.ReleaseTransforms();
             }
 
+            ApplyFixedGridOverflowChildVisibility(LayoutDataStore.Instance);
+
             LayoutDataStore.Instance.ClearDirtyState();
+        }
+
+        /// <summary>
+        /// When <see cref="AutoLayout.Cross"/> has both <see cref="CrossLayout.Columns"/> and <see cref="CrossLayout.Rows"/>
+        /// greater than zero, hides excess direct children using <see cref="UIBlock.Visible"/> (layout still includes them).
+        /// Restores visibility when the parent leaves that mode or is removed from the layout store.
+        /// </summary>
+        private static HashSet<DataStoreID> GridOverflowClampIdsThisFrame = new HashSet<DataStoreID>();
+        private static HashSet<DataStoreID> GridOverflowClampIdsPreviousFrame = new HashSet<DataStoreID>();
+
+        private static void ApplyFixedGridOverflowChildVisibility(LayoutDataStore layoutStore)
+        {
+            GridOverflowClampIdsThisFrame.Clear();
+
+            foreach (KeyValuePair<DataStoreID, ILayoutBlock> kv in layoutStore.Elements)
+            {
+                if (!(kv.Value is UIBlock parent))
+                {
+                    continue;
+                }
+
+                ref readonly AutoLayout autoLayout = ref layoutStore.AccessAutoLayoutReadOnly(parent);
+                if (!autoLayout.Enabled || !autoLayout.Cross.Enabled)
+                {
+                    continue;
+                }
+
+                int columns = autoLayout.Cross.Columns;
+                int rows = autoLayout.Cross.Rows;
+                if (columns <= 0 || rows <= 0)
+                {
+                    continue;
+                }
+
+                int maxVisible = rows * columns;
+                int childCount = parent.ChildCount;
+
+                for (int i = 0; i < childCount; i++)
+                {
+                    UIBlock child = parent.GetChild(i);
+                    if (child == null)
+                    {
+                        continue;
+                    }
+
+                    bool show = i < maxVisible;
+                    if (child.Visible != show)
+                    {
+                        child.Visible = show;
+                    }
+                }
+
+                GridOverflowClampIdsThisFrame.Add(kv.Key);
+            }
+
+            foreach (DataStoreID formerId in GridOverflowClampIdsPreviousFrame)
+            {
+                if (GridOverflowClampIdsThisFrame.Contains(formerId))
+                {
+                    continue;
+                }
+
+                if (!layoutStore.Elements.TryGetValue(formerId, out ILayoutBlock block) || !(block is UIBlock formerParent))
+                {
+                    continue;
+                }
+
+                int formerChildCount = formerParent.ChildCount;
+                for (int i = 0; i < formerChildCount; i++)
+                {
+                    UIBlock child = formerParent.GetChild(i);
+                    if (child != null && !child.Visible)
+                    {
+                        child.Visible = true;
+                    }
+                }
+            }
+
+            HashSet<DataStoreID> tmp = GridOverflowClampIdsPreviousFrame;
+            GridOverflowClampIdsPreviousFrame = GridOverflowClampIdsThisFrame;
+            GridOverflowClampIdsThisFrame = tmp;
         }
 
         #region Run Jobs

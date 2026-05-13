@@ -52,6 +52,13 @@ namespace Nova
             /// This can be used if you want to implement a custom resize behavior.
             /// </summary>
             Manual
+            ,
+            /// <summary>
+            /// Automatically choose between <see cref="FillMode.FixedWidth"/> and <see cref="FillMode.FixedHeight"/>
+            /// based on the current camera resolution vs the <see cref="ReferenceResolution"/> so the UI
+            /// adapts correctly for portrait/landscape devices.
+            /// </summary>
+            Adaptive
         }
 
         /// <summary>
@@ -378,18 +385,54 @@ namespace Nova
                         uiBlockSize.Y.Value = aspectRatio * uiBlockSize.X.Value;
                         break;
                     }
+                    case FillMode.Adaptive:
+                    {
+                        // Treat the ReferenceResolution as a fixed canvas size (pixels) and
+                        // scale the entire canvas uniformly so it fits inside the camera
+                        // viewport. This ensures the UI never escapes or extends beyond
+                        // the camera bounds regardless of orientation.
+                        uiBlockSize.X.Value = ReferenceResolution.x;
+                        uiBlockSize.Y.Value = ReferenceResolution.y;
+                        break;
+                    }
                 }
 
-                if (targetCamera.orthographic)
+                // Compute and apply scale. For Adaptive we compute a uniform scale that
+                // clamps the reference canvas inside the camera viewport. Otherwise fall
+                // back to the previous per-mode vertical-based scale calculation.
+                if (fillMode == FillMode.Adaptive)
                 {
-                    float scale = 2f * targetCamera.orthographicSize / uiBlockSize.Y.Value;
+                    float safeX = uiBlockSize.X.Value <= 0f ? 1e-6f : uiBlockSize.X.Value;
+                    float safeY = uiBlockSize.Y.Value <= 0f ? 1e-6f : uiBlockSize.Y.Value;
+
+                    float worldHeight;
+                    if (targetCamera.orthographic)
+                    {
+                        worldHeight = 2f * targetCamera.orthographicSize;
+                    }
+                    else
+                    {
+                        worldHeight = 2f * planeDistance * Mathf.Tan(.5f * targetCamera.fieldOfView * Mathf.Deg2Rad);
+                    }
+
+                    float worldWidth = worldHeight * (cameraDimensions.x / cameraDimensions.y);
+
+                    float scale = Mathf.Min(worldHeight / safeY, worldWidth / safeX);
                     uiBlock.transform.localScale = new Vector3(scale, scale, scale);
                 }
                 else
                 {
-                    // Adjust scale to match screen size
-                    float scale = 2f * planeDistance * Mathf.Tan(.5f * targetCamera.fieldOfView * Mathf.Deg2Rad) / uiBlockSize.Y.Value;
-                    uiBlock.transform.localScale = new Vector3(scale, scale, scale);
+                    if (targetCamera.orthographic)
+                    {
+                        float scale = 2f * targetCamera.orthographicSize / uiBlockSize.Y.Value;
+                        uiBlock.transform.localScale = new Vector3(scale, scale, scale);
+                    }
+                    else
+                    {
+                        // Adjust scale to match screen size
+                        float scale = 2f * planeDistance * Mathf.Tan(.5f * targetCamera.fieldOfView * Mathf.Deg2Rad) / uiBlockSize.Y.Value;
+                        uiBlock.transform.localScale = new Vector3(scale, scale, scale);
+                    }
                 }
             }
 

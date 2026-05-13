@@ -112,6 +112,12 @@ namespace Core.Animator
             if (gm == null || !marker.refProperty.PropertyType.Name.EndsWith("&"))
                 return false;
 
+            // Length3.Percent is NaN for Value-type axes; use UIBlock Get/Set* helpers from Animate.cs instead.
+            if (typeof(T) == typeof(Vector3) &&
+                (marker.refProperty.Name == nameof(UIBlock.Size) || marker.refProperty.Name == nameof(UIBlock.Position)) &&
+                (leafMember.Name == nameof(Length3.Percent) || leafMember.Name == nameof(Length3.Raw)))
+                return false;
+
             switch (marker.refProperty.Name)
             {
                 case nameof(UIBlock.Surface):
@@ -636,6 +642,32 @@ namespace Core.Animator
         }
 
         /// <summary>
+        /// Strip a leading <c>layout</c> segment (any casing) so paths like <c>layout.Size.Percent</c> match
+        /// <c>Size.Percent</c> fast-path entries (Unity serializes the private layout field on <see cref="UIBlock"/> as <c>layout</c>).
+        /// </summary>
+        private static string StripNovaLayoutPathPrefix(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            int dot = path.IndexOf('.');
+            if (dot <= 0) return path;
+            if (string.Equals(path.Substring(0, dot), "layout", StringComparison.OrdinalIgnoreCase))
+                return path.Substring(dot + 1);
+            return path;
+        }
+
+        /// <summary>
+        /// Walk nested <see cref="RefStructMarker.originalOwner"/> links (e.g. Layout → Size) to the root <see cref="UIBlock"/>.
+        /// </summary>
+        private static UIBlock TryGetUIBlockFromRefStructMarker(RefStructMarker marker)
+        {
+            if (marker == null) return null;
+            object o = marker.originalOwner;
+            while (o is RefStructMarker rm)
+                o = rm.originalOwner;
+            return o as UIBlock;
+        }
+
+        /// <summary>
         /// UIBlock-specific CustomProperty shortcuts (layout-friendly Size/Position paths, discrete Alignment delay).
         /// </summary>
         /// <returns><see langword="true"/> when this path handled the entry (result may still be null, e.g. Alignment).</returns>
@@ -645,10 +677,7 @@ namespace Core.Animator
 
             if (comp is UIBlock sizeBlock)
             {
-                string sizePath = resolvedPath;
-                const string layoutPrefix = "Layout.";
-                if (!string.IsNullOrEmpty(sizePath) && sizePath.StartsWith(layoutPrefix, StringComparison.Ordinal))
-                    sizePath = sizePath.Substring(layoutPrefix.Length);
+                string sizePath = StripNovaLayoutPathPrefix(resolvedPath);
 
                 if (sizePath == "Size.Percent" || sizePath == "Size.Raw")
                 {
@@ -726,9 +755,10 @@ namespace Core.Animator
                 }
             }
 
-            if ((comp is UIBlock || comp is UIBlock2D || comp is UIBlock3D) && (resolvedPath == "Position.Percent" || resolvedPath == "Position.Raw"))
+            string positionPath = StripNovaLayoutPathPrefix(resolvedPath);
+            if ((comp is UIBlock || comp is UIBlock2D || comp is UIBlock3D) && (positionPath == "Position.Percent" || positionPath == "Position.Raw"))
             {
-                bool isPercent = resolvedPath.EndsWith("Percent");
+                bool isPercent = positionPath.EndsWith("Percent", StringComparison.Ordinal);
 
                 Func<Vector3> getter = () =>
                 {

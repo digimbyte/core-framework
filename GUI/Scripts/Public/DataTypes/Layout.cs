@@ -117,6 +117,14 @@ namespace Nova
         public Axis AspectRatioAxis;
 
         /// <summary>
+        /// When <see cref="AutoSize"/> is <see cref="AutoSize.Expand"/> on an axis, this scales how much
+        /// of the parent's free space this element takes relative to other expanding siblings
+        /// (only used by the auto-layout expand distribution).
+        /// </summary>
+        [SerializeField]
+        public Vector2Int ExpandWeight;
+
+        /// <summary>
         /// Equality operator
         /// </summary>
         /// <param name="lhs">Left hand side</param>
@@ -137,7 +145,8 @@ namespace Nova
                    lhs.RotateSize == rhs.RotateSize &&
                    lhs.OffsetBySize == rhs.OffsetBySize &&
                    lhs.AspectRatio == rhs.AspectRatio &&
-                   lhs.AspectRatioAxis == rhs.AspectRatioAxis;
+                   lhs.AspectRatioAxis == rhs.AspectRatioAxis &&
+                   lhs.ExpandWeight == rhs.ExpandWeight;
         }
 
         /// <summary>
@@ -161,7 +170,8 @@ namespace Nova
                    lhs.RotateSize != rhs.RotateSize ||
                    lhs.OffsetBySize != rhs.OffsetBySize ||
                    lhs.AspectRatio != rhs.AspectRatio ||
-                   lhs.AspectRatioAxis != rhs.AspectRatioAxis;
+                   lhs.AspectRatioAxis != rhs.AspectRatioAxis ||
+                   lhs.ExpandWeight != rhs.ExpandWeight;
         }
 
         /// <summary>
@@ -184,6 +194,7 @@ namespace Nova
             hash = (hash * 7) + OffsetBySize.GetHashCode();
             hash = (hash * 7) + AspectRatio.GetHashCode();
             hash = (hash * 7) + AspectRatioAxis.GetHashCode();
+            hash = (hash * 7) + ExpandWeight.GetHashCode();
             return hash;
         }
 
@@ -223,6 +234,7 @@ namespace Nova
             PositionMinMax = MinMax3.Unclamped,
             PaddingMinMax = MinMaxBounds.Positive,
             MarginMinMax = MinMaxBounds.Unclamped,
+            ExpandWeight = new Vector2Int(1, 1),
         };
 
         /// <summary>
@@ -236,6 +248,7 @@ namespace Nova
             PositionMinMax = MinMax3.Unclamped,
             PaddingMinMax = MinMaxBounds.Positive,
             MarginMinMax = MinMaxBounds.Unclamped,
+            ExpandWeight = new Vector2Int(1, 1),
         };
     }
 }

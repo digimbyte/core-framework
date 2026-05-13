@@ -52,6 +52,11 @@ namespace Core.Registry
         [InfoBox("Enable verbose logging for this Registry (default: false)")]
         private bool enableLogging = false;
 
+        [SerializeField]
+        [LabelText("Debug Query Results")]
+        [InfoBox("When enabled, logs only UID lookups that miss (no match logs).")]
+        private bool debugQueryResults = false;
+
         public string Description => description;
         public int ItemCount => itemEntries.Count;
         public RegistryAssetType AssetType => assetType;
@@ -64,13 +69,20 @@ namespace Core.Registry
         public ItemEntry GetItemByUID(string uid)
         {
             if (string.IsNullOrEmpty(uid))
+            {
+                LogQuery(uid, matched: false);
                 return null;
+            }
 
             BuildCache();
 
             if (itemCache.TryGetValue(uid.ToLower(), out ItemEntry entry))
+            {
+                LogQuery(uid, matched: true);
                 return entry;
+            }
 
+            LogQuery(uid, matched: false);
             LogWarning($"[{assetType}Registry] Item UID '{uid}' not found, returning default asset");
             return null;
         }
@@ -511,6 +523,17 @@ namespace Core.Registry
         {
             if (!enableLogging) return;
             Debug.LogError(message);
+        }
+
+        private void LogQuery(string uid, bool matched)
+        {
+            if (!debugQueryResults || matched)
+            {
+                return;
+            }
+
+            string normalizedUid = string.IsNullOrWhiteSpace(uid) ? "<empty>" : uid;
+            Debug.Log($"[{assetType}Registry][Query] uid='{normalizedUid}' -> MISS", this);
         }
     }
 

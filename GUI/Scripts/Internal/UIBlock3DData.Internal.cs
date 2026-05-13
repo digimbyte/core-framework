@@ -10,6 +10,8 @@ namespace Nova.Internal
     {
         public Color Color;
         public Length CornerRadius;
+        public CornerRadii CornerRadii;
+        public bool UseIndividualCornerRadii;
         public Length EdgeRadius;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -18,6 +20,8 @@ namespace Nova.Internal
             return
                 Color.Equals(other.Color) &&
                 CornerRadius == other.CornerRadius &&
+                CornerRadii.Equals(other.CornerRadii) &&
+                UseIndividualCornerRadii == other.UseIndividualCornerRadii &&
                 EdgeRadius == other.EdgeRadius;
         }
     }

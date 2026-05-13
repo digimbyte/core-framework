@@ -37,7 +37,16 @@ namespace Nova.Editor.GUIs
                     using var indent = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
 
                     NovaGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
-                    NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.UIBlock2D.CornerRadius, uiNode2DData.CornerRadius, calc.CornerRadius, min: 0, max: minHalfSize);
+                    NovaEditorPrefs.DisplaySidesCornerRadius = LengthCornerRadiusRollout(
+                        Labels.UIBlock2D.CornerRadius,
+                        uiNode2DData.CornerRadius,
+                        uiNode2DData.CornerRadii,
+                        uiNode2DData.UseIndividualCornerRadiiProp,
+                        calc.CornerRadius,
+                        calc.CornerRadii,
+                        min: 0,
+                        max: minHalfSize,
+                        NovaEditorPrefs.DisplaySidesCornerRadius);
                     DrawRadialFillUI(uiNode2DData.RadialFill, calc.RadialFill);
                     DrawBaseInfoUI(baseInfo);
                     NovaGUI.ToggleField(Labels.UIBlock2D.SoftenEdges, uiNode2DData.SoftenEdgesProp);
@@ -59,7 +68,7 @@ namespace Nova.Editor.GUIs
                 {
                     using var indent = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
                     TextBlock textBlock = baseInfo.SerializedProperty.serializedObject.targetObject as TextBlock;
-                    TMPFields(tmpProps);
+                    TMPFields(tmpProps, baseInfo.SerializedProperty.serializedObject);
                 }
             }
 
@@ -94,7 +103,16 @@ namespace Nova.Editor.GUIs
 
                     NovaGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
                     float minXY = Mathf.Min(size.x, size.y);
-                    NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.UIBlock3D.CornerRadius, uiNode3DData.CornerRadius, calc.CornerRadius, min: 0, max: 0.5f * minXY);
+                    NovaEditorPrefs.DisplaySidesCornerRadius = LengthCornerRadiusRollout(
+                        Labels.UIBlock3D.CornerRadius,
+                        uiNode3DData.CornerRadius,
+                        uiNode3DData.CornerRadii,
+                        uiNode3DData.UseIndividualCornerRadiiProp,
+                        calc.CornerRadius,
+                        calc.CornerRadii,
+                        min: 0,
+                        max: 0.5f * minXY,
+                        NovaEditorPrefs.DisplaySidesCornerRadius);
                     NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.UIBlock3D.EdgeRadius, uiNode3DData.EdgeRadius, calc.EdgeRadius, min: 0, max: 0.5f * Mathf.Min(minXY, size.z));
                     DrawSurfaceUI(surface, true);
                 }
@@ -340,6 +358,7 @@ namespace Nova.Editor.GUIs
                     spriteProp.objectReferenceValue = null;
                     uiNode2DData.Image.Adjustment.UVScale = Vector2.one;
                     uiNode2DData.Image.Adjustment.CenterUV = Vector2.zero;
+                    uiNode2DData.Image.Adjustment.Rotation = 0f;
                     imageMode = newImageMode;
                 }
 
@@ -368,9 +387,27 @@ namespace Nova.Editor.GUIs
                     {
                         NovaGUI.Vector2Field(Labels.Image.ImageCenter, uiNode2DData.Image.Adjustment.CenterUVProp);
                         NovaGUI.Vector2Field(Labels.Image.ImageScale, uiNode2DData.Image.Adjustment.UVScaleProp);
+                        NovaGUI.FloatField(Labels.Image.ImageRotation, uiNode2DData.Image.Adjustment.RotationProp);
                     }
                     else if (newScaleMode == ImageScaleMode.Sliced || newScaleMode == ImageScaleMode.Tiled)
                     {
+                        NovaGUI.FloatFieldClamped(Labels.Image.PixelsPerUnit, uiNode2DData.Image.Adjustment.PixelsPerUnitMultiplierProp, .01f, float.MaxValue);
+                    }
+
+                    else if (newScaleMode == ImageScaleMode.Fill)
+                    {
+                        // Show Fill axis selector and pixels-per-unit for Fill mode
+                        Rect fillAxisField = NovaGUI.Layout.GetControlRect();
+                        EditorGUI.BeginChangeCheck();
+                        GUIContent fillAxisLabel = EditorGUI.BeginProperty(fillAxisField, Labels.Image.FillAxis, uiNode2DData.Image.Adjustment.fillAxisProp);
+                        Nova.ImageFillAxis startFillAxis = uiNode2DData.Image.Adjustment.fillAxis;
+                        Nova.ImageFillAxis newFillAxis = (Nova.ImageFillAxis)EditorGUI.EnumPopup(fillAxisField, fillAxisLabel, startFillAxis);
+                        EditorGUI.EndProperty();
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            uiNode2DData.Image.Adjustment.fillAxis = newFillAxis;
+                        }
+
                         NovaGUI.FloatFieldClamped(Labels.Image.PixelsPerUnit, uiNode2DData.Image.Adjustment.PixelsPerUnitMultiplierProp, .01f, float.MaxValue);
                     }
 
@@ -584,7 +621,7 @@ namespace Nova.Editor.GUIs
             NovaGUI.Layout.EndHorizontal();
         }
 
-        private static void TMPFields(TMPProperties tmpProps)
+        private static void TMPFields(TMPProperties tmpProps, SerializedObject blockSerializedObject)
         {
             NovaGUI.Layout.BeginHorizontal();
             EditorGUI.BeginChangeCheck();
@@ -671,6 +708,39 @@ namespace Nova.Editor.GUIs
                     tmpProps.FontSize = fontSize;
                 }
 
+                // Draw TextBlock-specific fields: ContentType and Password Mask (show mask only when Password selected)
+                if (blockSerializedObject != null)
+                {
+                    NovaGUI.Space(2 / NovaGUI.IndentSize);
+                    SerializedProperty contentTypeProp = blockSerializedObject.FindProperty("contentType");
+                    SerializedProperty passwordMaskProp = blockSerializedObject.FindProperty("passwordMask");
+
+                    EditorGUI.BeginChangeCheck();
+                    if (contentTypeProp != null)
+                    {
+                        Rect contentTypeRect = NovaGUI.Layout.GetControlRect();
+                        EditorGUI.PropertyField(contentTypeRect, contentTypeProp, new GUIContent("Content Type"));
+                    }
+
+                    bool showPasswordMask = true;
+                    if (contentTypeProp != null && !contentTypeProp.hasMultipleDifferentValues)
+                    {
+                        showPasswordMask = contentTypeProp.enumValueIndex == (int)TextBlock.ContentType.Password;
+                    }
+
+                    if (passwordMaskProp != null && showPasswordMask)
+                    {
+                        Rect maskRect = NovaGUI.Layout.GetControlRect();
+                        EditorGUI.PropertyField(maskRect, passwordMaskProp, new GUIContent("Password Mask"));
+                    }
+
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        blockSerializedObject.ApplyModifiedProperties();
+                        EditModeUtils.QueueEditorUpdateNextFrame();
+                    }
+                    NovaGUI.Space(1.5f);
+                }
                 NovaGUI.Layout.EndVertical();
                 NovaGUI.Layout.EndHorizontal();
             }

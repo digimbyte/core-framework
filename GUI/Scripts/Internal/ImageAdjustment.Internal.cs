@@ -12,6 +12,14 @@ namespace Nova.Internal
         Envelope = 2,
         Sliced = 3,
         Tiled = 4,
+        Fill = 5,
+    }
+
+    internal enum ImageFillAxis
+    {
+        All = 0,
+        Horizontal = 1,
+        Vertical = 2,
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -19,8 +27,10 @@ namespace Nova.Internal
     {
         public float2 CenterUV;
         public float2 UVScale;
+        public float Rotation;
         public float PixelsPerUnitMultiplier;
         public ImageScaleMode ScaleMode;
+        public ImageFillAxis FillAxis;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ImageAdjustment other)
@@ -28,8 +38,10 @@ namespace Nova.Internal
             return
                 CenterUV.Equals(other.CenterUV) &&
                 UVScale.Equals(other.UVScale) &&
+                Rotation == other.Rotation &&
                 ScaleMode == other.ScaleMode &&
-                PixelsPerUnitMultiplier == other.PixelsPerUnitMultiplier;
+                PixelsPerUnitMultiplier == other.PixelsPerUnitMultiplier &&
+                FillAxis == other.FillAxis;
         }
     }
 }

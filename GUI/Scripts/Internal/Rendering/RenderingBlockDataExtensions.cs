@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Supernova Technologies LLC
 using Nova.Internal.Utilities;
 using System.Runtime.CompilerServices;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
 namespace Nova.Internal.Rendering
@@ -8,24 +9,100 @@ namespace Nova.Internal.Rendering
     internal static class BlockDataExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetCornerRadius(ref this UIBlock2DData data, float halfMinBlockDimension)
+        private static float GetClampedCornerLength(ref global::Nova.Length length, float halfMinBlockDimension)
         {
-            float toClamp = data.CornerRadius.GetLengthValue(ref halfMinBlockDimension);
-            return math.clamp(toClamp, 0, halfMinBlockDimension);
+            float rel = halfMinBlockDimension;
+            ref Length il = ref global::Nova.LengthExtensions.ToInternal(ref length);
+            return math.clamp(GetLengthValue(ref il, ref rel), 0f, halfMinBlockDimension);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetCornerRadius(ref this UIBlock3DData data, float halfMinBlockDimension)
+        public static float4 GetResolvedCornerRadii(ref this global::Nova.UIBlock2DData data, float halfMinBlockDimension)
         {
-            float toClamp = data.CornerRadius.GetLengthValue(ref halfMinBlockDimension);
-            return math.clamp(toClamp, 0, halfMinBlockDimension);
+            if (!data.UseIndividualCornerRadii)
+            {
+                float u = GetClampedCornerLength(ref data.CornerRadius, halfMinBlockDimension);
+                return new float4(u, u, u, u);
+            }
+
+            ref global::Nova.CornerRadii cr = ref data.CornerRadii;
+            return new float4(
+                GetClampedCornerLength(ref cr.TopLeft, halfMinBlockDimension),
+                GetClampedCornerLength(ref cr.TopRight, halfMinBlockDimension),
+                GetClampedCornerLength(ref cr.BottomRight, halfMinBlockDimension),
+                GetClampedCornerLength(ref cr.BottomLeft, halfMinBlockDimension));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetEdgeRadius(ref this UIBlock3DData data, float zSize, float clampedCornerRadius)
+        public static float4 GetResolvedCornerRadii(ref this global::Nova.UIBlock3DData data, float halfMinXY)
+        {
+            if (!data.UseIndividualCornerRadii)
+            {
+                float u = GetClampedCornerLength(ref data.CornerRadius, halfMinXY);
+                return new float4(u, u, u, u);
+            }
+
+            ref global::Nova.CornerRadii cr = ref data.CornerRadii;
+            return new float4(
+                GetClampedCornerLength(ref cr.TopLeft, halfMinXY),
+                GetClampedCornerLength(ref cr.TopRight, halfMinXY),
+                GetClampedCornerLength(ref cr.BottomRight, halfMinXY),
+                GetClampedCornerLength(ref cr.BottomLeft, halfMinXY));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetCornerRadius(ref this global::Nova.UIBlock2DData data, float halfMinBlockDimension)
+        {
+            return math.cmax(data.GetResolvedCornerRadii(halfMinBlockDimension));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetCornerRadius(ref this global::Nova.UIBlock3DData data, float halfMinBlockDimension)
+        {
+            return math.cmax(data.GetResolvedCornerRadii(halfMinBlockDimension));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float4 GetResolvedCornerRadii(ref this global::Nova.Internal.UIBlock2DData data, float halfMinBlockDimension)
+        {
+            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            return pub.GetResolvedCornerRadii(halfMinBlockDimension);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float4 GetResolvedCornerRadii(ref this global::Nova.Internal.UIBlock3DData data, float halfMinXY)
+        {
+            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            return pub.GetResolvedCornerRadii(halfMinXY);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetCornerRadius(ref this global::Nova.Internal.UIBlock2DData data, float halfMinBlockDimension)
+        {
+            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            return pub.GetCornerRadius(halfMinBlockDimension);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetCornerRadius(ref this global::Nova.Internal.UIBlock3DData data, float halfMinBlockDimension)
+        {
+            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            return pub.GetCornerRadius(halfMinBlockDimension);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetEdgeRadius(ref this global::Nova.Internal.UIBlock3DData data, float zSize, float clampedCornerRadius)
+        {
+            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            return pub.GetEdgeRadius(zSize, clampedCornerRadius);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetEdgeRadius(ref this global::Nova.UIBlock3DData data, float zSize, float clampedCornerRadius)
         {
             float maxEdgeRadius = math.min(0.5f * zSize, clampedCornerRadius);
-            float toClamp = data.EdgeRadius.GetLengthValue(ref maxEdgeRadius);
+            ref Length il = ref global::Nova.LengthExtensions.ToInternal(ref data.EdgeRadius);
+            float toClamp = GetLengthValue(ref il, ref maxEdgeRadius);
             return math.clamp(toClamp, 0, maxEdgeRadius);
         }
 
@@ -116,9 +193,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AdjustSizeForImage(this ref UIBlock2DData data, ref float2 size, float aspectRatio)
+        public static void AdjustSizeForImage(this ref global::Nova.UIBlock2DData data, ref float2 size, float aspectRatio)
         {
-            if (data.Image.Adjustment.ScaleMode == ImageScaleMode.Fit)
+            if (data.Image.Adjustment.ScaleMode == global::Nova.ImageScaleMode.Fit)
             {
                 float nodeAspectRatio = size.x / size.y;
                 float relativeAspectRatio = aspectRatio / nodeAspectRatio;
@@ -131,6 +208,13 @@ namespace Nova.Internal.Rendering
                     size.x *= relativeAspectRatio;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AdjustSizeForImage(this ref global::Nova.Internal.UIBlock2DData data, ref float2 size, float aspectRatio)
+        {
+            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            pub.AdjustSizeForImage(ref size, aspectRatio);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -171,6 +255,23 @@ namespace Nova.Internal.Rendering
                     bodySize += borderWidth;
                     float halfBorderWidth = .5f * borderWidth;
                     bodyCornerRadius = math.select(0f, bodyCornerRadius + halfBorderWidth, bodyCornerRadius > Math.Epsilon);
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ModifySizeForBorder(ref this Border border, ref float4 bodyCornerRadii, ref float2 bodySize, float borderWidth)
+        {
+            switch (border.Direction)
+            {
+                case BorderDirection.Out:
+                    bodySize += 2f * borderWidth;
+                    bodyCornerRadii = math.select(float4.zero, bodyCornerRadii + borderWidth, bodyCornerRadii > Math.Epsilon);
+                    break;
+                case BorderDirection.Center:
+                    bodySize += borderWidth;
+                    float halfBorderWidth = .5f * borderWidth;
+                    bodyCornerRadii = math.select(float4.zero, bodyCornerRadii + halfBorderWidth, bodyCornerRadii > Math.Epsilon);
                     break;
             }
         }

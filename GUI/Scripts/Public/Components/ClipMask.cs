@@ -85,6 +85,57 @@ namespace Nova
         }
 
         /// <summary>
+        /// Whether to use a procedural implicit gradient mask instead of a texture.
+        /// </summary>
+        public bool Procedural
+        {
+            get => procedural;
+            set
+            {
+                if (procedural == value)
+                {
+                    return;
+                }
+                procedural = value;
+                RegisterOrUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Percentage (0..1) across the procedural gradient at which to cut.
+        /// </summary>
+        public float ProceduralPercent
+        {
+            get => proceduralPercent;
+            set
+            {
+                if (proceduralPercent == value)
+                {
+                    return;
+                }
+                proceduralPercent = value;
+                RegisterOrUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Rotation (degrees) of the procedural gradient.
+        /// </summary>
+        public float ProceduralRotation
+        {
+            get => proceduralRotation;
+            set
+            {
+                if (proceduralRotation == value)
+                {
+                    return;
+                }
+                proceduralRotation = value;
+                RegisterOrUpdate();
+            }
+        }
+
+        /// <summary>
         /// The <see cref="Nova.UIBlock"/> on <c>this.gameObject</c>.
         /// </summary>
         public UIBlock UIBlock
@@ -108,6 +159,12 @@ namespace Nova
         private ClipMaskInfo info = ClipMaskInfo.Default;
         [SerializeField]
         private Texture maskTexture = null;
+        [SerializeField]
+        private bool procedural = false;
+        [SerializeField]
+        private float proceduralPercent = 0.5f;
+        [SerializeField]
+        private float proceduralRotation = 0f;
 
         internal void RegisterOrUpdate()
         {
@@ -118,7 +175,17 @@ namespace Nova
 
             info.HasMask = maskTexture != null;
 
-            RenderingDataStore.Instance.VisualModifierTracker.AddOrUpdate(UIBlock.ID, UnsafeUtility.As<ClipMaskInfo, Internal.ClipMaskInfo>(ref info), maskTexture);
+            Internal.ClipMaskInfo internalInfo = new Internal.ClipMaskInfo()
+            {
+                Color = info.Color,
+                Clip = info.Clip,
+                HasMask = maskTexture != null,
+                Procedural = procedural,
+                ProceduralPercent = proceduralPercent,
+                ProceduralRotation = proceduralRotation,
+            };
+
+            RenderingDataStore.Instance.VisualModifierTracker.AddOrUpdate(UIBlock.ID, internalInfo, maskTexture);
         }
 
         private void Unregister(DataStoreID id)

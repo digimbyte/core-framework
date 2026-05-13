@@ -15,6 +15,14 @@ namespace Nova
         public Color Color;
         [SerializeField]
         public Length CornerRadius;
+
+        [SerializeField]
+        public CornerRadii CornerRadii;
+
+        /// <summary>Serialized for migration; when false, <see cref="CornerRadius"/> is copied to all corners each validate.</summary>
+        [SerializeField, HideInInspector]
+        public bool UseIndividualCornerRadii;
+
         [SerializeField]
         public RadialFill RadialFill;
         [SerializeField]
@@ -39,6 +47,7 @@ namespace Nova
         internal readonly struct Calculated
         {
             public readonly Length.Calculated CornerRadius;
+            public readonly CornerRadii.Calculated CornerRadii;
             public readonly Border.Calculated Border;
             public readonly RadialGradient.Calculated Gradient;
             public readonly Shadow.Calculated Shadow;
@@ -51,6 +60,10 @@ namespace Nova
                 var cornerRadius = new Internal.Length.Calculated(data.CornerRadius.ToInternal(), Internal.Length.MinMax.Positive, relative1D);
                 CornerRadius = cornerRadius.ToPublic();
 
+                CornerRadii = data.UseIndividualCornerRadii
+                    ? new CornerRadii.Calculated(data.CornerRadii, relative1D)
+                    : new CornerRadii.Calculated((CornerRadii)data.CornerRadius, relative1D);
+
                 Border = data.Border.Calc(relative1D);
                 Gradient = data.Gradient.Calc(relativeTo);
                 Shadow = data.Shadow.Calc(relativeTo);
@@ -62,6 +75,8 @@ namespace Nova
         {
             Color = Color.grey,
             CornerRadius = Length.Zero,
+            CornerRadii = default,
+            UseIndividualCornerRadii = false,
             RadialFill = RadialFill.Default,
             Border = Border.Default,
             Shadow = Shadow.Default,

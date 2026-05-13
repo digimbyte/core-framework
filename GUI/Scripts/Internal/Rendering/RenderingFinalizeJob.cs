@@ -437,15 +437,7 @@ namespace Nova.Internal.Rendering
                 {
                     float minHalfNodeSize = math.cmin(halfSize.xy);
                     UIBlock2DData data = UIBlock2DData[baseInfo.RenderIndex];
-                    switch (data.CornerRadius.Type)
-                    {
-                        case LengthType.Value:
-                            radius = math.clamp(data.CornerRadius.Raw, 0, minHalfNodeSize);
-                            break;
-                        case LengthType.Percent:
-                            radius = data.CornerRadius.Raw * minHalfNodeSize;
-                            break;
-                    }
+                    radius = data.GetCornerRadius(minHalfNodeSize);
                 }
 
                 float maxHalfDim = math.cmax(halfSize.xy);
@@ -453,11 +445,19 @@ namespace Nova.Internal.Rendering
                 float2 nHalfSize = halfSize.xy * nFactor;
                 float nRadius = radius * nFactor;
                 renderData.ClipRectInfo = new Vector4(nHalfSize.x, nHalfSize.y, nFactor, nRadius);
+                // Procedural clip mask params
+                float procFlag = info.Procedural ? 1.0f : 0.0f;
+                float procPercent = info.ProceduralPercent;
+                float rotRad = math.radians(info.ProceduralRotation);
+                float cosA = math.cos(rotRad);
+                float sinA = math.sin(rotRad);
+                renderData.ClipMaskParams = new Vector4(procFlag, procPercent, cosA, sinA);
             }
             else
             {
                 // Doesn't clip, so just make the size very large
                 renderData.ClipRectInfo = new Vector4(1f, 1f, 0f, 0f);
+                renderData.ClipMaskParams = new Vector4(0f, 0f, 1f, 0f);
             }
 
             VisualModifierRenderData[id] = renderData;

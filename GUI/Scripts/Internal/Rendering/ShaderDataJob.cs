@@ -143,11 +143,12 @@ namespace Nova.Internal.Rendering
 
             float3 nodeSize = LayoutAccess.Get(dataStoreIndex, ref LayoutProperties).Size.Value;
             float minXY = 0.5f * math.cmin(nodeSize.xy);
-            float clampedCornerRadius = data.GetCornerRadius(minXY);
+            float4 cornerRadii = data.GetResolvedCornerRadii(minXY);
+            float clampedCornerRadius = math.cmax(cornerRadii);
             float clampedEdgeRadius = data.GetEdgeRadius(nodeSize.z, clampedCornerRadius);
 
             shaderData.Color.Set(ref data.Color);
-            shaderData.CornerRadius = clampedCornerRadius;
+            shaderData.CornerRadii = cornerRadii;
             shaderData.EdgeRadius = clampedEdgeRadius;
             shaderData.Size = nodeSize;
             AssignTransformIndex(ref shaderData.TransformIndex);
@@ -237,7 +238,8 @@ namespace Nova.Internal.Rendering
 
             float2 nodeHalfSize = Math.float2_Half * nodeSize;
             float halfMinBlockDimension = math.cmin(nodeHalfSize);
-            float bodyCornerRadius = data.GetCornerRadius(halfMinBlockDimension);
+            float4 bodyCornerRadii = data.GetResolvedCornerRadii(halfMinBlockDimension);
+            float4 cornerRadiiForShadow = bodyCornerRadii;
 
             if (hasImage && data.Image.Mode == ImagePackMode.Packed && PackDataProvider.TryGetSlice(imageDescriptor.TextureID, out TexturePackSlice slice))
             {
@@ -247,7 +249,7 @@ namespace Nova.Internal.Rendering
             }
 
             // This needs to happen before the border size adjustment
-            shaderData.CornerRadius = bodyCornerRadius;
+            shaderData.CornerRadii = bodyCornerRadii;
 
             if (data.FillEnabled)
             {
@@ -296,8 +298,10 @@ namespace Nova.Internal.Rendering
                 shaderData.BorderColor.Set(ref data.Border.Color);
                 shaderData.BorderWidth = data.Border.GetWidth(halfMinBlockDimension);
 
-                data.Border.ModifySizeForBorder(ref bodyCornerRadius, ref nodeSize, shaderData.BorderWidth);
+                data.Border.ModifySizeForBorder(ref cornerRadiiForShadow, ref nodeSize, shaderData.BorderWidth);
             }
+
+            float bodyCornerRadius = math.cmax(cornerRadiiForShadow);
 
             float2 shadowWidths = data.Shadow.GetWidths(halfMinBlockDimension);
             if (data.Shadow.HasInnerShadow)

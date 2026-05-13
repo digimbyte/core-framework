@@ -213,6 +213,11 @@ namespace Nova.Editor.GUIs
         public static readonly GUIContent Front = EditorGUIUtility.TrTextContent("Front");
         public static readonly GUIContent Back = EditorGUIUtility.TrTextContent("Back");
 
+        public static readonly GUIContent CornerRadiiTopLeft = EditorGUIUtility.TrTextContent("Top Left", "Corner radius at the top-left. Expand the rollout to edit per-corner; the main field sets all corners when overrides are off.");
+        public static readonly GUIContent CornerRadiiTopRight = EditorGUIUtility.TrTextContent("Top Right", "Corner radius at the top-right.");
+        public static readonly GUIContent CornerRadiiBottomRight = EditorGUIUtility.TrTextContent("Bottom Right", "Corner radius at the bottom-right.");
+        public static readonly GUIContent CornerRadiiBottomLeft = EditorGUIUtility.TrTextContent("Bottom Left", "Corner radius at the bottom-left.");
+
         public static readonly GUIContent[] XYZ = new GUIContent[] { X, Y, Z };
 
         public static readonly GUIContent Min = EditorGUIUtility.TrTextContent("Min");
@@ -270,14 +275,14 @@ namespace Nova.Editor.GUIs
         public static class UIBlock2D
         {
             public static readonly GUIContent Color = EditorGUIUtility.TrTextContent("Color", "The color of the body.");
-            public static readonly GUIContent CornerRadius = EditorGUIUtility.TrTextContent("Corner Radius", "The radius of the corners of the body, border, and shadow.");
+            public static readonly GUIContent CornerRadius = EditorGUIUtility.TrTextContent("Corner Radius", "Master corner radius for the body, border, and shadow (same role as the top Padding field). Expand the arrow to set each corner independently.");
             public static readonly GUIContent SoftenEdges = EditorGUIUtility.TrTextContent("Soften Edges", "In certain situations, like when rendering a texture that has transparency which handles softening edges, having Nova add additional edge softening may not be desired.");
         }
 
         public static class UIBlock3D
         {
             public static readonly GUIContent Color = EditorGUIUtility.TrTextContent("Color", "The color of the UI Block.");
-            public static readonly GUIContent CornerRadius = EditorGUIUtility.TrTextContent("Corner Radius", "The radius of the front and back face corners.");
+            public static readonly GUIContent CornerRadius = EditorGUIUtility.TrTextContent("Corner Radius", "Master corner radius for the front and back faces. Expand the arrow to set each corner independently.");
             public static readonly GUIContent EdgeRadius = EditorGUIUtility.TrTextContent("Edge Radius", "The radius of the front and back face edges.");
         }
 
@@ -292,6 +297,7 @@ namespace Nova.Editor.GUIs
             public static readonly GUIContent Label = EditorGUIUtility.TrTextContent("Size", "The size of the UI Block.");
             public static readonly GUIContent AutoSize = EditorGUIUtility.TrTextContent("Auto Size", "Make size adapt to size of parent or children.");
             public static readonly GUIContent RotateSize = EditorGUIUtility.TrTextContent("Rotate Size", "Specifies whether or not to include the UI Block's rotation when calculating size.");
+            public static readonly GUIContent ExpandWeight = EditorGUIUtility.TrTextContent("Expand weight", "When Auto Size is Expand to parent, sets this block's share of free space next to other expanding siblings under the same Auto Layout. Each axis is clamped from 1 to 99. X and Y apply to expand on horizontal and vertical.");
         }
 
             public static class Position
@@ -391,7 +397,7 @@ namespace Nova.Editor.GUIs
         {
             public static readonly GUIContent TargetCamera = EditorGUIUtility.TrTextContent("Target Camera", "The target camera used to render the Nova content.");
             public static readonly GUIContent AdditionalCameras = EditorGUIUtility.TrTextContent("Additional Cameras", "Additional cameras that the ScreenSpace content will be rendered to.\nNOTE: The content will still be positioned and size based on the Target Camera, it will simply also render to these additional cameras.");
-            public static readonly GUIContent Mode = EditorGUIUtility.TrTextContent("Fill Mode", $"The mode used to render the content:\n-{nameof(Nova.ScreenSpace.FillMode.FixedWidth)}: Maintains the {nameof(Nova.ScreenSpace.ReferenceResolution)} width on the root UIBlock, adjusting the height to match the camera's aspect ratio.\n-{nameof(Nova.ScreenSpace.FillMode.FixedHeight)}: Maintains the {nameof(Nova.ScreenSpace.ReferenceResolution)} height on the root UIBlock, adjusting the width to match the camera's aspect ratio.\n-{nameof(Nova.ScreenSpace.FillMode.MatchCameraResolution)}: Sets the root UIBlock's size to match the pixel-dimensions of the camera.\n-{nameof(Nova.ScreenSpace.FillMode.Manual)}: Does not modify the size or scale of the UIBlock. Useful if a custom resize behavior is desired.");
+            public static readonly GUIContent Mode = EditorGUIUtility.TrTextContent("Fill Mode", $"The mode used to render the content:\n-{nameof(Nova.ScreenSpace.FillMode.FixedWidth)}: Maintains the {nameof(Nova.ScreenSpace.ReferenceResolution)} width on the root UIBlock, adjusting the height to match the camera's aspect ratio.\n-{nameof(Nova.ScreenSpace.FillMode.FixedHeight)}: Maintains the {nameof(Nova.ScreenSpace.ReferenceResolution)} height on the root UIBlock, adjusting the width to match the camera's aspect ratio.\n-{nameof(Nova.ScreenSpace.FillMode.MatchCameraResolution)}: Sets the root UIBlock's size to match the pixel-dimensions of the camera.\n-{nameof(Nova.ScreenSpace.FillMode.Adaptive)}: Automatically chooses the axis (width or height) to preserve based on the current camera resolution vs the Reference Resolution so the UI adapts for portrait or landscape devices.\n-{nameof(Nova.ScreenSpace.FillMode.Manual)}: Does not modify the size or scale of the UIBlock. Useful if a custom resize behavior is desired.");
             public static readonly GUIContent ReferenceResolution = EditorGUIUtility.TrTextContent("Reference Resolution", "The resolution to use as a reference when resizing the root UIBlock to match the camera's aspect ratio.");
             public static readonly GUIContent PlaneDistance = EditorGUIUtility.TrTextContent("Plane Distance", "The distance in front of the camera at which to render the Nova content.");
         }
@@ -438,8 +444,10 @@ namespace Nova.Editor.GUIs
             public static readonly GUIContent Label = EditorGUIUtility.TrTextContent("Image", "The image to render in the body of this UI Block.");
             public static readonly GUIContent ImageMode = EditorGUIUtility.TrTextContent("Mode", "Specifies how the Nova Engine should store and attempt to batch the image.");
             public static readonly GUIContent ImageScaleMode = EditorGUIUtility.TrTextContent("Scale Mode", "Specifies how to render the image based on the aspect ratio of the image and the UI Block.");
+            public static readonly GUIContent FillAxis = EditorGUIUtility.TrTextContent("Fill Axis", "Axis used as the pixel-density reference when Scale Mode is set to Fill.");
             public static readonly GUIContent ImageCenter = EditorGUIUtility.TrTextContent("Center", "The center position of the image in UV space, where UVs go from (-1, -1) in the bottom-left to (1, 1) in the top-right.");
             public static readonly GUIContent ImageScale = EditorGUIUtility.TrTextContent("Scale", "How much to scale the image in UV space, where UVs go from (-1, -1) in the bottom-left to (1, 1) in the top-right.");
+            public static readonly GUIContent ImageRotation = EditorGUIUtility.TrTextContent("Rotation", "Rotation (degrees) to apply to the image around its center. Positive => counter-clockwise.");
             public static readonly GUIContent PixelsPerUnit = EditorGUIUtility.TrTextContent("Pixels Per Unit Multiplier", "Determines how many pixels from the target image fit into a 1x1 square in the UIBlock2D's local space.");
             public static readonly GUIContent[] TypeLabels = new GUIContent[] { EditorGUIUtility.TrTextContent("T", "Texture"), EditorGUIUtility.TrTextContent("S", "Sprite") };
             public const string SlicedWarningTooltip = "\"Sliced\" Scale Mode isn't compatible with \"Texture\" images. Change the Image Type to \"Sprite\" to used \"Sliced\" Scale Mode.";

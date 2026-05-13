@@ -14,7 +14,8 @@ v2f NovaVert(UIBlock3DVert v, uint instanceID : SV_InstanceID)
     NOVA_GET_BUFFER_ITEM_uint(index, indexIntoIndexBuffer, _NovaDataIndices);
     NOVA_GET_BUFFER_ITEM_UIBlock3DData(shaderData, index, _NovaData);
 
-    float3 vertNodePos = v.Pos * shaderData.Size + v.CornerOffsetDir * shaderData.CornerRadius + v.EdgeOffsetDir * shaderData.EdgeRadius;
+    half rCorner = NovaPickCornerRadius(v.Pos.xy, (half4)shaderData.CornerRadii);
+    float3 vertNodePos = v.Pos * shaderData.Size + v.CornerOffsetDir * (float)rCorner + v.EdgeOffsetDir * shaderData.EdgeRadius;
 
     NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, shaderData.TransformIndex, _NovaTransformsAndLighting);
     float3 rootSpace = mul(transformAndLighting.RootFromBlock, float4(vertNodePos, 1)).xyz;

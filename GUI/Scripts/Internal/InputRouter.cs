@@ -245,8 +245,23 @@ namespace Nova.Internal
             [System.NonSerialized]
             private static GestureDetector<THit> gestureDetector = null;
 
+            /// <summary>
+            /// <see cref="Interaction.Init"/> skips <see cref="Init"/> when not in play mode, but sample input
+            /// (e.g. UI Controls <c>InputManager</c>) can still drive <see cref="Interaction"/> in the editor.
+            /// Lazily allocate router state so <see cref="Update{T}"/> and related entry points are safe.
+            /// </summary>
+            private void EnsureInitialized()
+            {
+                if (recipients == null || inputHandles == null || gestureDetector == null)
+                {
+                    Init();
+                }
+            }
+
             public void Update<T>(Interaction source, T input, ReadOnlyList<THit> sortedHits, InteractionType interaction, bool noisy) where T : unmanaged, System.IEquatable<T>
             {
+                EnsureInitialized();
+
                 uint sourceID = source.ID;
                 int sourceIndex = (int)sourceID;
 
@@ -402,6 +417,8 @@ namespace Nova.Internal
 
             public void Cancel(Interaction source)
             {
+                EnsureInitialized();
+
                 if (recipients[source.ID].HitInWorldSpace.UIBlock != null)
                 {
                     IUIBlock activeHitBlock = recipients[source.ID].HitInWorldSpace.UIBlock;
@@ -423,6 +440,8 @@ namespace Nova.Internal
 
             public bool TryGetCurrentCapturingInput<T>(uint sourceID, out THit lastHit) where T : unmanaged, System.IEquatable<T>
             {
+                EnsureInitialized();
+
                 THit hit = recipients[sourceID].HitInWorldSpace;
 
                 if (hit.UIBlock != null)
@@ -439,6 +458,8 @@ namespace Nova.Internal
 
             public bool TryGetLatestReceiver<T>(uint sourceID, out THit lastHit) where T : unmanaged, System.IEquatable<T>
             {
+                EnsureInitialized();
+
                 THit hit = recipients[sourceID].HitInWorldSpace;
 
                 if (hit.UIBlock != null && hit.UIBlock.ActiveInHierarchy)

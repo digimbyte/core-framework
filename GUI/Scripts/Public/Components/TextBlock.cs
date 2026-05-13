@@ -22,6 +22,44 @@ namespace Nova
     [HelpURL("https://novaui.io/manual/TextBlock.html")]
     public sealed class TextBlock : UIBlock, ITextBlock
     {
+        /// <summary>
+        /// Controls how the TextBlock treats its text content (e.g., normal or password-masked).
+        /// </summary>
+        public enum ContentType
+        {
+            Standard = 0,
+            Password = 1
+        }
+
+        [SerializeField]
+        private ContentType contentType = ContentType.Standard;
+
+        [SerializeField]
+        private string passwordMask = "\u2022";
+
+        /// <summary>
+        /// The content type for this TextBlock. When set to <see cref="ContentType.Password"/>,
+        /// the block will store the real text and display a masked string using <see cref="passwordMask"/>.
+        /// </summary>
+        public ContentType TextContentType
+        {
+            get => contentType;
+            set
+            {
+                if (contentType == value)
+                {
+                    return;
+                }
+                contentType = value;
+                ApplyContentTypeToTMP();
+            }
+        }
+
+        /// <summary>
+        /// The current unmasked text when using password content type.
+        /// </summary>
+        [NonSerialized]
+        private string unmaskedText = null;
         #region Public
         /// <summary>
         /// A shorthand for setting TMP.text
@@ -29,11 +67,28 @@ namespace Nova
         public string Text
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => TMP.text;
+            get
+            {
+                if (contentType == ContentType.Password)
+                {
+                    return unmaskedText ?? TMP.text;
+                }
+
+                return TMP.text;
+            }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                TMP.text = value;
+                if (contentType == ContentType.Password)
+                {
+                    unmaskedText = value ?? string.Empty;
+                    TMP.text = MaskString(unmaskedText);
+                }
+                else
+                {
+                    unmaskedText = value ?? string.Empty;
+                    TMP.text = value;
+                }
             }
         }
 
@@ -288,6 +343,8 @@ namespace Nova
             MeshRenderer.enabled = false;
 
             base.Register();
+
+            ApplyContentTypeToTMP();
         }
 
         private protected override void Unregister()
@@ -297,6 +354,63 @@ namespace Nova
             UnsubscribeFromTextChanged(this);
             base.Unregister();
         }
+
+        private void ApplyContentTypeToTMP()
+        {
+            if (TMP == null)
+            {
+                return;
+            }
+
+            if (contentType == ContentType.Password)
+            {
+                if (unmaskedText == null)
+                {
+                    unmaskedText = TMP.text ?? string.Empty;
+                }
+
+                TMP.richText = false;
+                TMP.text = MaskString(unmaskedText);
+            }
+            else
+            {
+                // Restore the real text if we have it
+                if (unmaskedText != null)
+                {
+                    TMP.text = unmaskedText;
+                    unmaskedText = null;
+                }
+
+                TMP.richText = true;
+            }
+        }
+
+        private string MaskString(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            char mask = string.IsNullOrEmpty(passwordMask) ? '\u2022' : passwordMask[0];
+            char[] arr = s.ToCharArray();
+            for (int i = 0; i < arr.Length; ++i)
+            {
+                // preserve explicit newlines so layout stays similar
+                if (arr[i] != '\n' && arr[i] != '\r')
+                {
+                    arr[i] = mask;
+                }
+            }
+
+            return new string(arr);
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            ApplyContentTypeToTMP();
+        }
+#endif
 
         /// <summary>
         /// Internal event handler for when TMP calls SetVerticesDirty()

@@ -13,6 +13,24 @@ namespace Nova.Internal.Layouts
         {
             private const int MaxIterations = 10;
             private const float Epsilon_ResolveExpand = 5e-4f;
+            internal const int ExpandWeightMin = 1;
+            internal const int ExpandWeightMax = 99;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static float WeightForExpandAxis(int2 expandWeight, int expandAxis)
+            {
+                if (expandAxis == 0)
+                {
+                    return math.clamp(expandWeight.x, ExpandWeightMin, ExpandWeightMax);
+                }
+
+                if (expandAxis == 1)
+                {
+                    return math.clamp(expandWeight.y, ExpandWeightMin, ExpandWeightMax);
+                }
+
+                return 1f;
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void ApplyAutoLayout(LayoutAccess.Properties childLayout, ref AutoLayoutContext ctx, float shift, float firstExpandSize, ref NativeList<ExpandableTrack> tracks, out float sizeAlongAxis)
@@ -20,6 +38,8 @@ namespace Nova.Internal.Layouts
                 int firstAxisIndex = ctx.FirstAxis.Index();
                 float baseOffset = ctx.AutoLayout.Offset;
                 float autolayoutAlignment = ctx.FirstAxisAlignment;
+
+                childLayout.WrapExpandWeights(ref ctx.ExpandWeights);
 
                 bool centerAligned = autolayoutAlignment == 0;
 
@@ -51,6 +71,18 @@ namespace Nova.Internal.Layouts
                 float spacing = ctx.AutoLayout.CrossEnabled && ctx.FirstAxisAutoSpace ? ctx.FirstSpacingMinMax.Min : ctx.FirstAxisCalculatedSpacing.Value;
 
                 bool expandToGrid = ctx.AutoLayout.Cross.ExpandToGrid;
+                int columns = ctx.AutoLayout.Cross.Columns;
+                int rows = ctx.AutoLayout.Cross.Rows;
+                bool resizeChildren = wrap && ctx.AutoLayout.Cross.ResizeChildren;
+                int currentTrackItemCount = 0;
+                int trackCount = wrap ? 1 : 0;
+
+                float uniformCellSize = 0;
+                if (resizeChildren && columns > 0)
+                {
+                    uniformCellSize = (parentSize - (columns - 1) * spacing) / columns;
+                    uniformCellSize = math.max(uniformCellSize, 0);
+                }
 
                 for (int i = startIndex; i != endIndex; i += increment)
                 {
@@ -60,6 +92,12 @@ namespace Nova.Internal.Layouts
 
                     float adjustedExpand = firstExpandSize;
                     int span = 1;
+
+                    if (!wrap && childLayout.AutoSize[firstAxisIndex] == AutoSize.Expand)
+                    {
+                        float w = WeightForExpandAxis(childLayout.ExpandWeight, firstAxisIndex);
+                        adjustedExpand = firstExpandSize * w;
+                    }
 
                     if (expand)
                     {
@@ -74,6 +112,11 @@ namespace Nova.Internal.Layouts
                     }
 
                     ExpandChild(childLayout, ref ctx, firstAxisIndex, adjustedExpand, secondAxisIndex, wrap ? ctx.ParentSize[secondAxisIndex] : 0, ref ctx.ParentSize);
+
+                    if (resizeChildren && columns > 0)
+                    {
+                        ResizeChildAlongAxis(childLayout, firstAxisIndex, uniformCellSize, ref ctx.ParentSize);
+                    }
 
                     float childSize = childLayout.RotatedSize[firstAxisIndex];
 
@@ -92,7 +135,21 @@ namespace Nova.Internal.Layouts
                     ref Length3 childPosition = ref childLayout.Position;
 
                     // Complete current and create new track as needed
-                    if (wrap && newPosition + childSize > parentSize && newPosition != 0)
+                    bool countLimitReached = wrap && columns > 0 && currentTrackItemCount >= columns;
+                    bool sizeLimitReached = wrap && columns <= 0 && newPosition + childSize > parentSize && newPosition != 0;
+                    bool needsWrap = countLimitReached || sizeLimitReached;
+                    bool rowLimitReached = wrap && rows > 0 && trackCount >= rows;
+
+                    if (needsWrap && rowLimitReached)
+                    {
+                        ref ExpandableTrack track = ref tracks.ElementAt(tracks.Length - 1);
+                        track.PreallocatedSpace -= expand ? adjustedExpand : 0;
+                        track.SpanCount -= expand ? span : 0;
+                        track.ExpandedCount -= expand ? 1 : 0;
+                        break;
+                    }
+
+                    if (needsWrap)
                     {
                         ref ExpandableTrack track = ref tracks.ElementAt(tracks.Length - 1);
                         track.PreallocatedSpace -= expand ? adjustedExpand : 0;
@@ -106,6 +163,8 @@ namespace Nova.Internal.Layouts
 
                         // Bump to 0 for wrapping
                         newPosition = 0;
+                        currentTrackItemCount = 0;
+                        trackCount++;
                         tracks.Add(new ExpandableTrack()
                         {
                             StartIndex = i,
@@ -118,6 +177,8 @@ namespace Nova.Internal.Layouts
                     }
 
                     childPosition[firstAxisIndex] = new Length() { Type = LengthType.Value, Raw = newPosition + childExtraLength + shift };
+
+                    currentTrackItemCount++;
 
                     if (clearFormerAxis)
                     {
@@ -218,50 +279,78 @@ namespace Nova.Internal.Layouts
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void ResizeChildAlongAxis(LayoutAccess.Properties childLayout, int axisIndex, float targetSize, ref float3 parentSize)
+            {
+                AutoSize savedAutoSize = childLayout.AutoSize[axisIndex];
+                childLayout.AutoSize[axisIndex] = AutoSize.None;
+
+                Length sizeLength = childLayout.Size[axisIndex];
+                sizeLength.Type = LengthType.Value;
+                sizeLength.Raw = targetSize;
+                childLayout.Size[axisIndex] = sizeLength;
+
+                bool3 axisMask = Math.bool3_False;
+                axisMask[axisIndex] = true;
+                childLayout.CalculateSize(parentSize, childLayout.AspectRatio.IsLocked ? true : axisMask);
+
+                childLayout.AutoSize[axisIndex] = savedAutoSize;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static float GetExpandableSize(LayoutAccess.Properties childLayout, ref AutoLayoutContext ctx, ref ExpandableTrack track, out float remainingSpace)
             {
                 int startIndex = track.StartIndex;
                 float childLength = track.ChildLength;
                 float preallocatedSpace = track.PreallocatedSpace;
-                float totalExpandCount = track.SpanCount;
+                float totalSpanCount = track.SpanCount;
                 int endIndex = track.EndIndex;
                 int expandAxis = track.ExpandAxis;
                 float parentLength = track.FillableLength;
+
+                childLayout.WrapExpandWeights(ref ctx.ExpandWeights);
 
                 float availableSpace = parentLength - childLength;
 
                 remainingSpace = availableSpace;
 
-                if (totalExpandCount == 0 || availableSpace <= 0)
+                if (totalSpanCount == 0 || availableSpace <= 0)
                 {
                     return 0;
                 }
 
                 remainingSpace = 0;
 
-                int attempts = 0;
-                float totalAllocatedSpace = 0;
-
-                float currentExpandCount = 0;
-                float currentApproximation = availableSpace / totalExpandCount;
-                float2 lookback = currentApproximation;
-
+                float totalW = 0;
                 int increment = endIndex > startIndex ? 1 : -1;
+                for (int childIndex = startIndex; childIndex != endIndex; childIndex += increment)
+                {
+                    childLayout.Index = ctx.ParentElement.Children[childIndex];
 
-                // This technically will go up to MaxIterations for the really complex
-                // cases where there are several unique min/max ranges, but in practice
-                // it's often much less. In the simple case it will resolve in 1 attempt.
+                    if (childLayout.AutoSize[expandAxis] != AutoSize.Expand)
+                    {
+                        continue;
+                    }
+
+                    float w = WeightForExpandAxis(childLayout.ExpandWeight, expandAxis);
+                    float span = 1f;
+                    totalW += w * span;
+                }
+
+                if (totalW <= 0f)
+                {
+                    totalW = 1f;
+                }
+
+                float currentT = availableSpace / totalW;
+                float2 lookback = currentT;
+                float lastTotalAllocated = 0f;
+
                 for (int i = 0; i < MaxIterations; ++i)
                 {
-                    float prevResult = totalAllocatedSpace - preallocatedSpace - availableSpace;
-
-                    currentExpandCount = 0;
-                    totalAllocatedSpace = 0;
-
-                    attempts = i + 1;
-
-                    float clampedByMaxCount = 0;
-
+                    float prevResult = lastTotalAllocated - preallocatedSpace - availableSpace;
+                    float currentFlexW = 0f;
+                    float totalAllocatedSpace = 0f;
+                    float clampedByMaxW = 0f;
                     float minAbove = float.MaxValue;
                     float maxBelow = float.MinValue;
 
@@ -274,69 +363,63 @@ namespace Nova.Internal.Layouts
                             continue;
                         }
 
+                        float w = WeightForExpandAxis(childLayout.ExpandWeight, expandAxis);
+                        float span = 1f;
+                        float ideal = currentT * w * span;
                         Length.MinMax range = childLayout.SizeMinMax[expandAxis];
 
-                        float span = 1;
-
-                        if (currentApproximation < range.Min)
+                        if (ideal < range.Min)
                         {
                             minAbove = math.min(minAbove, range.Min);
                         }
-                        else if (currentApproximation > range.Max)
+                        else if (ideal > range.Max)
                         {
                             maxBelow = math.max(maxBelow, range.Max);
                         }
 
-                        float val = range.Clamp(currentApproximation);
+                        float val = range.Clamp(ideal);
 
-                        if (Math.ApproximatelyEqual(val, currentApproximation, Epsilon_ResolveExpand))
+                        if (Math.ApproximatelyEqual(val, ideal, Epsilon_ResolveExpand))
                         {
-                            currentExpandCount += span;
+                            currentFlexW += w * span;
                         }
                         else if (Math.ApproximatelyEqual(val, range.Max))
                         {
-                            clampedByMaxCount += span;
+                            clampedByMaxW += w * span;
                         }
 
                         totalAllocatedSpace += val;
                     }
 
+                    lastTotalAllocated = totalAllocatedSpace;
                     float result = totalAllocatedSpace - preallocatedSpace - availableSpace;
 
-                    if (result <= 0 && clampedByMaxCount == totalExpandCount)
+                    if (result <= 0f && Math.ApproximatelyEqual(clampedByMaxW, totalW, Epsilon_ResolveExpand))
                     {
-                        // clamped entirely by max values,
-                        // so don't keep trying to adjust
                         remainingSpace = -result;
                         break;
                     }
 
-                    float countToUse = currentExpandCount == 0 ? totalExpandCount : currentExpandCount;
+                    float wToUse = currentFlexW > 0f ? currentFlexW : totalW;
 
                     lookback[0] = lookback[1];
-                    lookback[1] = currentApproximation;
+                    lookback[1] = currentT;
 
                     if (Math.ApproximatelyEqual(prevResult, result))
                     {
-                        // if we're here, we got stuck, so we'll jump to the nearest
-                        // limiting value to ensure we break past the threshold
-
-                        currentApproximation = result < 0 ? minAbove - (result / countToUse) : maxBelow - (result / countToUse);
+                        currentT = result < 0f ? minAbove - (result / wToUse) : maxBelow - (result / wToUse);
                     }
                     else
                     {
-                        currentApproximation -= result / countToUse;
+                        currentT -= result / wToUse;
                     }
 
-                    if (Math.ApproximatelyEqual(currentApproximation, lookback[0], Epsilon_ResolveExpand))
+                    if (Math.ApproximatelyEqual(currentT, lookback[0], Epsilon_ResolveExpand))
                     {
-                        // lookback used to avoid flipping back/forth between two values
-                        // here we average the two values we're flipping between to get unstuck
-                        currentApproximation = (currentApproximation + lookback[1]) * 0.5f;
+                        currentT = (currentT + lookback[1]) * 0.5f;
                     }
 
-                    currentApproximation = math.max(currentApproximation, 0);
-
+                    currentT = math.max(currentT, 0f);
 
                     if (Math.ApproximatelyZero(result, Epsilon_ResolveExpand))
                     {
@@ -344,48 +427,51 @@ namespace Nova.Internal.Layouts
                     }
                 }
 
-                return currentApproximation;
+                return currentT;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static float GetExpandableSize(ref NativeList<ExpandableRange> ranges, int expandCount, float childLength, float preallocatedSpace, float parentLength, out float remainingSpace)
             {
-                int totalExpandCount = expandCount;
-
                 float availableSpace = parentLength - childLength;
 
                 remainingSpace = availableSpace;
 
-                if (totalExpandCount == 0 || availableSpace <= 0)
+                if (expandCount == 0 || availableSpace <= 0)
                 {
                     return 0;
                 }
 
-                int attempts = 0;
-                float totalAllocatedSpace = 0;
+                float totalW = 0f;
+                int n = ranges.Length;
+                for (int ri = 0; ri < n; ++ri)
+                {
+                    ExpandableRange r = ranges[ri];
+                    if (r.Expand)
+                    {
+                        totalW += r.DistributeWeight;
+                    }
+                }
+
+                if (totalW <= 0f)
+                {
+                    totalW = 1f;
+                }
+
                 remainingSpace = 0;
 
-                int currentExpandCount = 0;
-                float currentApproximation = availableSpace / totalExpandCount;
-                float2 lookback = currentApproximation;
-
+                float currentT = availableSpace / totalW;
+                float2 lookback = currentT;
+                float lastTotalAllocated = 0f;
                 int startIndex = 0;
-                int endIndex = ranges.Length;
+                int endIndex = n;
 
-                // This technically will go up to MaxIterations for the really complex
-                // cases where there are several unique min/max ranges, but in practice
-                // it's often much less. In the simple case it will resolve in 1 attempt.
                 for (int i = 0; i < MaxIterations; ++i)
                 {
-                    float prevResult = totalAllocatedSpace - preallocatedSpace - availableSpace;
-
-                    currentExpandCount = 0;
-                    totalAllocatedSpace = 0;
-
-                    attempts = i + 1;
-
-                    int clampedByMaxCount = 0;
-
+                    float prevResult = lastTotalAllocated - preallocatedSpace - availableSpace;
+                    float currentFlexW = 0f;
+                    float totalAllocatedSpace = 0f;
+                    float clampedByMaxW = 0f;
                     float minAbove = float.MaxValue;
                     float maxBelow = float.MinValue;
 
@@ -398,67 +484,62 @@ namespace Nova.Internal.Layouts
                             continue;
                         }
 
+                        float w = trackRange.DistributeWeight;
+                        float ideal = currentT * w;
                         Length.MinMax range = trackRange.MinMax;
 
-                        if (currentApproximation < range.Min)
+                        if (ideal < range.Min)
                         {
                             minAbove = math.min(minAbove, range.Min);
                         }
-                        else if (currentApproximation > range.Max)
+                        else if (ideal > range.Max)
                         {
                             maxBelow = math.max(maxBelow, range.Max);
                         }
 
-                        float val = range.Clamp(currentApproximation);
+                        float val = range.Clamp(ideal);
 
-                        if (Math.ApproximatelyEqual(val, currentApproximation, Epsilon_ResolveExpand))
+                        if (Math.ApproximatelyEqual(val, ideal, Epsilon_ResolveExpand))
                         {
-                            currentExpandCount++;
+                            currentFlexW += w;
                         }
                         else if (Math.ApproximatelyEqual(val, range.Max))
                         {
-                            clampedByMaxCount++;
+                            clampedByMaxW += w;
                         }
 
                         totalAllocatedSpace += val;
                     }
 
+                    lastTotalAllocated = totalAllocatedSpace;
                     float result = totalAllocatedSpace - preallocatedSpace - availableSpace;
 
-                    if (result <= 0 && clampedByMaxCount == totalExpandCount)
+                    if (result <= 0f && Math.ApproximatelyEqual(clampedByMaxW, totalW, Epsilon_ResolveExpand))
                     {
-                        // clamped entirely by max values,
-                        // so don't keep trying to adjust
                         remainingSpace = -result;
                         break;
                     }
 
-                    int countToUse = currentExpandCount == 0 ? totalExpandCount : currentExpandCount;
+                    float wToUse = currentFlexW > 0f ? currentFlexW : totalW;
 
                     lookback[0] = lookback[1];
-                    lookback[1] = currentApproximation;
+                    lookback[1] = currentT;
 
                     if (Math.ApproximatelyEqual(prevResult, result))
                     {
-                        // if we're here, we got stuck, so we'll jump to the nearest
-                        // limiting value to ensure we break past the threshold
-
-                        currentApproximation = result < 0 ? minAbove - (result / countToUse) : maxBelow - (result / countToUse);
+                        currentT = result < 0f ? minAbove - (result / wToUse) : maxBelow - (result / wToUse);
                     }
                     else
                     {
-                        currentApproximation -= result / countToUse;
+                        currentT -= result / wToUse;
                     }
 
-                    if (Math.ApproximatelyEqual(currentApproximation, lookback[0], Epsilon_ResolveExpand))
+                    if (Math.ApproximatelyEqual(currentT, lookback[0], Epsilon_ResolveExpand))
                     {
-                        // lookback used to avoid flipping back/forth between two values
-                        // here we average the two values we're flipping between to get unstuck
-                        currentApproximation = (currentApproximation + lookback[1]) * 0.5f;
+                        currentT = (currentT + lookback[1]) * 0.5f;
                     }
 
-                    currentApproximation = math.max(currentApproximation, 0);
-
+                    currentT = math.max(currentT, 0f);
 
                     if (Math.ApproximatelyZero(result, Epsilon_ResolveExpand))
                     {
@@ -466,7 +547,7 @@ namespace Nova.Internal.Layouts
                     }
                 }
 
-                return currentApproximation;
+                return currentT;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -474,6 +555,8 @@ namespace Nova.Internal.Layouts
             {
                 int trackCount = tracks.Length;
                 int secondAxisIndex = ctx.SecondAxis.Index();
+
+                childLayout.WrapExpandWeights(ref ctx.ExpandWeights);
 
                 float preallocSize = 0;
                 float totalSize = 0;
@@ -494,6 +577,7 @@ namespace Nova.Internal.Layouts
                     float trackSize = 0;
                     bool expandAny = false;
                     bool preProcessAny = false;
+                    float trackCrossDistributeW = 0f;
 
                     Length.MinMax trackMinMax = new Length.MinMax();
 
@@ -504,6 +588,10 @@ namespace Nova.Internal.Layouts
                         bool expand = childLayout.AutoSize[secondAxisIndex] == AutoSize.Expand;
 
                         expandAny |= expand;
+                        if (expand)
+                        {
+                            trackCrossDistributeW += WeightForExpandAxis(childLayout.ExpandWeight, secondAxisIndex);
+                        }
 
                         preProcessAny |= expand && childLayout.AspectRatio.Axis.Index() == secondAxisIndex;
 
@@ -523,7 +611,8 @@ namespace Nova.Internal.Layouts
 
                     totalSize += trackSize + crossSpacing;
 
-                    ranges.Add(new ExpandableRange() { MinMax = trackMinMax, Expand = expandAny, ExpectedSize = trackSize, PreProcess = preProcessAny });
+                    float crossW = expandAny ? math.max(1e-3f, trackCrossDistributeW) : 1f;
+                    ranges.Add(new ExpandableRange() { MinMax = trackMinMax, Expand = expandAny, ExpectedSize = trackSize, PreProcess = preProcessAny, DistributeWeight = crossW });
                 }
 
                 totalSize -= crossSpacing;
@@ -580,8 +669,10 @@ namespace Nova.Internal.Layouts
             {
                 int firstAxisIndex = ctx.FirstAxis.Index();
                 int secondAxisIndex = ctx.SecondAxis.Index();
-                float baseOffset = ctx.AutoLayout.Offset;
+                float baseOffset = 0;
                 float autolayoutAlignment = ctx.SecondAxisAlignment;
+
+                childLayout.WrapExpandWeights(ref ctx.ExpandWeights);
 
                 int trackCount = tracks.Length;
 
@@ -596,6 +687,26 @@ namespace Nova.Internal.Layouts
                     {
                         GridifyAutoSpacing(ref childLayout, ref ctx, ref tracks, cellSize);
                     }
+                }
+
+                bool resizeChildren = ctx.AutoLayout.Cross.ResizeChildren;
+                int rows = ctx.AutoLayout.Cross.Rows;
+                int columns = ctx.AutoLayout.Cross.Columns;
+
+                float uniformRowSize = 0;
+                if (resizeChildren && rows > 0 && expandToGrid)
+                {
+                    float crossSpacing = ctx.SecondAxisCalculatedSpacing.Value;
+                    uniformRowSize = (ctx.ParentSize[secondAxisIndex] - (rows - 1) * crossSpacing) / rows;
+                    uniformRowSize = math.max(uniformRowSize, 0);
+                }
+
+                float uniformCellSize = 0;
+                if (resizeChildren && columns > 0)
+                {
+                    float colSpacing = ctx.FirstAxisCalculatedSpacing.Value;
+                    uniformCellSize = (ctx.ParentSize[firstAxisIndex] - (columns - 1) * colSpacing) / columns;
+                    uniformCellSize = math.max(uniformCellSize, 0);
                 }
 
                 float2 newPosition = new float2(0, baseOffset);
@@ -638,9 +749,32 @@ namespace Nova.Internal.Layouts
                     {
                         childLayout.Index = ctx.ParentElement.Children[i];
 
-                        float adjustedExpand = expandToGrid ? ctx.GetSpannedSize(childLayout.SizeMinMax[firstAxisIndex].Min, cellSize, out _) : expandableSize;
+                        float adjustedExpand;
+                        if (expandToGrid)
+                        {
+                            adjustedExpand = ctx.GetSpannedSize(childLayout.SizeMinMax[firstAxisIndex].Min, cellSize, out _);
+                        }
+                        else
+                        {
+                            adjustedExpand = expandableSize;
+                            if (childLayout.AutoSize[firstAxisIndex] == AutoSize.Expand)
+                            {
+                                adjustedExpand *= WeightForExpandAxis(childLayout.ExpandWeight, firstAxisIndex);
+                            }
+                        }
 
-                        ExpandChild(childLayout, ref ctx, firstAxisIndex, adjustedExpand, secondAxisIndex, range.MinMax.Clamp(crossExpandSize), ref ctx.ParentSize);
+                        float secondAxisExpand = expandToGrid ? crossExpandSize * range.DistributeWeight : range.ExpectedSize;
+                        ExpandChild(childLayout, ref ctx, firstAxisIndex, adjustedExpand, secondAxisIndex, range.MinMax.Clamp(secondAxisExpand), ref ctx.ParentSize);
+
+                        if (resizeChildren && columns > 0)
+                        {
+                            ResizeChildAlongAxis(childLayout, firstAxisIndex, uniformCellSize, ref ctx.ParentSize);
+                        }
+
+                        if (resizeChildren && rows > 0 && expandToGrid)
+                        {
+                            ResizeChildAlongAxis(childLayout, secondAxisIndex, uniformRowSize, ref ctx.ParentSize);
+                        }
 
                         float3 childSize = childLayout.RotatedSize;
                         childSize += childLayout.CalculatedMargin.Size;
@@ -675,10 +809,11 @@ namespace Nova.Internal.Layouts
                         newPosition[0] += childSize[firstAxisIndex] + ctx.FirstAxisCalculatedSpacing.Value;
                     }
 
-                    range.ExpectedSize = crossMax;
+                    float rowHeight = (resizeChildren && rows > 0 && expandToGrid) ? uniformRowSize : crossMax;
+                    range.ExpectedSize = rowHeight;
 
                     // increment total offset
-                    newPosition[1] += crossMax + ctx.SecondAxisCalculatedSpacing.Value;
+                    newPosition[1] += rowHeight + ctx.SecondAxisCalculatedSpacing.Value;
                     newPosition[0] = 0;
                 }
 
@@ -802,43 +937,37 @@ namespace Nova.Internal.Layouts
             public Length2.Calculated CalculatedSpacing;
             public float3 ParentSize;
             public float BaseCellSize;
+            public NativeList<int2> ExpandWeights;
 
             private bool Cross => AutoLayout.Cross.Enabled && AutoLayout.Cross.Axis != AutoLayout.Axis;
 
-            public bool FirstAxisAutoSpace => Cross ? AutoLayout.Cross.AutoSpace : AutoLayout.AutoSpace;
-            public bool SecondAxisAutoSpace => Cross ? AutoLayout.AutoSpace : false;
+            public bool FirstAxisAutoSpace => AutoLayout.AutoSpace;
+            public bool SecondAxisAutoSpace => Cross ? AutoLayout.Cross.AutoSpace : false;
 
-            public Axis FirstAxis => Cross ? AutoLayout.Cross.Axis : AutoLayout.Axis;
-            public Axis SecondAxis => Cross ? AutoLayout.Axis : Axis.None;
+            public Axis FirstAxis => AutoLayout.Axis;
+            public Axis SecondAxis => Cross ? AutoLayout.Cross.Axis : Axis.None;
 
-            public int FirstAxisAlignment => Cross ? AutoLayout.Cross.Alignment : AutoLayout.Alignment;
-            public int SecondAxisAlignment => AutoLayout.Alignment;
+            public int FirstAxisAlignment => AutoLayout.Alignment;
+            public int SecondAxisAlignment => Cross ? AutoLayout.Cross.Alignment : AutoLayout.Alignment;
 
             public bool FirstAxisCenterAligned => FirstAxisAlignment == 0;
             public bool SecondAxisCenterAligned => SecondAxisAlignment == 0;
 
-            public bool InvertFirstAxisOrder => Cross ? AutoLayout.Cross.ReverseOrder : AutoLayout.ReverseOrder;
-            public bool InvertSecondAxisOrder => Cross ? AutoLayout.ReverseOrder : false;
+            public bool InvertFirstAxisOrder => AutoLayout.ReverseOrder;
+            public bool InvertSecondAxisOrder => Cross ? AutoLayout.Cross.ReverseOrder : false;
 
             public bool InvertFirstAxisPositions => (FirstAxis == Axis.Y) ^ (FirstAxisAlignment == 1) ^ InvertFirstAxisOrder;
-            public bool InvertSecondAxisPositions => (SecondAxis == Axis.Y) ^ (SecondAxisAlignment == 1) ^ InvertSecondAxisOrder;
+            public bool InvertSecondAxisPositions => InvertSecondAxisOrder;
 
             public Length.Calculated FirstAxisCalculatedSpacing
             {
                 get
                 {
-                    return Cross ? CalculatedSpacing.Second : CalculatedSpacing.First;
+                    return CalculatedSpacing.First;
                 }
                 set
                 {
-                    if (Cross)
-                    {
-                        CalculatedSpacing.Second = value;
-                    }
-                    else
-                    {
-                        CalculatedSpacing.First = value;
-                    }
+                    CalculatedSpacing.First = value;
                 }
             }
 
@@ -846,13 +975,13 @@ namespace Nova.Internal.Layouts
             {
                 get
                 {
-                    return AutoLayout.CrossEnabled ? CalculatedSpacing.First : default;
+                    return AutoLayout.CrossEnabled ? CalculatedSpacing.Second : default;
                 }
                 set
                 {
                     if (Cross)
                     {
-                        CalculatedSpacing.First = value;
+                        CalculatedSpacing.Second = value;
                     }
                 }
             }
@@ -861,18 +990,11 @@ namespace Nova.Internal.Layouts
             {
                 get
                 {
-                    return Cross ? AutoLayout.Cross.Spacing : AutoLayout.Spacing;
+                    return AutoLayout.Spacing;
                 }
                 set
                 {
-                    if (Cross)
-                    {
-                        AutoLayout.Cross.Spacing = value;
-                    }
-                    else
-                    {
-                        AutoLayout.Spacing = value;
-                    }
+                    AutoLayout.Spacing = value;
                 }
             }
 
@@ -880,22 +1002,22 @@ namespace Nova.Internal.Layouts
             {
                 get
                 {
-                    return Cross ? AutoLayout.Spacing : default;
+                    return Cross ? AutoLayout.Cross.Spacing : default;
                 }
                 set
                 {
                     if (Cross)
                     {
-                        AutoLayout.Spacing = value;
+                        AutoLayout.Cross.Spacing = value;
                     }
                 }
             }
 
-            public Length.MinMax FirstSpacingMinMax => Cross ? AutoLayout.Cross.SpacingMinMax : AutoLayout.SpacingMinMax;
-            public Length.MinMax SecondSpacingMinMax => Cross ? AutoLayout.SpacingMinMax : default;
+            public Length.MinMax FirstSpacingMinMax => AutoLayout.SpacingMinMax;
+            public Length.MinMax SecondSpacingMinMax => Cross ? AutoLayout.Cross.SpacingMinMax : default;
 
-            public Length.Calculated CalculateFirstSpacing(float relativeTo) => Cross ? AutoLayout.Cross.Calc(relativeTo) : AutoLayout.Calc(relativeTo);
-            public Length.Calculated CalculateSecondSpacing(float relativeTo) => Cross ? AutoLayout.Calc(relativeTo) : default;
+            public Length.Calculated CalculateFirstSpacing(float relativeTo) => AutoLayout.Calc(relativeTo);
+            public Length.Calculated CalculateSecondSpacing(float relativeTo) => Cross ? AutoLayout.Cross.Calc(relativeTo) : default;
 
             public float GetSpannedSize(float minSize, out int spans) => GetSpannedSize(minSize, BaseCellSize, out spans);
 
@@ -964,6 +1086,7 @@ namespace Nova.Internal.Layouts
             public float ExpectedSize;
             public bool Expand;
             public bool PreProcess;
+            public float DistributeWeight;
         }
     }
 }

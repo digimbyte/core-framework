@@ -51,6 +51,7 @@ namespace Nova.Internal.Layouts
         public NativeList<bool> OffsetBySize;
         public NativeList<float3> Alignments;
         public NativeList<AutoSize3> AutoSizes;
+        public NativeList<int2> ExpandWeights;
 
         public NativeList<AutoLayout> AutoLayouts;
         public NativeList<Length2.Calculated> CalculatedSpacing;
@@ -93,6 +94,7 @@ namespace Nova.Internal.Layouts
         private bool* offsetBySizePtr;
         private float3* alignmentsPtr;
         private AutoSize3* autosizesPtr;
+        private int2* expandWeightsPtr;
         private AutoLayout* autoLayoutsPtr;
         private AspectRatio* aspectRatiosPtr;
 
@@ -380,6 +382,7 @@ namespace Nova.Internal.Layouts
             offsetBySizePtr = registerRunner.OffsetBySizePtr;
             alignmentsPtr = registerRunner.AlignmentsPtr;
             autosizesPtr = registerRunner.AutosizesPtr;
+            expandWeightsPtr = registerRunner.ExpandWeightsPtr;
             aspectRatiosPtr = registerRunner.AspectRatiosPtr;
 
             TransformTracker.Add(val);
@@ -424,6 +427,7 @@ namespace Nova.Internal.Layouts
             layout.WrapUseRotations(useRotationsPtr);
             layout.WrapOffsetBySize(offsetBySizePtr);
             layout.WrapAspectRatios(aspectRatiosPtr);
+            layout.WrapExpandWeights(expandWeightsPtr);
         }
 
         public void SetLayoutDirty(ILayoutBlock val)
@@ -576,6 +580,7 @@ namespace Nova.Internal.Layouts
             OffsetBySize = new NativeList<bool>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             Alignments = new NativeList<float3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             AutoSizes = new NativeList<AutoSize3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
+            ExpandWeights = new NativeList<int2>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             AspectRatios = new NativeList<AspectRatio>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             ParentSizes = new NativeList<float3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
 
@@ -587,6 +592,7 @@ namespace Nova.Internal.Layouts
             offsetBySizePtr = OffsetBySize.GetRawPtr();
             alignmentsPtr = Alignments.GetRawPtr();
             autosizesPtr = AutoSizes.GetRawPtr();
+            expandWeightsPtr = ExpandWeights.GetRawPtr();
 
             DirectContentSizes = new NativeList<float3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             DirectContentOffsets = new NativeList<float3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
@@ -618,6 +624,7 @@ namespace Nova.Internal.Layouts
                 OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 Autosizes = AutoSizes,
+                ExpandWeights = ExpandWeights,
                 AspectRatios = AspectRatios,
 
                 AutoLayouts = AutoLayouts,
@@ -667,6 +674,7 @@ namespace Nova.Internal.Layouts
                 OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 AutoSizes = AutoSizes,
+                ExpandWeights = ExpandWeights,
 
                 AutoLayouts = AutoLayouts,
                 CalculatedSpacing = CalculatedSpacing,
@@ -707,6 +715,7 @@ namespace Nova.Internal.Layouts
                 OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 AutoSizes = AutoSizes,
+                ExpandWeights = ExpandWeights,
 
                 AutoLayouts = AutoLayouts,
                 CalculatedSpacing = CalculatedSpacing,
@@ -757,6 +766,7 @@ namespace Nova.Internal.Layouts
                 OffsetBySize = OffsetBySize,
                 Alignments = Alignments,
                 AutoSizes = AutoSizes,
+                ExpandWeights = ExpandWeights,
                 AspectRatios = AspectRatios,
 
                 AutoLayouts = AutoLayouts,
@@ -781,6 +791,7 @@ namespace Nova.Internal.Layouts
             OffsetBySize.Dispose();
             Alignments.Dispose();
             AutoSizes.Dispose();
+            ExpandWeights.Dispose();
             AspectRatios.Dispose();
             ParentSizes.Dispose();
 

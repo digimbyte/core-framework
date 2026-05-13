@@ -29,5 +29,5 @@ MonoBehaviour:
   SliderPrefab: {fileID: 8438892594822831693, guid: cd60a284f8096c3458c9e34f4da59f66, type: 3}
   DropdownPrefab: {fileID: 5760967405154365189, guid: 6c171bbb6a47c0045aac94494c48f719, type: 3}
   TextFieldPrefab: {fileID: 433028253456703510, guid: 4384c656ba261894eb263de6feb0b91b, type: 3}
-  ScrollViewPrefab: {fileID: 4310017466626043759, guid: db2faff79ba10e548bfcb494aed8ea16, type: 3}
+  ScrollViewPrefab: {fileID: 1085750826417540080, guid: ab15359d265d68c459605c98dcfe5c93, type: 3}
   UIRootPrefab: {fileID: 7599235840010813282, guid: 46640eb424e726547b5f2426e3180e95, type: 3}

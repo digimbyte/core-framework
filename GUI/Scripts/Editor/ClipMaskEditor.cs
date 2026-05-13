@@ -2,6 +2,7 @@
 using Nova.Editor.Serialization;
 using Nova.Internal.Utilities;
 using UnityEditor;
+using UnityEngine;
 using static Nova.Editor.Serialization.Wrappers;
 
 namespace Nova.Editor.GUIs
@@ -37,6 +38,29 @@ namespace Nova.Editor.GUIs
             NovaGUI.ToggleField(Labels.ClipMask.Clip, wrapper.ClipProp);
             SerializedProperty textureProp = serializedObject.FindProperty(Names.ClipMask.maskTexture);
             EditorGUILayout.ObjectField(textureProp, Labels.ClipMask.Mask);
+
+            // Procedural clip mask options (stored on the ClipMask component)
+            SerializedProperty proceduralProp = serializedObject.FindProperty("procedural");
+            SerializedProperty proceduralPercentProp = serializedObject.FindProperty("proceduralPercent");
+            SerializedProperty proceduralRotationProp = serializedObject.FindProperty("proceduralRotation");
+
+            if (proceduralProp != null)
+            {
+                EditorGUILayout.PropertyField(proceduralProp, new GUIContent("Procedural Mask", "Use an implicit gradient mask instead of a texture."));
+            }
+
+            if (proceduralProp != null && proceduralProp.boolValue)
+            {
+                if (proceduralPercentProp != null)
+                {
+                    EditorGUILayout.Slider(proceduralPercentProp, 0f, 1f, new GUIContent("Slice Percent", "Percentage across the mask's gradient to cut at."));
+                }
+
+                if (proceduralRotationProp != null)
+                {
+                    EditorGUILayout.PropertyField(proceduralRotationProp, new GUIContent("Rotation", "Rotation (degrees) of the procedural gradient."));
+                }
+            }
 
             if (EditorGUI.EndChangeCheck())
             {

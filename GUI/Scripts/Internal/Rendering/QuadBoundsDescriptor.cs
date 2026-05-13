@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Supernova Technologies LLC
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 
 namespace Nova.Internal.Rendering
 {
@@ -27,7 +28,8 @@ namespace Nova.Internal.Rendering
         }
 
         public RotationSpaceBounds Bounds;
-        public float CornerRadius;
+        /// <summary>Resolved body corner radii in rotation-set units: x=TL, y=TR, z=BR, w=BL (matches shader / <see cref="Nova.CornerRadii"/> ordering).</summary>
+        public float4 CornerRadii;
         public RenderIndex RenderIndex;
         public VisualElementIndex VisualElementIndex;
 

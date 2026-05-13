@@ -16,6 +16,40 @@ namespace Nova.Editor.GUIs
 {
     internal static class NovaLayoutEditors
     {
+        private static readonly GUIContent RowSpacingLabel = new GUIContent("Row Spacing", "Gap inserted between rows (wrap direction). When Cross Axis is enabled, set this equal to Column Spacing for a uniform grid.");
+        private static readonly GUIContent ColumnSpacingLabel = new GUIContent("Column Spacing", "Gap inserted between items within each row (cross axis direction). When Cross Axis is enabled, set this equal to Row Spacing for a uniform grid.");
+
+        private static Vector2Int ClampExpandWeight(Vector2Int value)
+        {
+            return new Vector2Int(
+                Mathf.Clamp(value.x, 1, 99),
+                Mathf.Clamp(value.y, 1, 99));
+        }
+
+        private static void DrawExpandWeightField(SerializedProperty expandWeightProperty)
+        {
+            Vector2Int v = expandWeightProperty.vector2IntValue;
+            Vector2Int clamped = ClampExpandWeight(v);
+            if (v != clamped)
+            {
+                expandWeightProperty.vector2IntValue = clamped;
+                expandWeightProperty.serializedObject.ApplyModifiedProperties();
+            }
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(expandWeightProperty, Labels.Size.ExpandWeight);
+            if (EditorGUI.EndChangeCheck())
+            {
+                v = expandWeightProperty.vector2IntValue;
+                clamped = ClampExpandWeight(v);
+                if (v != clamped)
+                {
+                    expandWeightProperty.vector2IntValue = clamped;
+                    expandWeightProperty.serializedObject.ApplyModifiedProperties();
+                }
+            }
+        }
+
         private static bool ScreenSpaceControlsSize(UIBlock uiBlock)
         {
             if (uiBlock.TryGetComponent(out ScreenSpace screenSpace) &&
@@ -78,6 +112,11 @@ namespace Nova.Editor.GUIs
                         ApplyAutosizeTypeChanges(layout.Size.X, auto.X);
                         ApplyAutosizeTypeChanges(layout.Size.Y, auto.Y);
                         ApplyAutosizeTypeChanges(layout.Size.Z, auto.Z);
+                    }
+
+                    if (uiBlock is UIBlock2D && (uiBlock.AutoSize.X == AutoSize.Expand || uiBlock.AutoSize.Y == AutoSize.Expand))
+                    {
+                        DrawExpandWeightField(layout.ExpandWeightProp);
                     }
 
                     ThreeD<bool> autosizeDisables = Util.Or(uiBlock.AutoSize == AutoSize.Expand, uiBlock.AutoSize == AutoSize.Shrink);
@@ -435,24 +474,33 @@ namespace Nova.Editor.GUIs
                 _CrossLayout crossLayout = autoLayout.Cross;
                 bool crossAxisEnabled = crossLayout.Axis != Axis.None;
 
+                Axis oldPrimaryAxis = autoLayout.Axis;
+                Axis oldCrossAxis = crossLayout.Axis;
+
                 GUIContent primaryAxisLabel = Labels.AutoLayout.PrimaryAxis;
                 Rect labelRect = NovaGUI.Layout.GetControlRect();
                 labelRect = labelRect.Center(EditorStyles.boldLabel.CalcSize(primaryAxisLabel).x);
                 EditorGUI.LabelField(labelRect, primaryAxisLabel, EditorStyles.boldLabel);
 
                 AutoLayoutToolbar(autoLayout.AxisProp, autoLayout.alignmentProp, autoLayout.ReverseOrderProp, out bool axisChanged);
-                expandedLength = AutoLayoutSpacing(uiBlock, autoLayout.Spacing, autoLayout.SpacingMinMax, autoLayout.AutoSpaceProp, uiBlock.CalculatedSpacing, expandedLength);
+                expandedLength = AutoLayoutSpacing(uiBlock, autoLayout.Spacing, autoLayout.SpacingMinMax, autoLayout.AutoSpaceProp, uiBlock.CalculatedSpacing, expandedLength, crossAxisEnabled ? RowSpacingLabel : null);
                 NovaGUI.FloatField(Labels.AutoLayout.Offset, autoLayout.OffsetProp);
 
                 if (axisChanged && crossAxisEnabled)
                 {
+                    Axis newPrimaryAxis = autoLayout.Axis;
+                    autoLayout.alignment = RemapAlignment(oldPrimaryAxis, newPrimaryAxis, autoLayout.alignment);
+
                     int previousCrossAxis = (int)crossLayout.Axis;
-                    crossLayout.Axis = OppositeAxis(autoLayout.Axis);
+                    Axis newCrossAxis = OppositeAxis(newPrimaryAxis);
+                    crossLayout.alignment = RemapAlignment(oldCrossAxis, newCrossAxis, crossLayout.alignment);
+                    crossLayout.Axis = newCrossAxis;
                     ApplyKnownAutoLayoutPropsToChildren(crossLayout.AxisProp, previousCrossAxis, crossLayout.alignment);
                 }
 
                 EditorGUILayout.Space();
                 expandedCrossLength = CrossLayoutField(uiBlock, crossLayout, autoLayout.Axis, expandedCrossLength);
+
             }
 
             return (expandedLength, expandedCrossLength);
@@ -500,7 +548,7 @@ namespace Nova.Editor.GUIs
                 EditorGUILayout.Space(1);
 
                 AutoLayoutToolbar(crossLayout.AxisProp, crossLayout.alignmentProp, crossLayout.ReverseOrderProp, out _, primaryAxis);
-                expandedCrossLength = AutoLayoutSpacing(uiBlock, crossLayout.Spacing, crossLayout.SpacingMinMax, crossLayout.AutoSpaceProp, uiBlock.CalculatedCrossSpacing, expandedCrossLength);
+                expandedCrossLength = AutoLayoutSpacing(uiBlock, crossLayout.Spacing, crossLayout.SpacingMinMax, crossLayout.AutoSpaceProp, uiBlock.CalculatedCrossSpacing, expandedCrossLength, ColumnSpacingLabel);
 
                 Rect expandToGridPosition = NovaGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
@@ -511,6 +559,38 @@ namespace Nova.Editor.GUIs
                 {
                     crossLayout.ExpandToGrid = expandToGrid;
                 }
+
+                Rect columnsPosition = NovaGUI.Layout.GetControlRect();
+                EditorGUI.BeginChangeCheck();
+                GUIContent columnsLabel = EditorGUI.BeginProperty(columnsPosition, new GUIContent("Columns", "Items per row. 0 = unlimited (size-based wrapping)."), crossLayout.ColumnsProp);
+                int columns = Mathf.Max(0, EditorGUI.IntField(columnsPosition, columnsLabel, crossLayout.Columns));
+                EditorGUI.EndProperty();
+                if (EditorGUI.EndChangeCheck())
+                {
+                    crossLayout.Columns = columns;
+                }
+
+                Rect rowsPosition = NovaGUI.Layout.GetControlRect();
+                EditorGUI.BeginChangeCheck();
+                GUIContent rowsLabel = EditorGUI.BeginProperty(rowsPosition, new GUIContent("Rows", "Max number of rows. 0 = unlimited. Total items = Rows × Columns."), crossLayout.RowsProp);
+                int rows = Mathf.Max(0, EditorGUI.IntField(rowsPosition, rowsLabel, crossLayout.Rows));
+                EditorGUI.EndProperty();
+                if (EditorGUI.EndChangeCheck())
+                {
+                    crossLayout.Rows = rows;
+                }
+
+                Rect resizeChildrenPosition = NovaGUI.Layout.GetControlRect();
+                EditorGUI.BeginChangeCheck();
+                GUIContent resizeChildrenLabel = EditorGUI.BeginProperty(resizeChildrenPosition, new GUIContent("Resize Children", "Resize children to fill available space evenly. When Rows or Columns are set, space is divided uniformly."), crossLayout.ResizeChildrenProp);
+                bool resizeChildren = EditorGUI.Toggle(resizeChildrenPosition, resizeChildrenLabel, crossLayout.ResizeChildren);
+                EditorGUI.EndProperty();
+                if (EditorGUI.EndChangeCheck())
+                {
+                    crossLayout.ResizeChildren = resizeChildren;
+                }
+
+
             }
 
             EditorGUI.EndProperty();
@@ -531,6 +611,20 @@ namespace Nova.Editor.GUIs
                 default:
                     return Axis.None;
             }
+        }
+
+        private static int RemapAlignment(Axis oldAxis, Axis newAxis, int alignment)
+        {
+            if (oldAxis == newAxis || alignment == 0)
+                return alignment;
+
+            bool oldIsY = oldAxis == Axis.Y;
+            bool newIsY = newAxis == Axis.Y;
+
+            if (oldIsY != newIsY)
+                return -alignment;
+
+            return alignment;
         }
 
         private static void AutoLayoutToolbar(SerializedProperty axisProp, SerializedProperty alignmentProp, SerializedProperty orderProp, out bool axisChanged, Axis disabledAxis = Axis.None)
@@ -590,8 +684,9 @@ namespace Nova.Editor.GUIs
             NovaGUI.Layout.EndHorizontal();
         }
 
-        private static bool AutoLayoutSpacing(MonoBehaviour target, _Length spacing, _MinMax spacingMinMax, SerializedProperty autospaceProp, Length.Calculated calc, bool expandedLength)
+        private static bool AutoLayoutSpacing(MonoBehaviour target, _Length spacing, _MinMax spacingMinMax, SerializedProperty autospaceProp, Length.Calculated calc, bool expandedLength, GUIContent label = null)
         {
+            GUIContent spacingLabel = label ?? Labels.AutoLayout.Spacing;
             float labelWidth = NovaGUI.LabelWidth;
 
             bool lengthDisabled = autospaceProp.boolValue;
@@ -612,14 +707,14 @@ namespace Nova.Editor.GUIs
             lengthPosition.width -= NovaGUI.ToggleBoxSize;
 
             // total hack, but using another labelfield is shifting the text around. 
-            NovaGUI.LengthField(lengthPosition, Labels.AutoLayout.Spacing, spacing, calc, spacingMinMax.Min, spacingMinMax.Max);
+            NovaGUI.LengthField(lengthPosition, spacingLabel, spacing, calc, spacingMinMax.Min, spacingMinMax.Max);
 
             EditorGUI.EndDisabledGroup();
 
             if (lengthDisabled && Event.current.type == EventType.Repaint)
             {
                 GUIStyle labelStyle = spacing.SerializedProperty.prefabOverride ? EditorStyles.boldLabel : EditorStyles.label;
-                labelStyle.Draw(lengthPosition, Labels.AutoLayout.Spacing, false, false, false, false);
+                labelStyle.Draw(lengthPosition, spacingLabel, false, false, false, false);
             }
 
             NovaGUI.LabelWidth = autospaceFieldWidth - NovaGUI.ToggleBoxSize;

@@ -30,6 +30,12 @@ namespace NovaSamples.UIControls
         [Min(0), Tooltip("The duration of the transition animation. Only applicable when \"Transition Type\" is set to \"Color Change\".")]
         public float TransitionDuration = 0.1f;
 
+        [Tooltip("Additional UIBlock2D elements to also apply the same visual transition to. Drag a GameObject to resolve its UIBlock2D. Does not replace the primary Transition Target.")]
+        public UIBlock2D[] SecondaryTransitionTargets = new UIBlock2D[0];
+
+        [Tooltip("Additional TextBlock labels to apply the same color transition to. Drag a GameObject to resolve its TextBlock.")]
+        public TextBlock[] SecondaryLabelColorTargets = new TextBlock[0];
+
         /// <summary>
         /// The set of sprites to use when <see cref="TransitionType"/> is set to <see cref="TransitionType.SpriteSwap"/>.
         /// </summary>
@@ -111,17 +117,57 @@ namespace NovaSamples.UIControls
         /// <param name="targetColor">The color to assign to the <see cref="TransitionTarget"/>'s body.</param>
         private void ChangeColor(Color targetColor)
         {
-            if (TransitionTarget == null)
+            colorAnimationHandle.Cancel();
+
+            AnimationHandle combined = default;
+            bool scheduled = false;
+
+            void AddTarget(UIBlock target)
             {
-                return;
+                if (target == null)
+                {
+                    return;
+                }
+
+                var step = new ControlColorAnimation()
+                {
+                    Target = target,
+                    TargetColor = targetColor,
+                };
+
+                if (!scheduled)
+                {
+                    combined = step.Run(TransitionDuration);
+                    scheduled = true;
+                }
+                else
+                {
+                    combined = combined.Include(step);
+                }
             }
 
-            colorAnimationHandle.Cancel();
-            colorAnimationHandle = new ControlColorAnimation()
+            AddTarget(TransitionTarget);
+
+            if (SecondaryTransitionTargets != null)
             {
-                Target = TransitionTarget,
-                TargetColor = targetColor,
-            }.Run(TransitionDuration);
+                for (int i = 0; i < SecondaryTransitionTargets.Length; i++)
+                {
+                    AddTarget(SecondaryTransitionTargets[i]);
+                }
+            }
+
+            if (SecondaryLabelColorTargets != null)
+            {
+                for (int i = 0; i < SecondaryLabelColorTargets.Length; i++)
+                {
+                    AddTarget(SecondaryLabelColorTargets[i]);
+                }
+            }
+
+            if (scheduled)
+            {
+                colorAnimationHandle = combined;
+            }
         }
 
         /// <summary>

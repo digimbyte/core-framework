@@ -15,6 +15,7 @@ namespace Nova.Internal.Rendering
 
         public float2 UVZoom;
         public float2 CenterUV;
+        public float Rotation;
     }
 
     /// <summary>
@@ -29,8 +30,10 @@ namespace Nova.Internal.Rendering
         public float2 GradientSizeReciprocal;
         public float2 GradientRotationSinCos;
 
+        /// <summary>Resolved radii in block units: x=TL, y=TR, z=BR, w=BL (matches <see cref="CornerRadii"/>).</summary>
+        public float4 CornerRadii;
+
         public float2 ShadowOffset;
-        public float CornerRadius;
         public float ShadowWidth;
 
         public ShaderIndex TransformIndex;
@@ -41,6 +44,8 @@ namespace Nova.Internal.Rendering
         public float2 RadialFillCenter;
         public float RadialFillRotation;
         public float RadialFillAngle;
+
+        private float _alignPadBeforeColors;
 
         public ShaderColor PrimaryColor;
 
@@ -107,11 +112,13 @@ namespace Nova.Internal.Rendering
     internal struct UIBlock3DShaderData
     {
         public float3 Size;
-        public float CornerRadius;
+        private float _alignPadAfterSize;
+        /// <summary>Resolved radii: x=TL, y=TR, z=BR, w=BL.</summary>
+        public float4 CornerRadii;
 
         public float EdgeRadius;
         public ShaderIndex TransformIndex;
-        private float2 _padding;
+        private float2 _padAlignBeforeColor;
 
         public ShaderColor Color;
     }

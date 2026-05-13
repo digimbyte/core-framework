@@ -66,6 +66,20 @@ half2 Length4To2(half4 vec)
     return sqrt(half2(vecSq.x + vecSq.y, vecSq.z + vecSq.w));
 }
 
+// CornerRadii order: x=TL, y=TR, z=BR, w=BL (block space, Y+ up)
+half NovaPickCornerRadius(half2 blockPos, half4 r_tl_tr_br_bl)
+{
+    if (blockPos.x >= 0 && blockPos.y >= 0) { return r_tl_tr_br_bl.y; }
+    if (blockPos.x >= 0 && blockPos.y < 0) { return r_tl_tr_br_bl.z; }
+    if (blockPos.x < 0 && blockPos.y < 0) { return r_tl_tr_br_bl.w; }
+    return r_tl_tr_br_bl.x;
+}
+
+half NovaMaxCornerRadius(half4 r)
+{
+    return max(max(r.x, r.y), max(r.z, r.w));
+}
+
 #if 1 // Distance Calculations
 
     // Returns the distance from p0 to p1, in quadrant 1 of p0.

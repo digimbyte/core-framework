@@ -19,6 +19,13 @@ namespace Nova.Internal.Rendering
         /// w -> nRadius
         /// </summary>
         public Vector4 ClipRectInfo;
+        /// <summary>
+        /// x -> procedural flag (1 = procedural, 0 = texture)
+        /// y -> procedural percent (0..1)
+        /// z -> tangent cos
+        /// w -> tangent sin
+        /// </summary>
+        public Vector4 ClipMaskParams;
         public Color ColorModifier;
         public bool IsMask;
     }
@@ -59,6 +66,7 @@ namespace Nova.Internal.Rendering
         public NestedVisualModiferData<VisualModifierID> ModifierIDs;
         public NestedVisualModiferData<Matrix4x4> ModifiersFromRoot;
         public NestedVisualModiferData<Vector4> ClipRectInfos;
+        public NestedVisualModiferData<Vector4> ClipMaskParams;
         public NestedVisualModiferData<Color> ColorModifiers;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,6 +97,7 @@ namespace Nova.Internal.Rendering
             ModifierIDs[index] = id;
             ModifiersFromRoot[index] = renderData.ModifierFromRoot;
             ClipRectInfos[index] = renderData.ClipRectInfo;
+            ClipMaskParams[index] = renderData.ClipMaskParams;
             ColorModifiers[index] = renderData.ColorModifier;
 
             if (ClipMaskIndex == -1 && renderData.IsMask)
@@ -110,6 +119,7 @@ namespace Nova.Internal.Rendering
         public int ClipMaskIndex;
         public Matrix4x4[] VisualModifiersFromRoot = new Matrix4x4[Constants.MaxVisualModifiers];
         public Vector4[] ClipRectInfos = new Vector4[Constants.MaxVisualModifiers];
+        public Vector4[] ClipMaskParams = new Vector4[Constants.MaxVisualModifiers];
         public Vector4[] VisualModifierColors = new Vector4[Constants.MaxVisualModifiers];
         public VisualModifierID[] ModifierIDs = new VisualModifierID[Constants.MaxVisualModifiers];
 
@@ -132,6 +142,11 @@ namespace Nova.Internal.Rendering
             fixed (Vector4* dest = ClipRectInfos)
             {
                 MemoryUtils.MemCpy(dest, (Vector4*)&data.ClipRectInfos, Count);
+            }
+
+            fixed (Vector4* destParams = ClipMaskParams)
+            {
+                MemoryUtils.MemCpy(destParams, (Vector4*)&data.ClipMaskParams, Count);
             }
 
             fixed (Vector4* dest = VisualModifierColors)

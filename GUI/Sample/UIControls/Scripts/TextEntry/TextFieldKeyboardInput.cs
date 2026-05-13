@@ -11,6 +11,19 @@ namespace NovaSamples.UIControls
     {
         public event Action OnSubmit = null;
 
+        /// <summary>
+        /// Fired when Tab (no shift) is pressed while the field is focused.
+        /// The field automatically loses focus before this is fired so the
+        /// subscriber can safely move focus to the next element.
+        /// </summary>
+        public event Action OnNavigateForward = null;
+
+        /// <summary>
+        /// Fired when Shift+Tab is pressed while the field is focused.
+        /// The field automatically loses focus before this is fired.
+        /// </summary>
+        public event Action OnNavigateBack = null;
+
         [SerializeField]
         [Tooltip("If true, will fire submit events whenever the return key is pressed.")]
         private bool fireSubmitEvents = false;
@@ -101,15 +114,37 @@ namespace NovaSamples.UIControls
             // Process the "special" keys
             switch (evt.keyCode)
             {
+                case KeyCode.Tab:
+                {
+                    // Unfocus first so the subscriber can immediately Focus+Select
+                    // the next element without fighting the active input loop.
+                    selector.RemoveFocus();
+                    if (shift)
+                        OnNavigateBack?.Invoke();
+                    else
+                        OnNavigateForward?.Invoke();
+                    return false;
+                }
                 case KeyCode.Return:
                 {
-                    if (!fireSubmitEvents || shift)
+                    // Single-line fields: Enter = next, Shift+Enter = back (mirrors Tab/Shift-Tab).
+                    // Multi-line fields keep the legacy submit/newline behaviour.
+                    if (!allowNewlines)
                     {
-                        break;
+                        selector.RemoveFocus();
+                        if (shift)
+                            OnNavigateBack?.Invoke();
+                        else
+                            OnNavigateForward?.Invoke();
+                        return false;
                     }
 
-                    OnSubmit?.Invoke();
-                    return false;
+                    if (fireSubmitEvents && !shift)
+                    {
+                        OnSubmit?.Invoke();
+                        return false;
+                    }
+                    break;
                 }
                 case KeyCode.Backspace:
                     {

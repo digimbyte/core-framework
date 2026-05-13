@@ -34,6 +34,8 @@ namespace Nova.Internal.Layouts
             [NativeDisableParallelForRestriction]
             public NativeList<AutoSize3> Autosizes;
             [NativeDisableParallelForRestriction]
+            public NativeList<int2> ExpandWeights;
+            [NativeDisableParallelForRestriction]
             public NativeList<AspectRatio> AspectRatios;
             [NativeDisableParallelForRestriction]
             public NativeList<AutoLayout> AutoLayouts;
@@ -76,6 +78,7 @@ namespace Nova.Internal.Layouts
                 LayoutAccess.Properties layout = LayoutAccess.Get(layoutIndex, ref LengthConfigs);
                 layout.WrapMinMaxes(ref LengthRanges);
                 layout.WrapAutoSizes(ref Autosizes);
+                layout.WrapExpandWeights(ref ExpandWeights);
                 layout.WrapAlignments(ref Alignments);
                 layout.WrapUseRotations(ref UseRotations);
                 layout.WrapOffsetBySize(ref OffsetBySize);
@@ -282,6 +285,7 @@ namespace Nova.Internal.Layouts
             public NativeList<Length3> LengthConfigs;
             public NativeList<Length3.MinMax> LengthRanges;
             public NativeList<AutoSize3> AutoSizes;
+            public NativeList<int2> ExpandWeights;
             public NativeList<float3> Alignments;
             public NativeList<bool> UseRotations;
             public NativeList<bool> OffsetBySize;
@@ -314,6 +318,7 @@ namespace Nova.Internal.Layouts
 
                 LayoutAccess.Properties elementProps = LayoutAccess.Get(0, ref LengthConfigs);
                 elementProps.WrapAutoSizes(ref AutoSizes);
+                elementProps.WrapExpandWeights(ref ExpandWeights);
                 elementProps.WrapMinMaxes(ref LengthRanges);
                 elementProps.WrapAlignments(ref Alignments);
                 elementProps.WrapUseRotations(ref UseRotations);
@@ -410,7 +415,7 @@ namespace Nova.Internal.Layouts
 
                     LayoutAccess.Properties elementProps = LayoutAccess.Get(rootIndex, ref LengthConfigs);
                     elementProps.WrapAutoSizes(ref AutoSizes);
-
+                    elementProps.WrapExpandWeights(ref ExpandWeights);
 
                     isRelative = isRelative & (elementProps.IsRelative | elementProps.AutoSize.Shrink);
 
@@ -432,6 +437,7 @@ namespace Nova.Internal.Layouts
             public NativeList<bool> OffsetBySize;
             public NativeList<float3> Alignments;
             public NativeList<AutoSize3> AutoSizes;
+            public NativeList<int2> ExpandWeights;
 
             public NativeList<AutoLayout> AutoLayouts;
             public NativeList<Length2.Calculated> CalculatedSpacing;
@@ -487,6 +493,8 @@ namespace Nova.Internal.Layouts
             [NativeDisableUnsafePtrRestriction]
             public AutoSize3* AutosizesPtr;
             [NativeDisableUnsafePtrRestriction]
+            public int2* ExpandWeightsPtr;
+            [NativeDisableUnsafePtrRestriction]
             public AutoLayout* AutoLayoutsPtr;
             [NativeDisableUnsafePtrRestriction]
             public AspectRatio* AspectRatiosPtr;
@@ -514,6 +522,10 @@ namespace Nova.Internal.Layouts
                 ParentSizes.Add(float3.zero);
 
                 AutoSizes.Add(Layout.AutoSize);
+                int2 w = Layout.ExpandWeight;
+                w.x = math.clamp(w.x, AutoLayoutUtils.ExpandWeightMin, AutoLayoutUtils.ExpandWeightMax);
+                w.y = math.clamp(w.y, AutoLayoutUtils.ExpandWeightMin, AutoLayoutUtils.ExpandWeightMax);
+                ExpandWeights.Add(w);
                 AspectRatios.Add(Layout.AspectRatio);
 
                 DirectContentSizes.Add(0);
@@ -562,6 +574,7 @@ namespace Nova.Internal.Layouts
                 OffsetBySizePtr = OffsetBySize.GetRawPtr();
                 AlignmentsPtr = Alignments.GetRawPtr();
                 AutosizesPtr = AutoSizes.GetRawPtr();
+                ExpandWeightsPtr = ExpandWeights.GetRawPtr();
                 AspectRatiosPtr = AspectRatios.GetRawPtr();
             }
 
@@ -584,6 +597,7 @@ namespace Nova.Internal.Layouts
             public NativeList<bool> OffsetBySize;
             public NativeList<float3> Alignments;
             public NativeList<AutoSize3> AutoSizes;
+            public NativeList<int2> ExpandWeights;
 
             public NativeList<AutoLayout> AutoLayouts;
             public NativeList<Length2.Calculated> CalculatedSpacing;
@@ -637,6 +651,7 @@ namespace Nova.Internal.Layouts
                 OffsetBySize.RemoveAtSwapBack(IndexToRemove);
                 Alignments.RemoveAtSwapBack(IndexToRemove);
                 AutoSizes.RemoveAtSwapBack(IndexToRemove);
+                ExpandWeights.RemoveAtSwapBack(IndexToRemove);
                 AspectRatios.RemoveAtSwapBack(IndexToRemove);
 
                 DirectContentSizes.RemoveAtSwapBack(IndexToRemove);
@@ -782,6 +797,7 @@ namespace Nova.Internal.Layouts
             public NativeList<Length3> Lengths;
             public NativeList<Length3.MinMax> Ranges;
             public NativeList<AutoSize3> AutoSizes;
+            public NativeList<int2> ExpandWeights;
             public NativeList<float3> Alignments;
             public NativeList<bool> UseRotations;
             public NativeList<bool> OffsetBySize;
@@ -793,6 +809,7 @@ namespace Nova.Internal.Layouts
 
                 layout.WrapMinMaxes(ref Ranges);
                 layout.WrapAutoSizes(ref AutoSizes);
+                layout.WrapExpandWeights(ref ExpandWeights);
                 layout.WrapAlignments(ref Alignments);
                 layout.WrapUseRotations(ref UseRotations);
                 layout.WrapOffsetBySize(ref OffsetBySize);

@@ -172,10 +172,11 @@ namespace Nova
         }
 
         /// <summary>
-        /// The <see cref="Length"/> configuration used to calculate a corner radius, applies to all four corners of the body, <see cref="Border"/>, and <see cref="Shadow"/>.
+        /// Master corner radius (same role as the top-level padding field): one <see cref="Length"/> drives all four corners for legacy scenes and simple authoring.
         /// </summary>
         /// <remarks>
-        /// <see cref="CornerRadius">CornerRadius</see>.<see cref="Length.Percent">Percent</see> is relative to half 
+        /// Applies to the body, <see cref="Border"/>, and <see cref="Shadow"/>. Unless per-corner overrides are in use, validation copies this value into <see cref="CornerRadii"/> each frame (padding-style master + sub-fields).
+        /// <see cref="CornerRadius">CornerRadius</see>.<see cref="Length.Percent">Percent</see> is relative to half
         /// the minimum dimension (X or Y) of <see cref="UIBlock.CalculatedSize">CalculatedSize</see>. Mathematically speaking:<br/>
         /// <c>float calculatedCornerRadius = CornerRadius.Percent * 0.5f * Mathf.Min(CalculatedSize.X.Value, CalculatedSize.Y.Value)</c>
         /// </remarks>
@@ -183,6 +184,16 @@ namespace Nova
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref RenderingDataStore.Instance.Access(this).CornerRadius.ToPublic();
+        }
+
+        /// <summary>
+        /// Per-corner corner radii. <see cref="CornerRadii.Value"/> and <see cref="CornerRadii.Percent"/> set all four corners at once (same authoring pattern as padding); assign individual corners for overrides.
+        /// When not using overrides, <see cref="CornerRadius"/> is the source of truth and is copied to all corners during validation.
+        /// </summary>
+        public ref CornerRadii CornerRadii
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref RenderingDataStore.Instance.Access(this).CornerRadii;
         }
 
         /// <summary>

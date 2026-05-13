@@ -28,6 +28,12 @@ namespace Nova
         /// </summary>
         Envelope = Internal.ImageScaleMode.Envelope,
         /// <summary>
+        /// As the parent's size changes, the image will repeat (tile) to fill the parent while
+        /// preserving the image's native pixel dimensions. The image is not scaled to match the
+        /// larger axis; instead it repeats to fill.
+        /// </summary>
+        Fill = Internal.ImageScaleMode.Fill,
+        /// <summary>
         /// The image will be displayed as a 9-sliced sprite.<br/> NOTE: the <see cref="ImageAdjustment.PixelsPerUnitMultiplier"/>
         /// value determines the width of the borders.
         /// </summary>
@@ -39,6 +45,29 @@ namespace Nova
         /// value determines the width of the borders and the size of the tiles.
         /// </summary>
         Tiled = Internal.ImageScaleMode.Tiled,
+    }
+
+    /// <summary>
+    /// When using <see cref="ImageScaleMode.Fill"/>, determines which axis is used
+    /// as the pixel-density reference when computing how the image should be scaled
+    /// before tiling across the remaining axis.
+    /// </summary>
+    public enum ImageFillAxis
+    {
+        /// <summary>
+        /// Use the smallest axis of the block as the reference (default).
+        /// </summary>
+        All = 0,
+
+        /// <summary>
+        /// Always use the horizontal (X) axis as the reference.
+        /// </summary>
+        Horizontal = 1,
+
+        /// <summary>
+        /// Always use the vertical (Y) axis as the reference.
+        /// </summary>
+        Vertical = 2,
     }
 
     /// <summary>
@@ -66,14 +95,24 @@ namespace Nova
         [SerializeField]
         public Vector2 UVScale;
         /// <summary>
+        /// Rotation (in degrees) to apply to the image around its center.
+        /// Positive => counter-clockwise.
+        /// </summary>
+        [SerializeField]
+        public float Rotation;
+        /// <summary>
         /// A multiplier that scales how <see cref="ImageScaleMode.Sliced"/> and <see cref="ImageScaleMode.Tiled"/> images are rendered.
         /// Specifically, <see cref="PixelsPerUnitMultiplier">PixelsPerUnitMultiplier</see> determines how many pixels from the target image
         /// fit into a 1x1 square in the target <see cref="UIBlock2D"/>'s local space.
         /// </summary>
         [SerializeField]
         public float PixelsPerUnitMultiplier;
+        // Field order must match Nova.Internal.ImageAdjustment (ScaleMode then FillAxis); UIBlock2D
+        // reinterprets this struct to Internal for rendering. Swapping these breaks 9-slice and other modes.
         [SerializeField]
         private ImageScaleMode scaleMode;
+        [SerializeField]
+        private ImageFillAxis fillAxis;
 
         /// <summary>
         /// <c>get</c>: Gets the current scale mode.<br/>
@@ -99,6 +138,18 @@ namespace Nova
         }
 
         /// <summary>
+        /// Gets or sets which axis to use as the density reference when <see cref="ScaleMode"/> is <see cref="ImageScaleMode.Fill"/>.
+        /// Default: <see cref="ImageFillAxis.All"/>.
+        /// </summary>
+        public ImageFillAxis FillAxis
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => fillAxis;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => fillAxis = value;
+        }
+
+        /// <summary>
         /// Constructs a new <see cref="ImageAdjustment"/> with <see cref="ScaleMode"/> set to <see cref="ImageScaleMode.Manual"/>.
         /// </summary>
         /// <param name="centerUV"></param>
@@ -107,8 +158,10 @@ namespace Nova
         {
             CenterUV = centerUV;
             UVScale = uvScale;
+            Rotation = 0f;
             scaleMode = ImageScaleMode.Manual;
             PixelsPerUnitMultiplier = 1f;
+            fillAxis = ImageFillAxis.All;
         }
 
         public static bool operator ==(ImageAdjustment lhs, ImageAdjustment rhs)
@@ -116,8 +169,10 @@ namespace Nova
             return
                 lhs.CenterUV.Equals(rhs.CenterUV) &&
                 lhs.UVScale.Equals(rhs.UVScale) &&
+                lhs.Rotation.Equals(rhs.Rotation) &&
                 lhs.scaleMode == rhs.ScaleMode &&
-                lhs.PixelsPerUnitMultiplier.Equals(rhs.PixelsPerUnitMultiplier);
+                lhs.PixelsPerUnitMultiplier.Equals(rhs.PixelsPerUnitMultiplier) &&
+                lhs.fillAxis == rhs.fillAxis;
         }
         public static bool operator !=(ImageAdjustment lhs, ImageAdjustment rhs) => !(rhs == lhs);
 
@@ -126,8 +181,10 @@ namespace Nova
             int hash = 13;
             hash = (hash * 7) + CenterUV.GetHashCode();
             hash = (hash * 7) + UVScale.GetHashCode();
+            hash = (hash * 7) + Rotation.GetHashCode();
             hash = (hash * 7) + scaleMode.GetHashCode();
             hash = (hash * 7) + PixelsPerUnitMultiplier.GetHashCode();
+            hash = (hash * 7) + fillAxis.GetHashCode();
             return hash;
         }
 
@@ -153,8 +210,10 @@ namespace Nova
         {
             UVScale = Vector2.one,
             CenterUV = Vector2.zero,
+            Rotation = 0f,
             scaleMode = ImageScaleMode.Fit,
             PixelsPerUnitMultiplier = 1f,
+            fillAxis = ImageFillAxis.All,
         };
     }
 }

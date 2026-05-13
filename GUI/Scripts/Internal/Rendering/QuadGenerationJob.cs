@@ -75,13 +75,14 @@ namespace Nova.Internal.Rendering
 
             ref float4x4 worldFromBlock = ref WorldFromLocalMatrices.ElementAt(visualElement.DataStoreIndex);
 
-            float cornerRadius = data.GetCornerRadius(halfMinBlockDimension);
             float setFromBlockScale = Math.GetRoughScale(ref worldFromBlock) * Math.GetRoughScale(ref rotationSet.SetFromWorld);
+            float4 cornerRadii = data.GetResolvedCornerRadii(halfMinBlockDimension) * setFromBlockScale;
+            float cornerRadiusMax = math.cmax(cornerRadii);
 
             QuadBoundsDescriptor toRet = new QuadBoundsDescriptor()
             {
                 RenderIndex = visualElement.RenderIndex,
-                CornerRadius = setFromBlockScale * cornerRadius,
+                CornerRadii = cornerRadii,
                 VisualElementIndex = visualElementIndex,
                 ZLayer = baseInfo.Val.ZIndex,
             };
@@ -115,7 +116,7 @@ namespace Nova.Internal.Rendering
             }
 
             float borderWidth = data.Border.GetWidth(halfMinBlockDimension);
-            data.Border.GetBorderRadii(cornerRadius, borderWidth, ref size, out float innerRadius, out float outerRadius);
+            data.Border.GetBorderRadii(cornerRadiusMax, borderWidth, ref size, out float innerRadius, out float outerRadius);
 
             toRet.Border.BorderWidth = borderWidth * setFromBlockScale;
             toRet.Border.OuterRadius = outerRadius * setFromBlockScale;

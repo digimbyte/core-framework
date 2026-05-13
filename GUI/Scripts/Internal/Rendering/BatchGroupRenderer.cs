@@ -324,19 +324,18 @@ namespace Nova.Internal.Rendering
 
             instance.Mpb.SetMatrixArray(ShaderPropertyIDs.VisualModifersFromRoot, visualModifierShaderData.VisualModifiersFromRoot);
             instance.Mpb.SetVectorArray(ShaderPropertyIDs.ClipRectInfos, visualModifierShaderData.ClipRectInfos);
+            instance.Mpb.SetVectorArray(Shader.PropertyToID("_NovaClipMaskParams"), visualModifierShaderData.ClipMaskParams);
             instance.Mpb.SetVectorArray(ShaderPropertyIDs.GlobalColorModifiers, visualModifierShaderData.VisualModifierColors);
 
             // Set the clip mask texture if there is one
             if (visualModifierShaderData.ClipMaskIndex != -1)
             {
                 Texture texture = DataStore.VisualModifierTracker.ClipMaskTextures[visualModifierShaderData.ModifierIDs[visualModifierShaderData.ClipMaskIndex]];
-                if (texture == null)
-                {
-                    return;
-                }
-
                 instance.Mpb.SetInt(ShaderPropertyIDs.ClipMaskIndex, visualModifierShaderData.ClipMaskIndex);
-                instance.Mpb.SetTexture(ShaderPropertyIDs.ClipMaskTexture, texture);
+                if (texture != null)
+                {
+                    instance.Mpb.SetTexture(ShaderPropertyIDs.ClipMaskTexture, texture);
+                }
             }
 
         }

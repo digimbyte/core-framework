@@ -11,6 +11,7 @@ namespace Nova.Editor.GUIs
 
         protected virtual void OnEnable()
         {
+            if (target == null) return;
             targetComponents = serializedObject.targetObjects.CastTo<T>();
         }
 

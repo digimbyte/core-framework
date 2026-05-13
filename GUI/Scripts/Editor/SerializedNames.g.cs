@@ -962,6 +962,12 @@ namespace Nova.Editor.Serialization
             
             private UnityEditor.SerializedProperty _expandtogridProp;
             
+            private UnityEditor.SerializedProperty _columnsProp;
+            
+            private UnityEditor.SerializedProperty _rowsProp;
+            
+            private UnityEditor.SerializedProperty _resizechildrenProp;
+            
             public UnityEditor.SerializedProperty SerializedProperty
             {
                 get
@@ -1141,6 +1147,78 @@ namespace Nova.Editor.Serialization
                         _expandtogridProp = this._serializedProperty.FindPropertyRelative("ExpandToGrid");
                     }
                     return _expandtogridProp;
+                }
+            }
+            
+            public int Columns
+            {
+                get
+                {
+                    return this.ColumnsProp.intValue;
+                }
+                set
+                {
+                    this.ColumnsProp.intValue = value;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty ColumnsProp
+            {
+                get
+                {
+                    if ((_columnsProp == null))
+                    {
+                        _columnsProp = this._serializedProperty.FindPropertyRelative("Columns");
+                    }
+                    return _columnsProp;
+                }
+            }
+            
+            public int Rows
+            {
+                get
+                {
+                    return this.RowsProp.intValue;
+                }
+                set
+                {
+                    this.RowsProp.intValue = value;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty RowsProp
+            {
+                get
+                {
+                    if ((_rowsProp == null))
+                    {
+                        _rowsProp = this._serializedProperty.FindPropertyRelative("Rows");
+                    }
+                    return _rowsProp;
+                }
+            }
+            
+            public bool ResizeChildren
+            {
+                get
+                {
+                    return this.ResizeChildrenProp.boolValue;
+                }
+                set
+                {
+                    this.ResizeChildrenProp.boolValue = value;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty ResizeChildrenProp
+            {
+                get
+                {
+                    if ((_resizechildrenProp == null))
+                    {
+                        _resizechildrenProp = this._serializedProperty.FindPropertyRelative("ResizeChildren");
+                    }
+                    return _resizechildrenProp;
                 }
             }
             
@@ -1590,7 +1668,11 @@ namespace Nova.Editor.Serialization
             
             private UnityEditor.SerializedProperty _pixelsperunitmultiplierProp;
             
+            private UnityEditor.SerializedProperty _rotationProp;
+            
             private UnityEditor.SerializedProperty _scalemodeProp;
+            
+            private UnityEditor.SerializedProperty _fillaxisProp;
             
             public UnityEditor.SerializedProperty SerializedProperty
             {
@@ -1663,6 +1745,30 @@ namespace Nova.Editor.Serialization
                     this.PixelsPerUnitMultiplierProp.floatValue = value;
                 }
             }
+
+            public float Rotation
+            {
+                get
+                {
+                    return this.RotationProp.floatValue;
+                }
+                set
+                {
+                    this.RotationProp.floatValue = value;
+                }
+            }
+
+            public UnityEditor.SerializedProperty RotationProp
+            {
+                get
+                {
+                    if ((_rotationProp == null))
+                    {
+                        _rotationProp = this._serializedProperty.FindPropertyRelative("Rotation");
+                    }
+                    return _rotationProp;
+                }
+            }
             
             public UnityEditor.SerializedProperty PixelsPerUnitMultiplierProp
             {
@@ -1697,6 +1803,30 @@ namespace Nova.Editor.Serialization
                         _scalemodeProp = this._serializedProperty.FindPropertyRelative("scaleMode");
                     }
                     return _scalemodeProp;
+                }
+            }
+
+            public Nova.ImageFillAxis fillAxis
+            {
+                get
+                {
+                    return ((Nova.ImageFillAxis)(this.fillAxisProp.intValue));
+                }
+                set
+                {
+                    this.fillAxisProp.intValue = ((int)(value));
+                }
+            }
+
+            public UnityEditor.SerializedProperty fillAxisProp
+            {
+                get
+                {
+                    if ((_fillaxisProp == null))
+                    {
+                        _fillaxisProp = this._serializedProperty.FindPropertyRelative("fillAxis");
+                    }
+                    return _fillaxisProp;
                 }
             }
             
@@ -2126,6 +2256,8 @@ namespace Nova.Editor.Serialization
             
             private UnityEditor.SerializedProperty _aspectratioaxisProp;
             
+            private UnityEditor.SerializedProperty _expandweightProp;
+            
             public UnityEditor.SerializedProperty SerializedProperty
             {
                 get
@@ -2447,6 +2579,30 @@ namespace Nova.Editor.Serialization
                 }
             }
             
+            public UnityEngine.Vector2Int ExpandWeight
+            {
+                get
+                {
+                    return this.ExpandWeightProp.vector2IntValue;
+                }
+                set
+                {
+                    this.ExpandWeightProp.vector2IntValue = value;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty ExpandWeightProp
+            {
+                get
+                {
+                    if ((_expandweightProp == null))
+                    {
+                        _expandweightProp = this._serializedProperty.FindPropertyRelative("ExpandWeight");
+                    }
+                    return _expandweightProp;
+                }
+            }
+            
             public void ApplyModifications()
             {
                 this._serializedProperty.serializedObject.ApplyModifiedProperties();
@@ -2519,6 +2675,145 @@ namespace Nova.Editor.Serialization
                         _typeProp = this._serializedProperty.FindPropertyRelative("Type");
                     }
                     return _typeProp;
+                }
+            }
+            
+            public void ApplyModifications()
+            {
+                this._serializedProperty.serializedObject.ApplyModifiedProperties();
+            }
+        }
+        
+        public class _CornerRadii : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        {
+            
+            private UnityEditor.SerializedProperty _serializedProperty;
+            
+            private _Length _topleft;
+            
+            private UnityEditor.SerializedProperty _topleftProp;
+            
+            private _Length _topright;
+            
+            private UnityEditor.SerializedProperty _toprightProp;
+            
+            private _Length _bottomright;
+            
+            private UnityEditor.SerializedProperty _bottomrightProp;
+            
+            private _Length _bottomleft;
+            
+            private UnityEditor.SerializedProperty _bottomleftProp;
+            
+            public UnityEditor.SerializedProperty SerializedProperty
+            {
+                get
+                {
+                    return this._serializedProperty;
+                }
+                set
+                {
+                    this._serializedProperty = value;
+                }
+            }
+            
+            public _Length TopLeft
+            {
+                get
+                {
+                    if ((_topleft == null))
+                    {
+                        _topleft = new _Length();
+                        _topleft.SerializedProperty = this.TopLeftProp;
+                    }
+                    return this._topleft;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty TopLeftProp
+            {
+                get
+                {
+                    if ((_topleftProp == null))
+                    {
+                        _topleftProp = this._serializedProperty.FindPropertyRelative("TopLeft");
+                    }
+                    return this._topleftProp;
+                }
+            }
+            
+            public _Length TopRight
+            {
+                get
+                {
+                    if ((_topright == null))
+                    {
+                        _topright = new _Length();
+                        _topright.SerializedProperty = this.TopRightProp;
+                    }
+                    return this._topright;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty TopRightProp
+            {
+                get
+                {
+                    if ((_toprightProp == null))
+                    {
+                        _toprightProp = this._serializedProperty.FindPropertyRelative("TopRight");
+                    }
+                    return this._toprightProp;
+                }
+            }
+            
+            public _Length BottomRight
+            {
+                get
+                {
+                    if ((_bottomright == null))
+                    {
+                        _bottomright = new _Length();
+                        _bottomright.SerializedProperty = this.BottomRightProp;
+                    }
+                    return this._bottomright;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty BottomRightProp
+            {
+                get
+                {
+                    if ((_bottomrightProp == null))
+                    {
+                        _bottomrightProp = this._serializedProperty.FindPropertyRelative("BottomRight");
+                    }
+                    return this._bottomrightProp;
+                }
+            }
+            
+            public _Length BottomLeft
+            {
+                get
+                {
+                    if ((_bottomleft == null))
+                    {
+                        _bottomleft = new _Length();
+                        _bottomleft.SerializedProperty = this.BottomLeftProp;
+                    }
+                    return this._bottomleft;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty BottomLeftProp
+            {
+                get
+                {
+                    if ((_bottomleftProp == null))
+                    {
+                        _bottomleftProp = this._serializedProperty.FindPropertyRelative("BottomLeft");
+                    }
+                    return this._bottomleftProp;
                 }
             }
             
@@ -5902,6 +6197,12 @@ namespace Nova.Editor.Serialization
             
             private UnityEditor.SerializedProperty _cornerradiusProp;
             
+            private _CornerRadii _cornerradii;
+            
+            private UnityEditor.SerializedProperty _cornerradiiProp;
+            
+            private UnityEditor.SerializedProperty _useindividualcornerradiiProp;
+            
             private _RadialFill _radialfill;
             
             private UnityEditor.SerializedProperty _radialfillProp;
@@ -5984,6 +6285,43 @@ namespace Nova.Editor.Serialization
                         _cornerradiusProp = this._serializedProperty.FindPropertyRelative("CornerRadius");
                     }
                     return _cornerradiusProp;
+                }
+            }
+            
+            public _CornerRadii CornerRadii
+            {
+                get
+                {
+                    if ((_cornerradii == null))
+                    {
+                        _cornerradii = new _CornerRadii();
+                        _cornerradii.SerializedProperty = this.CornerRadiiProp;
+                    }
+                    return _cornerradii;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty CornerRadiiProp
+            {
+                get
+                {
+                    if ((_cornerradiiProp == null))
+                    {
+                        _cornerradiiProp = this._serializedProperty.FindPropertyRelative("CornerRadii");
+                    }
+                    return _cornerradiiProp;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty UseIndividualCornerRadiiProp
+            {
+                get
+                {
+                    if ((_useindividualcornerradiiProp == null))
+                    {
+                        _useindividualcornerradiiProp = this._serializedProperty.FindPropertyRelative("UseIndividualCornerRadii");
+                    }
+                    return _useindividualcornerradiiProp;
                 }
             }
             
@@ -6313,6 +6651,12 @@ namespace Nova.Editor.Serialization
             
             private UnityEditor.SerializedProperty _cornerradiusProp;
             
+            private _CornerRadii _cornerradii;
+            
+            private UnityEditor.SerializedProperty _cornerradiiProp;
+            
+            private UnityEditor.SerializedProperty _useindividualcornerradiiProp;
+            
             private _Length _edgeradius;
             
             private UnityEditor.SerializedProperty _edgeradiusProp;
@@ -6375,6 +6719,43 @@ namespace Nova.Editor.Serialization
                         _cornerradiusProp = this._serializedProperty.FindPropertyRelative("CornerRadius");
                     }
                     return _cornerradiusProp;
+                }
+            }
+            
+            public _CornerRadii CornerRadii
+            {
+                get
+                {
+                    if ((_cornerradii == null))
+                    {
+                        _cornerradii = new _CornerRadii();
+                        _cornerradii.SerializedProperty = this.CornerRadiiProp;
+                    }
+                    return _cornerradii;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty CornerRadiiProp
+            {
+                get
+                {
+                    if ((_cornerradiiProp == null))
+                    {
+                        _cornerradiiProp = this._serializedProperty.FindPropertyRelative("CornerRadii");
+                    }
+                    return _cornerradiiProp;
+                }
+            }
+            
+            public UnityEditor.SerializedProperty UseIndividualCornerRadiiProp
+            {
+                get
+                {
+                    if ((_useindividualcornerradiiProp == null))
+                    {
+                        _useindividualcornerradiiProp = this._serializedProperty.FindPropertyRelative("UseIndividualCornerRadii");
+                    }
+                    return _useindividualcornerradiiProp;
                 }
             }
             
@@ -7475,6 +7856,10 @@ namespace Nova.Editor.Serialization
             
             public static string CornerRadius = "CornerRadius";
             
+            public static string CornerRadii = "CornerRadii";
+            
+            public static string UseIndividualCornerRadii = "UseIndividualCornerRadii";
+            
             public static string RadialFill = "RadialFill";
             
             public static string Gradient = "Gradient";
@@ -7508,6 +7893,10 @@ namespace Nova.Editor.Serialization
             public static string Color = "Color";
             
             public static string CornerRadius = "CornerRadius";
+            
+            public static string CornerRadii = "CornerRadii";
+            
+            public static string UseIndividualCornerRadii = "UseIndividualCornerRadii";
             
             public static string EdgeRadius = "EdgeRadius";
         }

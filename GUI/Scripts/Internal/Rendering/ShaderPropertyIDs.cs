@@ -28,6 +28,7 @@ namespace Nova.Internal.Rendering
         public static int VisualModifierCount;
         public static int VisualModifersFromRoot;
         public static int ClipRectInfos;
+        public static int ClipMaskParams;
         public static int ClipMaskIndex;
         public static int GlobalColorModifiers;
         public static int ClipMaskTexture;
@@ -68,6 +69,7 @@ namespace Nova.Internal.Rendering
             VisualModifierCount = Shader.PropertyToID("_NovaVisualModifierCount");
             VisualModifersFromRoot = Shader.PropertyToID("_NovaVisualModifiersFromRoot");
             ClipRectInfos = Shader.PropertyToID("_NovaClipRectInfos");
+            ClipMaskParams = Shader.PropertyToID("_NovaClipMaskParams");
             ClipMaskIndex = Shader.PropertyToID("_NovaClipMaskIndex");
             GlobalColorModifiers = Shader.PropertyToID("_NovaGlobalColorModifiers");
             ClipMaskTexture = Shader.PropertyToID("_ClipMaskTex");

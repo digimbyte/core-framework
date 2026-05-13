@@ -59,6 +59,11 @@ namespace Core.Registry
 
         public static RegistryManager Instance { get; private set; }
 
+        /// <summary>
+        /// True when at least one registry bucket finished loading (composite / bare UID lookups are meaningful).
+        /// </summary>
+        public bool HasLoadedRegistries => loadedRegistries != null && loadedRegistries.Count > 0;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -202,10 +207,9 @@ namespace Core.Registry
         // Prefer composite keys: "prefix/path"; check overrides first
         if (uid.Contains("/"))
         {
-            if (TryParseCompositeKey(uid.ToLower(), out var regName, out var path))
-            {
+                if (TryParseCompositeKey(uid.ToLower(), out var regName, out var path))
+                {
                 var key = MakeCompositeKey(regName, path);
-                Debug.Log($"[RegistryManager] Looking up '{key}', cache has {globalItemCache.Count} keys, contains key: {globalItemCache.ContainsKey(key)}");
                 if (overrideItemCache.TryGetValue(key, out var ovr))
                     return ovr;
                 if (globalItemCache.TryGetValue(key, out var e))
@@ -215,7 +219,8 @@ namespace Core.Registry
                     if (loadedRegistries.TryGetValue(regName, out var reg))
                         return reg.GetItemByUID(path);
                 }
-                Debug.LogWarning($"[RegistryManager] Item key '{uid}' not found");
+                if (HasLoadedRegistries)
+                    Debug.LogWarning($"[RegistryManager] Item key '{uid}' not found");
                 return null;
             }
 
@@ -234,7 +239,8 @@ namespace Core.Registry
             }
             if (unique != null) return unique;
 
-            Debug.LogWarning($"[RegistryManager] Item id '{uid}' not found in any loaded Registry");
+            if (HasLoadedRegistries)
+                Debug.LogWarning($"[RegistryManager] Item id '{uid}' not found in any loaded Registry");
             return null;
         }
 

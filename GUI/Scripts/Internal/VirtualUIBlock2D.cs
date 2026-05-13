@@ -52,6 +52,12 @@ namespace Nova
             get => ref RenderingDataStore.Instance.Access(this).CornerRadius.ToPublic();
         }
 
+        public ref CornerRadii CornerRadii
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref RenderingDataStore.Instance.Access(this).CornerRadii;
+        }
+
         public Color Color
         {
             get

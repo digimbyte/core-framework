@@ -1706,8 +1706,40 @@ namespace Core.Animator
                             Func<Vector3> getter = () => Vector3.zero;
                             Action<Vector3> setter = _ => { };
                             bool configured = false;
+                            bool skipPercentUiScaling = false;
 
-                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size")
+                            if (owner is RefStructMarker lenMarker && TryGetUIBlockFromRefStructMarker(lenMarker) is UIBlock uiLenBlock &&
+                                (lenMarker.refProperty.Name == nameof(UIBlock.Size) || lenMarker.refProperty.Name == nameof(UIBlock.Position)) &&
+                                (memberInfo.Name == nameof(Length3.Percent) || memberInfo.Name == nameof(Length3.Raw)))
+                            {
+                                bool isSizeRoot = lenMarker.refProperty.Name == nameof(UIBlock.Size);
+                                bool usePercentUi = memberInfo.Name == nameof(Length3.Percent);
+                                UIBlock ub = uiLenBlock;
+
+                                getter = () =>
+                                {
+                                    if (isSizeRoot)
+                                        return usePercentUi ? ub.GetSizePercentUI() : ub.GetSizeValueUnits();
+                                    return usePercentUi ? ub.GetPositionPercentUI() : ub.GetPositionValueUnits();
+                                };
+
+                                setter = v =>
+                                {
+                                    float? setX = e.vectorMask.HasFlag(ComponentMask.X) ? (float?)v.x : null;
+                                    float? setY = e.vectorMask.HasFlag(ComponentMask.Y) ? (float?)v.y : null;
+                                    float? setZ = e.vectorMask.HasFlag(ComponentMask.Z) ? (float?)v.z : null;
+                                    var space = usePercentUi ? Length3Extensions.LengthInputSpace.PercentUI_0_100 : Length3Extensions.LengthInputSpace.ValueUnits;
+                                    if (isSizeRoot)
+                                        ub.SetSizeAxes(setX, setY, setZ, space);
+                                    else
+                                        ub.SetPositionAxes(setX, setY, setZ, space);
+                                };
+
+                                configured = true;
+                                if (usePercentUi)
+                                    skipPercentUiScaling = true;
+                            }
+                            else if (owner is RefStructMarker marker && marker.refProperty.Name == "Size")
                             {
                                 var ui = marker.originalOwner as Nova.UIBlock;
                                 var ui2 = marker.originalOwner as Nova.UIBlock2D;
@@ -1831,8 +1863,7 @@ namespace Core.Animator
 
                             if (!configured) return null;
 
-                            bool isPercent = memberInfo.Name == "Percent";
-                            if (isPercent)
+                            if (!skipPercentUiScaling && memberInfo.Name == "Percent")
                             {
                                 var baseGetter = getter;
                                 var baseSetter = setter;

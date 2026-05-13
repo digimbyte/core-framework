@@ -27,6 +27,8 @@ namespace NovaSamples.UIControls.Editor
         private const string DefaultColorName = nameof(UIControlVisuals.DefaultColor);
         private const string HoveredColorName = nameof(UIControlVisuals.HoveredColor);
         private const string PressedColorName = nameof(UIControlVisuals.PressedColor);
+        private const string SecondaryTransitionTargetsName = nameof(UIControlVisuals.SecondaryTransitionTargets);
+        private const string SecondaryLabelColorTargetsName = nameof(UIControlVisuals.SecondaryLabelColorTargets);
 
         private const string SpritesName = nameof(UIControlVisuals.Sprites);
         private const string AnimationsName = nameof(UIControlVisuals.Animations);
@@ -34,7 +36,7 @@ namespace NovaSamples.UIControls.Editor
         // The colors + transition duration
         private const int NumberOfColorStates = 3;
 
-        private static readonly string[] ColorChangeFields = new string[] { TransitionTargetName, DefaultColorName, HoveredColorName, PressedColorName, TransitionDurationName };
+        private static readonly string[] ColorChangeFields = new string[] { TransitionTargetName, DefaultColorName, HoveredColorName, PressedColorName, TransitionDurationName, SecondaryTransitionTargetsName, SecondaryLabelColorTargetsName };
         private static readonly string[] SpriteSwapFields = new string[] { TransitionTargetName, SpritesName };
         private static readonly string[] AnimationFields = new string[] { AnimationsName };
 
@@ -46,6 +48,8 @@ namespace NovaSamples.UIControls.Editor
             DefaultColorName,
             HoveredColorName,
             PressedColorName,
+                SecondaryTransitionTargetsName,
+            SecondaryLabelColorTargetsName,
             SpritesName,
             AnimationsName,
         };
@@ -72,15 +76,17 @@ namespace NovaSamples.UIControls.Editor
             float expectedAnimationsHeight = GetFieldHeight(property, AnimationsName);
             float actualAnimationsHeight = lineHeight * GetChildPropertyCount(property, AnimationsName);
             float colorsHeight = NumberOfColorStates * lineHeight;
+            float expectedSecondaryTargetsHeight = GetFieldHeight(property, SecondaryTransitionTargetsName);
+            float expectedSecondaryLabelTargetsHeight = GetFieldHeight(property, SecondaryLabelColorTargetsName);
 
-            totalPropertyHeight -= colorsHeight + expectedSpritesHeight + expectedAnimationsHeight + transitionTargetHeight;
+            totalPropertyHeight -= colorsHeight + expectedSpritesHeight + expectedAnimationsHeight + transitionTargetHeight + expectedSecondaryTargetsHeight + expectedSecondaryLabelTargetsHeight;
 
             if (!transitionTypeProp.hasMultipleDifferentValues)
             {
                 switch (transitionType)
                 {
                     case TransitionType.ColorChange:
-                        totalPropertyHeight += colorsHeight + transitionTargetHeight + transitionDurationHeight;
+                        totalPropertyHeight += colorsHeight + transitionTargetHeight + transitionDurationHeight + expectedSecondaryTargetsHeight + expectedSecondaryLabelTargetsHeight;
                         break;
                     case TransitionType.SpriteSwap:
                         totalPropertyHeight += actualSpritesHeight + transitionTargetHeight;
@@ -165,6 +171,22 @@ namespace NovaSamples.UIControls.Editor
             {
                 SerializedProperty relativeProperty = property.FindPropertyRelative(relativePropertyName);
 
+                if (relativeProperty == null)
+                {
+                    continue;
+                }
+
+                // Serialized array/list: enumerating children yields nothing when the list is empty, so
+                // the entire array row would be skipped and the foldout (size) would not appear. Draw the
+                // property as a single field with children instead.
+                if (relativeProperty.isArray)
+                {
+                    position.height = EditorGUI.GetPropertyHeight(relativeProperty, true);
+                    EditorGUI.PropertyField(position, relativeProperty, true);
+                    position.y = position.yMax + EditorGUIUtility.standardVerticalSpacing;
+                    continue;
+                }
+
                 if (relativeProperty.hasVisibleChildren)
                 {
                     IEnumerator iterator = relativeProperty.GetEnumerator();
@@ -198,7 +220,14 @@ namespace NovaSamples.UIControls.Editor
         {
             SerializedProperty relativeProperty = property.FindPropertyRelative(relativePropertyName);
 
-            return EditorGUI.GetPropertyHeight(relativeProperty, includeChildren: relativeProperty.isExpanded) + EditorGUIUtility.standardVerticalSpacing;
+            if (relativeProperty == null)
+            {
+                return 0f;
+            }
+
+            // Native arrays: match PropertyField with includeChildren (collapsed vs expanded and element count).
+            bool include = relativeProperty.isArray || relativeProperty.isExpanded;
+            return EditorGUI.GetPropertyHeight(relativeProperty, includeChildren: include) + EditorGUIUtility.standardVerticalSpacing;
         }
 
         private static int GetChildPropertyCount(SerializedProperty property, string relativePropertyName)

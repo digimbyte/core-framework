@@ -205,6 +205,8 @@ namespace Nova
                 private float3* relativeSizesPtr;
                 [NoAlias]
                 private quaternion* rotationsPtr;
+                [NoAlias]
+                private int2* expandWeightsPtr;
 
                 public ref AutoSize3 AutoSize
                 {
@@ -234,6 +236,18 @@ namespace Nova
                 {
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     get => ref UnsafeUtility.AsRef<AspectRatio>(aspectRatiosPtr + Index);
+                }
+
+                public ref int2 ExpandWeight
+                {
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    get
+                    {
+                        unsafe
+                        {
+                            return ref UnsafeUtility.AsRef<int2>(expandWeightsPtr + Index);
+                        }
+                    }
                 }
 
                 private int Length3Index
@@ -676,7 +690,8 @@ namespace Nova
                         !PaddingMinMax.Equals(ref snapShot.PaddingMinMax) ||
                         AutoSize != snapShot.AutoSize ||
                         AspectRatio != snapShot.AspectRatio ||
-                        RotateSize != snapShot.RotateSize)
+                        RotateSize != snapShot.RotateSize ||
+                        !math.all(ExpandWeight == snapShot.ExpandWeight))
                     {
                         Size = snapShot.Size;
                         SizeMinMax = snapShot.SizeMinMax;
@@ -685,6 +700,7 @@ namespace Nova
                         AutoSize = snapShot.AutoSize;
                         RotateSize = snapShot.RotateSize;
                         AspectRatio = snapShot.AspectRatio;
+                        ExpandWeight = snapShot.ExpandWeight;
 
                         dependent = HierarchyDependency.ParentAndChildren;
                     }
@@ -717,6 +733,7 @@ namespace Nova
                     props.AspectRatio = *(aspectRatiosPtr + Index);
                     props.RotateSize = *(useRotationsPtr + Index);
                     props.OffsetBySize = *(offsetBySizePtr + Index);
+                    props.ExpandWeight = expandWeightsPtr != null ? *(expandWeightsPtr + Index) : new int2(1, 1);
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -792,6 +809,18 @@ namespace Nova
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public void WrapExpandWeights(ref NativeList<int2> expandWeights)
+                {
+                    expandWeightsPtr = expandWeights.GetRawPtr();
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public void WrapExpandWeights(int2* expandWeights)
+                {
+                    expandWeightsPtr = expandWeights;
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void WrapRotations(ref NativeList<quaternion> rotations)
                 {
                     rotationsPtr = rotations.GetRawPtr();
@@ -840,6 +869,7 @@ namespace Nova
                     offsetBySizePtr = null;
                     relativeSizesPtr = null;
                     rotationsPtr = null;
+                    expandWeightsPtr = null;
                 }
 
                 public Properties(DataStoreIndex layoutIndex, Length3* lengths)
@@ -855,6 +885,7 @@ namespace Nova
                     offsetBySizePtr = null;
                     relativeSizesPtr = null;
                     rotationsPtr = null;
+                    expandWeightsPtr = null;
                 }
             }
 
@@ -876,6 +907,7 @@ namespace Nova
                 public bool RotateSize;
                 public bool OffsetBySize;
                 public AspectRatio AspectRatio;
+                public int2 ExpandWeight;
 
                 public bool3 IsRelative
                 {

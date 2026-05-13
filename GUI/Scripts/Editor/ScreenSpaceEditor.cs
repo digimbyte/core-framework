@@ -29,7 +29,9 @@ namespace Nova.Editor.GUIs
             NovaGUI.EnumField(Labels.ScreenSpace.Mode, fillModeProp, targetComponents[0].Mode);
 
             var fillModeValue = (ScreenSpace.FillMode)fillModeProp.intValue;
-            if (fillModeValue == ScreenSpace.FillMode.FixedWidth || fillModeValue == ScreenSpace.FillMode.FixedHeight)
+            if (fillModeValue == ScreenSpace.FillMode.FixedWidth ||
+                fillModeValue == ScreenSpace.FillMode.FixedHeight ||
+                fillModeValue == ScreenSpace.FillMode.Adaptive)
             {
                 NovaGUI.Vector2Field(Labels.ScreenSpace.ReferenceResolution, serializedObject.FindProperty(Names.ScreenSpace.referenceResolution));
             }

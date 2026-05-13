@@ -43,6 +43,7 @@ namespace Nova.Internal.Rendering
         public bool EdgeSoftenDisabled;
         public float2 UVZoom;
         public float2 CenterUV;
+        public float Rotation;
     }
 
     internal struct SubQuadProcessingData : IInitializable, IClearable
@@ -143,6 +144,7 @@ namespace Nova.Internal.Rendering
             {
                 Bounds = descriptor.MaxRenderBounds,
                 EdgeSoftenDisabled = blockData.SoftenEdges ? false : true,
+                Rotation = blockData.Image.Adjustment.Rotation,
             };
 
             if (ImageDataProvider.TryGetImageData(blockData.Image.ImageID, out ImageDescriptor imageDescriptor, out TextureDescriptor textureDescriptor))
@@ -384,9 +386,57 @@ namespace Nova.Internal.Rendering
                     baseQuad.CenterUV = centerUV + spriteUVCorrection * blockData.Image.Adjustment.CenterUV;
                     baseQuad.UVZoom = spriteUVCorrection * math.select(float2.zero, Math.float2_One / blockData.Image.Adjustment.UVScale, blockData.Image.Adjustment.UVScale != float2.zero);
 
-                    if (blockData.Image.Adjustment.ScaleMode == ImageScaleMode.Envelope)
+                    if (blockData.Image.Adjustment.ScaleMode == ImageScaleMode.Fill)
                     {
-                        // We only do envelope here because AdjustSizeForImage handles fit
+                        // Fill: compute a uniform pixel-density scale based on a chosen axis
+                        // (smallest axis by default), scale the source image uniformly to
+                        // match that axis, then tile the scaled image across the other axis.
+                        float2 imageSize = new float2(imageDescriptor.Rect.width, imageDescriptor.Rect.height);
+                        float2 blockLocalSize = descriptor.Bounds.Size;
+                        float ppu = blockData.Image.Adjustment.PixelsPerUnitMultiplier;
+
+                        // tileCount without any scaling: how many source images (in pixels)
+                        // would fit on each axis of the block
+                        float2 tileCountNoScale = blockLocalSize * ppu / imageSize;
+
+                        // Determine which axis to use as the density reference
+                        int axisRef;
+                        ImageFillAxis fillAxis = blockData.Image.Adjustment.FillAxis;
+                        if (fillAxis == ImageFillAxis.Horizontal)
+                        {
+                            axisRef = 0;
+                        }
+                        else if (fillAxis == ImageFillAxis.Vertical)
+                        {
+                            axisRef = 1;
+                        }
+                        else
+                        {
+                            // Default: use the smallest axis of the block as the reference
+                            axisRef = (blockLocalSize.x < blockLocalSize.y) ? 0 : 1;
+                        }
+
+                        // Compute a uniform scale factor so the image's reference axis matches
+                        // the block's reference axis in pixel terms.
+                        float denom = imageSize[axisRef];
+                        float scaleFactor = denom > 0f ? (blockLocalSize[axisRef] * ppu) / denom : 1f;
+
+                        float2 tileCountScaled;
+                        if (scaleFactor > 0f)
+                        {
+                            tileCountScaled = tileCountNoScale / scaleFactor;
+                        }
+                        else
+                        {
+                            tileCountScaled = tileCountNoScale;
+                        }
+
+                        // Map to sprite UV space and set UV zoom so the image repeats tileCountScaled times.
+                        baseQuad.UVZoom = spriteUVCorrection * tileCountScaled;
+                    }
+                    else if (blockData.Image.Adjustment.ScaleMode == ImageScaleMode.Envelope)
+                    {
+                        // Envelope: scale one axis so image fills while preserving aspect
                         float nodeAspectRatio = descriptor.Bounds.Size.x / descriptor.Bounds.Size.y;
                         float relativeAspectRatio = imageDescriptor.AspectRatio / nodeAspectRatio;
                         if (relativeAspectRatio > 1)
@@ -516,6 +566,7 @@ namespace Nova.Internal.Rendering
                 EdgeSoftenMask = quad.EdgeSoftenDisabled ? 0f : 1f,
                 CenterUV = quad.CenterUV,
                 UVZoom = quad.UVZoom,
+                Rotation = quad.Rotation,
             };
 
 
@@ -638,14 +689,16 @@ namespace Nova.Internal.Rendering
             }
 
             RotationSpaceBounds maxCoverageBounds = overlap.MaxCoverageBounds;
-            bool4 hasRemainders = GetCutoutRemainders(ref bounds, ref maxCoverageBounds, out float4 remainders);
-            float4 maxCoverageRemainder = overlap.MaxCoverageRemainder;
+            GetCutoutRemainders(ref bounds, ref maxCoverageBounds, out float4 remainders);
 
-            bool hasRoundedCorner = !Math.ApproximatelyZero(overlap.CornerRadius);
+            float4 overlapRadii = overlap.CornerRadii;
+            bool hasRoundedCorner = !Math.ApproximatelyZero(math.cmax(overlapRadii));
 
             if (hasRoundedCorner)
             {
-                bool4 edgesAlign = Math.ApproximatelyEqual4(ref remainders, ref maxCoverageRemainder);
+                float m = overlap.MaxCoverageRemainder;
+                float4 maxCoverageRemainder4 = new float4(m);
+                bool4 edgesAlign = Math.ApproximatelyEqual4(ref remainders, ref maxCoverageRemainder4);
                 for (int i = 0; i < 4; ++i)
                 {
                     if (!edgesAlign[i])
@@ -667,7 +720,8 @@ namespace Nova.Internal.Rendering
                 DisableSoften(ref edgeBounds);
             }
 
-            if (!hasRoundedCorner || !Math.ApproximatelyEqual(converter.CornerRadius, overlap.CornerRadius))
+            float4 converterRadii = converter.CornerRadii;
+            if (!hasRoundedCorner || !Math.ApproximatelyEqual(ref converterRadii, ref overlapRadii))
             {
                 // Skip corner processing if corners not rounded or radii differ
                 return;

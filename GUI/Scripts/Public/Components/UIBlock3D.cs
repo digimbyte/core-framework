@@ -30,10 +30,11 @@ namespace Nova
         }
 
         /// <summary>
-        /// The <see cref="Length"/> configuration used to calculate a corner radius, applies to all eight corners of the body's front and back faces (XY planes).
+        /// Master corner radius for the front and back face corners (same role as the top-level padding field): one <see cref="Length"/> for legacy scenes and uniform radii.
         /// </summary>
         /// <remarks>
-        /// <see cref="CornerRadius">CornerRadius</see>.<see cref="Length.Percent">Percent</see> is relative to half 
+        /// Unless per-corner overrides are in use, validation copies this value into <see cref="CornerRadii"/> each frame.
+        /// <see cref="CornerRadius">CornerRadius</see>.<see cref="Length.Percent">Percent</see> is relative to half
         /// the minimum dimension (X or Y) of <see cref="UIBlock.CalculatedSize">CalculatedSize</see>. Mathematically speaking:<br/>
         /// <c>float calculatedCornerRadius = CornerRadius.Percent * 0.5f * Mathf.Min(CalculatedSize.X.Value, CalculatedSize.Y.Value)</c>
         /// </remarks>
@@ -41,6 +42,16 @@ namespace Nova
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref RenderingDataStore.Instance.Access(this).CornerRadius.ToPublic();
+        }
+
+        /// <summary>
+        /// Per-corner radii on the front and back faces. <see cref="CornerRadii.Value"/> / <see cref="CornerRadii.Percent"/> set all four at once; assign individual corners for overrides.
+        /// When not using overrides, <see cref="CornerRadius"/> is the source of truth and is copied to all corners during validation.
+        /// </summary>
+        public ref CornerRadii CornerRadii
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref RenderingDataStore.Instance.Access(this).CornerRadii;
         }
 
         /// <summary>

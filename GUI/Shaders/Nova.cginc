@@ -212,6 +212,11 @@
     // z -> nFactor
     // w -> nRadius
     float4 _NovaClipRectInfos[MAX_VISUAL_MODIFIERS];
+    // x -> procedural flag (1 = procedural, 0 = sample texture)
+    // y -> procedural percent (0..1)
+    // z -> tangent cos
+    // w -> tangent sin
+    float4 _NovaClipMaskParams[MAX_VISUAL_MODIFIERS];
     float4 _NovaGlobalColorModifiers[MAX_VISUAL_MODIFIERS];
 
     #if defined(NOVA_CLIP_RECT) || defined(NOVA_CLIP_MASK)
@@ -291,6 +296,33 @@
             float2 clipMaskNPos = clipMaskPos * GetClipRectNFactor(clipMaskInfo);
 
             half2 novaUV = clipMaskNPos / GetClipRectNHalfSize(clipMaskInfo);
+
+            float4 maskParams = _NovaClipMaskParams[_NovaClipMaskIndex];
+            // Procedural mode: treat mask as an implicit linear gradient across the rect, rotated by maskParams.zw
+            if (maskParams.x > 0.5)
+            {
+                float2 axis = float2(maskParams.z, maskParams.w);
+                // We need to normalize the projection range so percent maps 0..1 across the rect.
+                // For novaUV in [-1,1]^2 the max projection magnitude along axis occurs at a corner
+                // and equals abs(axis.x) + abs(axis.y). Use that to normalize proj into [-1,1].
+                float proj = dot(novaUV, axis);
+                float maxProj = abs(axis.x) + abs(axis.y);
+                // Protect against degenerate axis
+                if (maxProj <= 0.00001)
+                {
+                    maxProj = 1.0;
+                }
+                float pNorm = proj / maxProj; // in [-1,1]
+                float p = pNorm * 0.5 + 0.5; // map to [0,1]
+                // threshold by percent (maskParams.y). Keep area where p <= percent
+                float maskAlpha = p <= maskParams.y ? 1.0 : 0.0;
+                // Preserve RGB, only affect alpha so tint/colouring behaves like texture masks
+                fixed4 clipMaskColor = fixed4(1.0, 1.0, 1.0, maskAlpha);
+                color = ApplyColorTint(color, clipMaskColor);
+                return ApplyGlobalColorModification(color);
+            }
+
+            // Texture mode
             half2 unityUV = ToUnityUV(novaUV);
             fixed4 clipMaskColor = tex2D(_ClipMaskTex, unityUV);
             // Clip mask

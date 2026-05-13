@@ -38,6 +38,7 @@ namespace Nova.Editor.GUIs
         protected override void OnEnable()
         {
             base.OnEnable();
+            if (target == null) return;
 
             EnsureComponentOrder();
 

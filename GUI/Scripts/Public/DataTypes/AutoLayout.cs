@@ -153,6 +153,26 @@ namespace Nova
         public bool ExpandToGrid;
 
         /// <summary>
+        /// Number of items per row/column (cross axis). 0 = unlimited (size-based wrapping).
+        /// </summary>
+        [SerializeField]
+        public int Columns;
+
+        /// <summary>
+        /// Maximum number of rows/columns (primary axis). 0 = unlimited. When both <see cref="Columns"/> and <see cref="Rows"/> are positive,
+        /// direct children beyond Rows × Columns stay in layout but are hidden using <see cref="UIBlock.Visible"/>.
+        /// </summary>
+        [SerializeField]
+        public int Rows;
+
+        /// <summary>
+        /// When enabled, children are uniformly resized to fill available space without overflow.
+        /// If Columns or Rows are set (non-zero), the space along that axis is divided evenly.
+        /// </summary>
+        [SerializeField]
+        public bool ResizeChildren;
+
+        /// <summary>
         /// Alignment [-1, 1] of the children along the <see cref="AutoLayout.Cross"/> <see cref="Axis">Axis</see>.
         /// </summary>
         /// 
@@ -186,6 +206,9 @@ namespace Nova
                    lhs.ReverseOrder == rhs.ReverseOrder &&
                    lhs.Alignment == rhs.Alignment &&
                    lhs.ExpandToGrid == rhs.ExpandToGrid &&
+                   lhs.Columns == rhs.Columns &&
+                   lhs.Rows == rhs.Rows &&
+                   lhs.ResizeChildren == rhs.ResizeChildren &&
                    lhs.Spacing == rhs.Spacing &&
                    lhs.SpacingMinMax == rhs.SpacingMinMax;
         }
@@ -237,6 +260,9 @@ namespace Nova
             hash = (hash * 7) + ReverseOrder.GetHashCode();
             hash = (hash * 7) + Alignment.GetHashCode();
             hash = (hash * 7) + ExpandToGrid.GetHashCode();
+            hash = (hash * 7) + Columns.GetHashCode();
+            hash = (hash * 7) + Rows.GetHashCode();
+            hash = (hash * 7) + ResizeChildren.GetHashCode();
             return hash;
         }
 

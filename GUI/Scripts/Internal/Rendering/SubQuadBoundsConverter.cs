@@ -11,7 +11,8 @@ namespace Nova.Internal.Rendering
     {
         private interface IBoundsConverter
         {
-            float CornerRadius { get; }
+            /// <summary>Resolved radii: x=TL, y=TR, z=BR, w=BL. Border paths use uniform outer radius on all components.</summary>
+            float4 CornerRadii { get; }
             float MaxCoverageRemainder { get; }
 
             RotationSpaceBounds MaxCoverageBounds { get; }
@@ -44,16 +45,16 @@ namespace Nova.Internal.Rendering
                 descriptor = quadBoundsDescriptor;
             }
 
-            public float CornerRadius
+            public float4 CornerRadii
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => descriptor.CornerRadius;
+                get => descriptor.CornerRadii;
             }
 
             public float MaxCoverageRemainder
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => Math.OneMinusSin45 * descriptor.CornerRadius;
+                get => Math.OneMinusSin45 * math.cmax(descriptor.CornerRadii);
             }
 
             public RotationSpaceBounds MaxCoverageBounds
@@ -85,13 +86,13 @@ namespace Nova.Internal.Rendering
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public RotationSpaceBounds GetCornerBounds(int cornerIndex)
             {
-                return SubQuadShaderDataJob.GetCornerBounds(cornerIndex, ref descriptor.Bounds, descriptor.CornerRadius);
+                return SubQuadShaderDataJob.GetCornerBounds(cornerIndex, ref descriptor.Bounds, descriptor.CornerRadii);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public RotationSpaceBounds GetEdgeBounds(int edgeIndex)
             {
-                return SubQuadShaderDataJob.GetEdgeBounds(edgeIndex, ref descriptor.Bounds, descriptor.CornerRadius);
+                return SubQuadShaderDataJob.GetEdgeBounds(edgeIndex, ref descriptor.Bounds, descriptor.CornerRadii);
             }
         }
 
@@ -105,10 +106,10 @@ namespace Nova.Internal.Rendering
                 descriptor = quadBoundsDescriptor;
             }
 
-            public float CornerRadius
+            public float4 CornerRadii
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => descriptor.Border.OuterRadius;
+                get => new float4(descriptor.Border.OuterRadius);
             }
 
             public float MaxCoverageRemainder
@@ -146,13 +147,13 @@ namespace Nova.Internal.Rendering
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public RotationSpaceBounds GetCornerBounds(int cornerIndex)
             {
-                return SubQuadShaderDataJob.GetCornerBounds(cornerIndex, ref descriptor.Border.Bounds, descriptor.Border.OuterRadius);
+                return SubQuadShaderDataJob.GetCornerBounds(cornerIndex, ref descriptor.Border.Bounds, CornerRadii);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public RotationSpaceBounds GetEdgeBounds(int edgeIndex)
             {
-                return SubQuadShaderDataJob.GetEdgeBounds(edgeIndex, ref descriptor.Border.Bounds, descriptor.Border.OuterRadius);
+                return SubQuadShaderDataJob.GetEdgeBounds(edgeIndex, ref descriptor.Border.Bounds, CornerRadii);
             }
         }
 
@@ -166,10 +167,10 @@ namespace Nova.Internal.Rendering
                 descriptor = quadBoundsDescriptor;
             }
 
-            public float CornerRadius
+            public float4 CornerRadii
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => descriptor.Border.OuterRadius;
+                get => new float4(descriptor.Border.OuterRadius);
             }
 
             public float MaxCoverageRemainder
@@ -207,7 +208,7 @@ namespace Nova.Internal.Rendering
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public RotationSpaceBounds GetCornerBounds(int cornerIndex)
             {
-                return SubQuadShaderDataJob.GetCornerBounds(cornerIndex, ref descriptor.Border.Bounds, descriptor.Border.OuterRadius);
+                return SubQuadShaderDataJob.GetCornerBounds(cornerIndex, ref descriptor.Border.Bounds, CornerRadii);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -256,9 +257,48 @@ namespace Nova.Internal.Rendering
             }
         }
 
+        // cornerIndex: 0=BL, 1=TL, 2=TR, 3=BR — same as RotationSpaceBounds.GetCorner. Radii: x=TL, y=TR, z=BR, w=BL.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static RotationSpaceBounds GetEdgeBounds(int edgeIndex, ref RotationSpaceBounds bounds, float radius)
+        private static float ResolvedRadiusAtCorner(int cornerIndex, float4 radii)
         {
+            switch (cornerIndex)
+            {
+                case 0:
+                    return radii.w;
+                case 1:
+                    return radii.x;
+                case 2:
+                    return radii.y;
+                case 3:
+                    return radii.z;
+                default:
+                    return 0f;
+            }
+        }
+
+        // edgeIndex: 0=R, 1=T, 2=L, 3=B — smaller adjoining corner radius along that edge.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float ResolvedRadiusAtEdge(int edgeIndex, float4 radii)
+        {
+            switch (edgeIndex)
+            {
+                case 0:
+                    return math.min(radii.y, radii.z);
+                case 1:
+                    return math.min(radii.x, radii.y);
+                case 2:
+                    return math.min(radii.w, radii.x);
+                case 3:
+                    return math.min(radii.w, radii.z);
+                default:
+                    return 0f;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static RotationSpaceBounds GetEdgeBounds(int edgeIndex, ref RotationSpaceBounds bounds, float4 cornerRadii)
+        {
+            float radius = ResolvedRadiusAtEdge(edgeIndex, cornerRadii);
             if (Math.ApproximatelyZero(radius))
             {
                 // If there is no corner rounding, then we return one "edge" which is really just the entire
@@ -293,7 +333,7 @@ namespace Nova.Internal.Rendering
                     // Bottom
                     return new RotationSpaceBounds()
                     {
-                        BL = new float2(bounds.BL.x + radius, bounds.BL.y),
+                        BL = new float2(bounds.BL.x, bounds.BL.y),
                         TR = new float2(bounds.TR.x - radius, bounds.BL.y + radius),
                     };
                 default:
@@ -303,8 +343,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static RotationSpaceBounds GetCornerBounds(int cornerIndex, ref RotationSpaceBounds bounds, float radius)
+        private static RotationSpaceBounds GetCornerBounds(int cornerIndex, ref RotationSpaceBounds bounds, float4 cornerRadii)
         {
+            float radius = ResolvedRadiusAtCorner(cornerIndex, cornerRadii);
             switch (cornerIndex)
             {
                 case 0:

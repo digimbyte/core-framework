@@ -11,6 +11,8 @@ namespace Nova.Internal
     {
         public Color Color;
         public Length CornerRadius;
+        public CornerRadii CornerRadii;
+        public bool UseIndividualCornerRadii;
         public RadialFill RadialFill;
         public RadialGradient Gradient;
         public Border Border;
@@ -25,6 +27,8 @@ namespace Nova.Internal
             return
                 Color.Equals(other.Color) &&
                 CornerRadius == other.CornerRadius &&
+                CornerRadii.Equals(other.CornerRadii) &&
+                UseIndividualCornerRadii == other.UseIndividualCornerRadii &&
                 RadialFill.Equals(other.RadialFill) &&
                 Gradient.Equals(other.Gradient) &&
                 Border.Equals(other.Border) &&

@@ -45,6 +45,11 @@ namespace Nova
             }
         }
 
+        public ref CornerRadii CornerRadii
+        {
+            get => ref RenderingDataStore.Instance.Access(this).CornerRadii;
+        }
+
         public ref Length EdgeRadius
         {
             get

@@ -35,6 +35,8 @@ namespace Nova.Internal.Layouts
             [NativeDisableParallelForRestriction]
             public NativeList<AutoSize3> AutoSizes;
             [NativeDisableParallelForRestriction]
+            public NativeList<int2> ExpandWeights;
+            [NativeDisableParallelForRestriction]
             public NativeList<AspectRatio> AspectRatios;
 
             [NativeDisableParallelForRestriction]
@@ -64,6 +66,8 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NovaHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
 
+            public NativeReference<bool> RequestSecondPass;
+
             [NativeDisableParallelForRestriction]
             public NativeList<HierarchyDependency> DirtyDependencies;
 
@@ -78,6 +82,7 @@ namespace Nova.Internal.Layouts
                 ctx = default;
                 secondPass = isSecondPass;
                 parentIndex = layoutIndex;
+                ctx.ExpandWeights = ExpandWeights;
                 ctx.ParentElement = Hierarchy[parentIndex];
 
                 LayoutAccess.Properties parentLayout = LayoutAccess.Get(parentIndex, ref LengthConfigs, ref CalculatedLengths);
@@ -102,7 +107,12 @@ namespace Nova.Internal.Layouts
                     return;
                 }
 
-                ctx.ParentSize = math.max(math.select(layoutProperties.Size.Value, parentLayout.SizeMinMax.Min, parentShrink) - layoutProperties.Padding.Size, 0);
+                // Shrink axes: bootstrap inner parent size from the resolved size, floored by any *finite*
+                // SizeMinMax.Min. Using math.select(..., Min, shrink) picked -Infinity when Min was disabled,
+                // which collapsed the first-pass budget before children (especially TMP) had converged.
+                float3 shrinkBootstrap = layoutProperties.Size.Value;
+                shrinkBootstrap = math.select(shrinkBootstrap, math.max(shrinkBootstrap, parentLayout.SizeMinMax.Min), parentShrink);
+                ctx.ParentSize = math.max(shrinkBootstrap - layoutProperties.Padding.Size, 0);
                 ctx.CalculatedSpacing = CalculatedSpacing[parentIndex];
 
                 int mainAxisIndex = ctx.FirstAxis.Index();
@@ -154,12 +164,27 @@ namespace Nova.Internal.Layouts
                     }
                 }
 
+                if (shrinkAny)
+                {
+                    // TODO: This shrink path is still insufficient for some compounded
+                    // nested H/V shrink cases. Complex groups may still require a
+                    // caller-side explicit size pass until the deeper layout stack
+                    // derives parent size entirely from resolved descendant bounds.
+                    // Final shrink needs to come from the laid-out child bounds, not the
+                    // pre-layout estimate, so nested shrink containers recurse correctly.
+                    estimatedChildSize = GetActualChildBoundsSize(ctx.ParentSize, layoutProperties.Padding.Offset);
+                    estimatedChildSize = math.select(estimatedChildSize, shrinkSizeOverride.Size, shrinkSizeOverride.Mask);
+                }
+
                 CalculatedSpacing.ElementAt(parentIndex) = ctx.CalculatedSpacing;
 
                 bool parentDirtied = ShrinkToTotalChildSize(ref estimatedChildSize);
 
                 if (parentDirtied)
                 {
+                    // Shrink-driven parent size changes can invalidate nested child size
+                    // estimates within the same inline update, so request one settle pass.
+                    RequestSecondPass.Value = true;
                     DirtyDependencies[parentIndex] = HierarchyDependency.ParentAndChildren;
                 }
             }
@@ -418,6 +443,8 @@ namespace Nova.Internal.Layouts
                 float3 totalValue = sizeValue + marginValue.c0 + marginValue.c1;
                 float3 totalPercent = (sizePercent + marginPercent.c0 + marginPercent.c1) * Math.Mask(parentShrinkMask);
 
+                MergeShrinkSizeOverrideIntoExtents(childLayout.Index, ref totalValue);
+
                 return minMax.Clamp(GetFlexibleSize(ref totalValue, ref totalPercent));
             }
 
@@ -508,6 +535,63 @@ namespace Nova.Internal.Layouts
 
                     childLayout.Calc(updatedParentSize, Math.bool3_True);
                 }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private float3 GetActualChildBoundsSize(float3 parentPaddedSize, float3 parentPaddingOffset)
+            {
+                int childCount = ctx.ParentElement.ChildCount;
+
+                if (childCount == 0)
+                {
+                    return Math.float3_Zero;
+                }
+
+                float3 minContentPoint = float.MaxValue;
+                float3 maxContentPoint = float.MinValue;
+
+                LayoutAccess.Properties childLayout = LayoutAccess.Get(DataStoreIndex.Invalid, ref LengthConfigs, ref CalculatedLengths);
+                childLayout.WrapAlignments(ref Alignments);
+                childLayout.WrapRotations(ref Rotations);
+                childLayout.WrapUseRotations(ref UseRotations);
+
+                for (int i = 0; i < childCount; ++i)
+                {
+                    childLayout.Index = ctx.ParentElement.Children[i];
+
+                    float3 totalChildSize = childLayout.GetRotatedSize(ref Rotations, ref UseRotations) + childLayout.CalculatedMargin.Size;
+                    MergeShrinkSizeOverrideIntoExtents(childLayout.Index, ref totalChildSize);
+                    float3 layoutPosition = LayoutUtils.LayoutOffsetToLocalPosition(childLayout.CalculatedPosition.Value, totalChildSize, childLayout.CalculatedMargin.Offset, parentPaddedSize, parentPaddingOffset, childLayout.Alignment);
+
+                    Math.ToFloat3x2(totalChildSize, out float3x2 totalChildSize3x2);
+                    Math.ToFloat3x2(layoutPosition - childLayout.CalculatedMargin.Offset, out float3x2 contentCenterOffset);
+
+                    float3x2 childBounds = (totalChildSize3x2 * Math.Extents) + contentCenterOffset;
+                    minContentPoint = math.min(minContentPoint, childBounds.c0);
+                    maxContentPoint = math.max(maxContentPoint, childBounds.c1);
+                }
+
+                return maxContentPoint - minContentPoint;
+            }
+
+            /// <summary>
+            /// Text (and similar) blocks push mesh-accurate bounds into <see cref="ShrinkSizeOverrides"/> under
+            /// their own <see cref="DataStoreID"/>. Leaf-up previously only read overrides keyed by the *parent*
+            /// being shrunk, so composite parents under-measured until a later settle. Merge per-child overrides
+            /// into the extents used for shrink-to-children so the first pass matches TMP where possible.
+            /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void MergeShrinkSizeOverrideIntoExtents(DataStoreIndex elementIndex, ref float3 extents)
+            {
+                HierarchyElement element = Hierarchy[elementIndex];
+                if (!ShrinkSizeOverrides.TryGetValue(element.ID, out SizeOverride ov))
+                {
+                    return;
+                }
+
+                extents.x = math.select(extents.x, math.max(extents.x, ov.Size.x), ov.Mask.x);
+                extents.y = math.select(extents.y, math.max(extents.y, ov.Size.y), ov.Mask.y);
+                extents.z = math.select(extents.z, math.max(extents.z, ov.Size.z), ov.Mask.z);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

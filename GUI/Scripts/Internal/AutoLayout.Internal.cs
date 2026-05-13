@@ -19,6 +19,9 @@ namespace Nova.Internal
         public int Alignment;
 
         public bool ExpandToGrid;
+        public int Columns;
+        public int Rows;
+        public bool ResizeChildren;
 
         public readonly bool Enabled
         {

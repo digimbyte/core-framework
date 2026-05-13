@@ -102,6 +102,14 @@ namespace Nova.Internal.DataBinding
         }
 
         /// <summary>
+        /// Returns true if a prefab provider has been registered for the given data type.
+        /// </summary>
+        public bool HasListItemPrefabProvider(Type dataType)
+        {
+            return prefabProviders.ContainsKey(dataType);
+        }
+
+        /// <summary>
         /// Might want to change this to unregister via the callback?
         /// </summary>
         /// <typeparam name="TData"></typeparam>

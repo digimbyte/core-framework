@@ -21,6 +21,7 @@ namespace Nova.Editor.GUIs
         protected override void OnEnable()
         {
             base.OnEnable();
+            if (target == null) return;
 
             renderData.SerializedProperty = serializedObject.FindProperty(Names.UIBlock2D.visuals);
 

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using Core.Enums;
 
@@ -13,10 +15,63 @@ namespace Core.Enums.Editor
         private SerializedProperty groupsProp;
         private bool[] groupFoldouts;
 
+        /// <summary>
+        /// Reorderable lists for each group's values, keyed by <see cref="SerializedProperty.propertyPath"/>.
+        /// Cleared when the groups array size changes so paths stay aligned with entries.
+        /// </summary>
+        private Dictionary<string, ReorderableList> valueListsByPropertyPath;
+
+        private int cachedGroupsArraySize = -1;
+
         private void OnEnable()
         {
             groupsProp = serializedObject.FindProperty("groups");
             groupFoldouts = null;
+            InvalidateValueReorderableLists();
+        }
+
+        private void InvalidateValueReorderableLists()
+        {
+            valueListsByPropertyPath?.Clear();
+            cachedGroupsArraySize = -1;
+        }
+
+        private ReorderableList GetOrCreateValuesReorderableList(SerializedProperty valuesProp)
+        {
+            if (valuesProp == null)
+                return null;
+
+            string path = valuesProp.propertyPath;
+            if (valueListsByPropertyPath != null &&
+                valueListsByPropertyPath.TryGetValue(path, out var existing) &&
+                existing != null &&
+                existing.serializedProperty != null &&
+                existing.serializedProperty.propertyPath == path)
+            {
+                return existing;
+            }
+
+            valueListsByPropertyPath ??= new Dictionary<string, ReorderableList>(System.StringComparer.Ordinal);
+
+            var list = new ReorderableList(valuesProp.serializedObject, valuesProp, draggable: true, displayHeader: true, displayAddButton: true, displayRemoveButton: true);
+            list.drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Entries (drag rows to reorder)");
+            list.elementHeight = EditorGUIUtility.singleLineHeight + 6f;
+            list.drawElementCallback = (rect, index, isActive, isFocused) =>
+            {
+                SerializedProperty element = list.serializedProperty.GetArrayElementAtIndex(index);
+                rect.y += 2f;
+                rect.height = EditorGUIUtility.singleLineHeight;
+                EditorGUI.PropertyField(rect, element, GUIContent.none);
+            };
+            list.onAddCallback = reorderableList =>
+            {
+                int index = reorderableList.serializedProperty.arraySize;
+                reorderableList.serializedProperty.InsertArrayElementAtIndex(index);
+                reorderableList.serializedProperty.GetArrayElementAtIndex(index).stringValue = string.Empty;
+            };
+
+            valueListsByPropertyPath[path] = list;
+            return list;
         }
 
         public override void OnInspectorGUI()
@@ -40,6 +95,12 @@ namespace Core.Enums.Editor
             {
                 EditorGUILayout.HelpBox("groups property not found", MessageType.Error);
                 return;
+            }
+
+            if (cachedGroupsArraySize != groupsProp.arraySize)
+            {
+                valueListsByPropertyPath?.Clear();
+                cachedGroupsArraySize = groupsProp.arraySize;
             }
 
             EditorGUILayout.LabelField("Enum Groups", EditorStyles.boldLabel);
@@ -72,6 +133,7 @@ namespace Core.Enums.Editor
                 if (GUILayout.Button("-", GUILayout.Width(removeButtonWidth)))
                 {
                     groupsProp.DeleteArrayElementAtIndex(i);
+                    InvalidateValueReorderableLists();
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndVertical();
                     break;
@@ -80,33 +142,15 @@ namespace Core.Enums.Editor
 
                 if (groupFoldouts[i])
                 {
-                    // Entries list: flat rows, label them nicely.
                     if (valuesProp != null)
                     {
                         EditorGUI.indentLevel++;
-                        EditorGUILayout.LabelField("Entries");
-
-                        for (int j = 0; j < valuesProp.arraySize; j++)
+                        ReorderableList valueList = GetOrCreateValuesReorderableList(valuesProp);
+                        if (valueList != null)
                         {
-                            var valueProp = valuesProp.GetArrayElementAtIndex(j);
-
-                            EditorGUILayout.BeginHorizontal();
-                            valueProp.stringValue = EditorGUILayout.TextField(valueProp.stringValue ?? string.Empty);
-                            if (GUILayout.Button("-", GUILayout.Width(removeButtonWidth)))
-                            {
-                                valuesProp.DeleteArrayElementAtIndex(j);
-                                EditorGUILayout.EndHorizontal();
-                                break;
-                            }
-                            EditorGUILayout.EndHorizontal();
+                            valueList.DoLayoutList();
                         }
 
-                        if (GUILayout.Button("+ Add Entry", GUILayout.Width(110)))
-                        {
-                            int newValIndex = valuesProp.arraySize;
-                            valuesProp.InsertArrayElementAtIndex(newValIndex);
-                            valuesProp.GetArrayElementAtIndex(newValIndex).stringValue = string.Empty;
-                        }
                         EditorGUI.indentLevel--;
                     }
                 }

@@ -32,6 +32,91 @@ namespace Core.Enums
         [SerializeField]
         public List<EnumGroup> groups = new List<EnumGroup>();
 
+        /// <summary>
+        /// Same normalization as generated constants: trim and replace spaces with underscores.
+        /// </summary>
+        public static string NormalizeKeyPart(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return string.Empty;
+            }
+
+            return text.Trim().Replace(' ', '_');
+        }
+
+        /// <summary>
+        /// Builds the string key used by <see cref="SerialEnum"/> for a group value, matching the code generator.
+        /// </summary>
+        public static string BuildSerialEnumKey(string groupKey, string value)
+        {
+            string prefix = NormalizeKeyPart(groupKey);
+            string suffix = NormalizeKeyPart(value);
+            if (string.IsNullOrEmpty(prefix) || string.IsNullOrEmpty(suffix))
+            {
+                return string.Empty;
+            }
+
+            return prefix + "." + suffix;
+        }
+
+        /// <summary>
+        /// All <see cref="SerialEnum"/> values for the first group whose key matches (trimmed, case-insensitive).
+        /// </summary>
+        public List<SerialEnum> GetSerialEnumsForGroup(string groupKey)
+        {
+            var result = new List<SerialEnum>();
+            if (groups == null || string.IsNullOrWhiteSpace(groupKey))
+            {
+                return result;
+            }
+
+            string wanted = groupKey.Trim();
+            for (int i = 0; i < groups.Count; i++)
+            {
+                EnumGroup g = groups[i];
+                if (g == null || string.IsNullOrWhiteSpace(g.key))
+                {
+                    continue;
+                }
+
+                if (!string.Equals(g.key.Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (g.values == null)
+                {
+                    break;
+                }
+
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (string raw in g.values)
+                {
+                    if (string.IsNullOrWhiteSpace(raw))
+                    {
+                        continue;
+                    }
+
+                    string v = raw.Trim();
+                    if (!seen.Add(v))
+                    {
+                        continue;
+                    }
+
+                    string full = BuildSerialEnumKey(g.key, v);
+                    if (!string.IsNullOrEmpty(full))
+                    {
+                        result.Add(new SerialEnum(full));
+                    }
+                }
+
+                break;
+            }
+
+            return result;
+        }
+
 #if UNITY_EDITOR
         // Snapshot of the last generated state, used to know if enums changed since last Save/Generate.
         [SerializeField, HideInInspector]
@@ -200,10 +285,7 @@ namespace Core.Enums
         /// </summary>
         private static string NormalizeKey(string text)
         {
-            if (string.IsNullOrWhiteSpace(text))
-                return string.Empty;
-
-            return text.Trim().Replace(' ', '_');
+            return StringEnumLibrary.NormalizeKeyPart(text);
         }
     }
 #endif

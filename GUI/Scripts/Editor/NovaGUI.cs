@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Supernova Technologies LLC
 //#define DEBUG_RECTS
+using Nova;
 using Nova.Internal.Utilities;
 using System.Collections.Generic;
 using System.Reflection;
@@ -1412,6 +1413,114 @@ namespace Nova.Editor.GUIs
             Layout.EndVertical();
 
             return (showSides, showRange);
+        }
+
+        /// <summary>Padding-style master <see cref="Length"/> plus optional per-corner lengths.</summary>
+        public static bool LengthCornerRadiusRollout(
+            GUIContent label,
+            _Length master,
+            _CornerRadii corners,
+            SerializedProperty useIndividualCornerRadiiProp,
+            Length.Calculated masterCalc,
+            CornerRadii.Calculated cornersCalc,
+            float min,
+            float max,
+            bool showCorners)
+        {
+            MinMax minMax = new MinMax(min, max);
+            bool showMixedMaster = useIndividualCornerRadiiProp.boolValue || CornerRadiiSerializedAsymmetrical(corners);
+
+            Layout.BeginVertical();
+            Rect fieldRect = Layout.GetControlRect();
+            showCorners = Foldout.FoldoutToggle(fieldRect, showCorners);
+
+            EditorGUI.BeginChangeCheck();
+            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, master.SerializedProperty);
+            Length masterLength = new Length(master.Raw, master.Type);
+            Length all = LengthFieldAlternate(fieldRect, propertyLabel, masterLength, minMax, masterCalc, showMixedMaster, showClampIndicators: false);
+            EditorGUI.EndProperty();
+            if (EditorGUI.EndChangeCheck())
+            {
+                master.Raw = all.Raw;
+                master.Type = all.Type;
+                useIndividualCornerRadiiProp.boolValue = false;
+                ApplyLengthToAllCorners(corners, all);
+            }
+
+            if (showCorners)
+            {
+                float lengthTypeFieldWidth = CompactViewMode ? MinFloatFieldWidth : ToggleToolbarFieldWidth;
+                float labelWidth = LabelWidth;
+
+                EditorGUILayout.Space(1);
+                Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+                Layout.BeginVertical(Styles.InnerContent);
+                Layout.BeginHorizontal();
+                Space(0.5f);
+                using (new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel))
+                {
+                    Layout.BeginHorizontal();
+                    Layout.BeginVertical();
+                    Layout.GetXYZFieldRects(false, out Rect tl, out Rect tr, out _);
+                    Layout.GetXYZFieldRects(false, out Rect bl, out Rect br, out _);
+                    Layout.EndVertical();
+                    Layout.EndHorizontal();
+
+                    LabelWidth = MiniLabelWidth - 10;
+                    EditorGUI.BeginChangeCheck();
+                    LengthField(tl, Labels.CornerRadiiTopLeft, corners.TopLeft, cornersCalc.TopLeft, min, max, lengthTypeFieldWidth);
+                    LengthField(tr, Labels.CornerRadiiTopRight, corners.TopRight, cornersCalc.TopRight, min, max, lengthTypeFieldWidth);
+                    LabelWidth = MiniLabelWidth;
+                    LengthField(bl, Labels.CornerRadiiBottomLeft, corners.BottomLeft, cornersCalc.BottomLeft, min, max, lengthTypeFieldWidth);
+                    LengthField(br, Labels.CornerRadiiBottomRight, corners.BottomRight, cornersCalc.BottomRight, min, max, lengthTypeFieldWidth);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        useIndividualCornerRadiiProp.boolValue = !CornersSerializedUniformAndMatchMaster(corners, master);
+                    }
+
+                    LabelWidth = labelWidth;
+                }
+
+                Layout.EndHorizontal();
+                Layout.EndVertical();
+            }
+
+            Layout.EndVertical();
+            return showCorners;
+        }
+
+        private static bool CornerRadiiSerializedAsymmetrical(_CornerRadii c)
+        {
+            return !(SerializedLengthEquals(c.TopLeft, c.TopRight) &&
+                     SerializedLengthEquals(c.TopRight, c.BottomRight) &&
+                     SerializedLengthEquals(c.BottomRight, c.BottomLeft));
+        }
+
+        private static bool SerializedLengthEquals(_Length a, _Length b)
+        {
+            return a.Raw == b.Raw && a.Type == b.Type;
+        }
+
+        private static void ApplyLengthToAllCorners(_CornerRadii corners, Length len)
+        {
+            corners.TopLeft.Raw = len.Raw;
+            corners.TopLeft.Type = len.Type;
+            corners.TopRight.Raw = len.Raw;
+            corners.TopRight.Type = len.Type;
+            corners.BottomRight.Raw = len.Raw;
+            corners.BottomRight.Type = len.Type;
+            corners.BottomLeft.Raw = len.Raw;
+            corners.BottomLeft.Type = len.Type;
+        }
+
+        private static bool CornersSerializedUniformAndMatchMaster(_CornerRadii corners, _Length master)
+        {
+            if (!CornerRadiiSerializedAsymmetrical(corners))
+            {
+                return SerializedLengthEquals(corners.TopLeft, master);
+            }
+
+            return false;
         }
 
         public static void LengthBoundsRangeField(_LengthBounds lengths, _MinMaxBounds minMax, LengthBounds.Calculated calc, bool zField)
