@@ -84,6 +84,21 @@ namespace NovaSamples.UIControls
         }
 
         /// <summary>
+        /// Rebinds the options <see cref="ListView"/> after <see cref="DropdownData.Options"/> was modified in place.
+        /// <see cref="Expand"/> skips <see cref="ListView.SetDataSource{T}"/> when the list reference is unchanged, so this must be called when mutating that list while expanded (or to correct the list before the next expand).
+        /// </summary>
+        public void RefreshDataSourceList()
+        {
+            if (DataSource == null || DataSource.Options == null || OptionsView == null)
+            {
+                return;
+            }
+
+            EnsureEventHandlersRegistered();
+            OptionsView.SetDataSource(DataSource.Options);
+        }
+
+        /// <summary>
         /// Collapse the dropdown list of options.
         /// </summary>
         public void Collapse()

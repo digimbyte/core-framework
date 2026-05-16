@@ -53,7 +53,12 @@ namespace Core.Framework.Editor
 			}
 		}
 
-		private static bool TryGetClickedFolder(out string folderPath)
+		/// <summary>
+		/// Resolves a folder for Assets menu validation when <see cref="Selection"/> alone is wrong
+		/// (e.g. two-column Project window: hierarchy vs list selection).
+		/// Uses the last Project-window context click path when fresh, then <see cref="Selection.activeObject"/> if it is a folder.
+		/// </summary>
+		public static bool TryGetProjectWindowFolderForMenus(out string folderPath)
 		{
 			folderPath = null;
 
@@ -92,13 +97,13 @@ namespace Core.Framework.Editor
 		[MenuItem("Assets/Open in new View", true, 2100)]
 		private static bool ValidateOpenInNewView()
 		{
-			return TryGetClickedFolder(out _);
+			return TryGetProjectWindowFolderForMenus(out _);
 		}
 
 		[MenuItem("Assets/Open in new View", false, 2100)]
 		private static void OpenInNewView()
 		{
-			if (!TryGetClickedFolder(out var folder))
+			if (!TryGetProjectWindowFolderForMenus(out var folder))
 				return;
 
 			EditorApplication.delayCall += () =>
@@ -118,13 +123,13 @@ namespace Core.Framework.Editor
 		[MenuItem("Assets/Collapse All", true, 2111)]
 		private static bool ValidateRecursiveExpandMenu()
 		{
-			return ProjectBrowserType != null && InternalEditorUtilityType != null && TryGetClickedFolder(out _);
+			return ProjectBrowserType != null && InternalEditorUtilityType != null && TryGetProjectWindowFolderForMenus(out _);
 		}
 
 		[MenuItem("Assets/Expand All", false, 2110)]
 		private static void ExpandAll()
 		{
-			if (!TryGetClickedFolder(out var folder))
+			if (!TryGetProjectWindowFolderForMenus(out var folder))
 				return;
 
 			EditorApplication.delayCall += () =>
@@ -137,7 +142,7 @@ namespace Core.Framework.Editor
 		[MenuItem("Assets/Collapse All", false, 2111)]
 		private static void CollapseAll()
 		{
-			if (!TryGetClickedFolder(out var folder))
+			if (!TryGetProjectWindowFolderForMenus(out var folder))
 				return;
 
 			EditorApplication.delayCall += () =>

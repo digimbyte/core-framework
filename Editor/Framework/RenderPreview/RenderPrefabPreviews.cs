@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Core.Framework.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -10,6 +12,8 @@ namespace Core.Framework.Editor.RenderPreview
 public static class RenderPrefabPreviews
 {
     private const string OutputFolderName = "RenderedPreviews";
+    /// <summary>Top-level Unity content folder; rendering from here would scan the whole project.</summary>
+    private const string DisallowedPreviewRootFolder = "Assets";
     
     // Default settings (legacy, used when not specified)
     private const int PreviewSize = 256;
@@ -300,7 +304,8 @@ public static class RenderPrefabPreviews
         string[] folders = GetSelectedFolders();
         if (folders.Length == 0)
         {
-            Debug.LogWarning("Select at least one folder in the Project window.");
+            Debug.LogWarning(
+                "Select or right-click a folder in the Project window to render previews. The Assets root folder is not allowed.");
             return;
         }
 
@@ -314,7 +319,8 @@ public static class RenderPrefabPreviews
         string[] folders = GetSelectedFolders();
         if (folders.Length == 0)
         {
-            Debug.LogWarning("No folders selected.");
+            Debug.LogWarning(
+                "Select or right-click a folder in the Project window to render previews. The Assets root folder is not allowed.");
             return;
         }
 
@@ -333,23 +339,60 @@ public static class RenderPrefabPreviews
         currentSettings = null; // Reset after rendering
     }
 
-    [MenuItem("Assets/Tools/Render Previews", true)]
-    private static bool ValidateShowRenderConfigWindow()
-    {
-        return GetSelectedFolders().Length > 0;
-    }
-
+    /// <summary>
+    /// Resolves folder targets from the Project window without scanning folder contents.
+    /// Merges <see cref="Selection.assetGUIDs"/>, <see cref="Selection.objects"/>, and
+    /// <see cref="FolderBrowserWindow.TryGetProjectWindowFolderForMenus"/> so hierarchy clicks / context menus
+    /// match what Unity shows as the active folder (same basis as Assets/Open in new View).
+    /// </summary>
     private static string[] GetSelectedFolders()
     {
-        var folders = new List<string>();
+        var folders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void ConsiderFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            path = path.Replace("\\", "/");
+            if (!AssetDatabase.IsValidFolder(path))
+            {
+                return;
+            }
+
+            if (path.Equals(DisallowedPreviewRootFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            folders.Add(path);
+        }
+
+        foreach (string guid in Selection.assetGUIDs)
+        {
+            if (string.IsNullOrEmpty(guid))
+            {
+                continue;
+            }
+
+            ConsiderFolder(AssetDatabase.GUIDToAssetPath(guid));
+        }
 
         foreach (UnityEngine.Object selected in Selection.objects)
         {
-            string path = AssetDatabase.GetAssetPath(selected);
-            if (!string.IsNullOrWhiteSpace(path) && AssetDatabase.IsValidFolder(path))
+            if (selected == null)
             {
-                folders.Add(path);
+                continue;
             }
+
+            ConsiderFolder(AssetDatabase.GetAssetPath(selected));
+        }
+
+        if (FolderBrowserWindow.TryGetProjectWindowFolderForMenus(out string contextFolder))
+        {
+            ConsiderFolder(contextFolder);
         }
 
         return folders.ToArray();

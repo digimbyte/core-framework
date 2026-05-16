@@ -1,4 +1,6 @@
 using Nova;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,9 +14,121 @@ namespace NovaSamples.UIControls
         [Tooltip("The event fired when a new item is selected from the dropdown list.")]
         public UnityEvent<string> OnValueChanged = null;
 
-        [SerializeField]
         [Tooltip("The data used to populate the list of selectable items in the dropdown.")]
-        private DropdownData DropdownOptions = new DropdownData();
+        public DropdownData DropdownOptions = new DropdownData();
+
+        /// <summary>
+        /// Adds an option if it is not already present (comparison is case-insensitive).
+        /// </summary>
+        /// <returns><c>true</c> if the option was added; <c>false</c> if it was null/whitespace, a duplicate, or <see cref="DropdownOptions"/> is missing.</returns>
+        public bool TryAddOption(string option)
+        {
+            if (string.IsNullOrWhiteSpace(option) || DropdownOptions == null)
+            {
+                return false;
+            }
+
+            DropdownOptions.Options ??= new List<string>();
+
+            if (IndexOfOptionIgnoreCase(option, DropdownOptions.Options) >= 0)
+            {
+                return false;
+            }
+
+            DropdownOptions.Options.Add(option);
+            RefreshAfterOptionsChanged();
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first option that matches <paramref name="option"/> using case-insensitive comparison.
+        /// </summary>
+        /// <returns><c>true</c> if an option was removed.</returns>
+        public bool RemoveOption(string option)
+        {
+            if (string.IsNullOrEmpty(option) || DropdownOptions?.Options == null)
+            {
+                return false;
+            }
+
+            int index = IndexOfOptionIgnoreCase(option, DropdownOptions.Options);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            DropdownOptions.Options.RemoveAt(index);
+            AdjustSelectedIndexAfterRemoveAt(index);
+            RefreshAfterOptionsChanged();
+            return true;
+        }
+
+        /// <summary>
+        /// Removes all options and clears the current selection.
+        /// </summary>
+        public void ClearOptions()
+        {
+            if (DropdownOptions == null)
+            {
+                return;
+            }
+
+            DropdownOptions.Options ??= new List<string>();
+            DropdownOptions.Options.Clear();
+            DropdownOptions.SelectedIndex = -1;
+            RefreshAfterOptionsChanged();
+        }
+
+        private static int IndexOfOptionIgnoreCase(string option, List<string> options)
+        {
+            for (int i = 0; i < options.Count; i++)
+            {
+                if (string.Equals(options[i], option, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void AdjustSelectedIndexAfterRemoveAt(int removedIndex)
+        {
+            if (DropdownOptions == null)
+            {
+                return;
+            }
+
+            if (DropdownOptions.SelectedIndex == removedIndex)
+            {
+                DropdownOptions.SelectedIndex = -1;
+            }
+            else if (DropdownOptions.SelectedIndex > removedIndex)
+            {
+                DropdownOptions.SelectedIndex--;
+            }
+
+            int count = DropdownOptions.Options?.Count ?? 0;
+            if (count == 0)
+            {
+                DropdownOptions.SelectedIndex = -1;
+            }
+            else if (DropdownOptions.SelectedIndex >= count)
+            {
+                DropdownOptions.SelectedIndex = count - 1;
+            }
+        }
+
+        private void RefreshAfterOptionsChanged()
+        {
+            if (!View.TryGetVisuals(out DropdownVisuals visuals))
+            {
+                return;
+            }
+
+            visuals.InitSelectionLabel(DropdownOptions.CurrentSelection);
+            visuals.RefreshDataSourceList();
+        }
 
         /// <summary>
         /// The visuals associated with this dropdown control
