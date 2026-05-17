@@ -77,6 +77,40 @@ namespace Core.Data.ItemDefinitions
         }
 
         /// <summary>
+        /// Find an entry by <see cref="ItemDefinitionEntry.DisplayName"/> (trimmed, case-insensitive).
+        /// Whitespace-only queries return null. Requires unique names as enforced by <see cref="EnsureUniqueDisplayNames"/>.
+        /// </summary>
+        public ItemDefinitionEntry GetEntryByDisplayName(string displayName)
+        {
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                return null;
+            }
+
+            string key = displayName.Trim();
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var e = entries[i];
+                if (e == null)
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(e.DisplayName))
+                {
+                    continue;
+                }
+
+                if (string.Equals(e.DisplayName.Trim(), key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return e;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Append a new row with a fresh UUID. Editor and tools should persist the asset after calling this.
         /// </summary>
         public ItemDefinitionEntry AddEntry()
@@ -84,6 +118,7 @@ namespace Core.Data.ItemDefinitions
             var row = new ItemDefinitionEntry();
             row.SetUuidInternal(NewUuid());
             entries.Add(row);
+            EnsureUniqueDisplayNames();
             return row;
         }
 
@@ -108,6 +143,7 @@ namespace Core.Data.ItemDefinitions
             row.SetThumbnailInternal(thumbnailTexture);
             row.SetMainImageInternal(mainImageTexture);
             EnsureUniqueUuids();
+            EnsureUniqueDisplayNames();
             return row;
         }
 
@@ -137,6 +173,7 @@ namespace Core.Data.ItemDefinitions
             }
 
             EnsureUniqueUuids();
+            EnsureUniqueDisplayNames();
             return added;
         }
 
@@ -179,6 +216,74 @@ namespace Core.Data.ItemDefinitions
             }
         }
 
+        /// <summary>
+        /// Ensure display names are trimmed, non-empty (fallback <c>Unnamed item</c>), and unique case-insensitively.
+        /// Later duplicates are renamed with <c> (2)</c>, <c> (3)</c>, etc. Logs a warning when any row is changed.
+        /// </summary>
+        public void EnsureUniqueDisplayNames()
+        {
+            const string emptyFallback = "Unnamed item";
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            int repaired = 0;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                ItemDefinitionEntry e = entries[i];
+                if (e == null)
+                {
+                    continue;
+                }
+
+                string baseName = string.IsNullOrWhiteSpace(e.DisplayName)
+                    ? emptyFallback
+                    : e.DisplayName.Trim();
+
+                if (seen.Contains(baseName))
+                {
+                    int suffix = 2;
+                    string candidate;
+                    while (true)
+                    {
+                        candidate = baseName + " (" + suffix + ")";
+                        if (!seen.Contains(candidate))
+                        {
+                            break;
+                        }
+
+                        suffix++;
+                    }
+
+                    if (!string.Equals(e.DisplayName, candidate, StringComparison.Ordinal))
+                    {
+                        e.SetDisplayNameInternal(candidate);
+                        repaired++;
+                    }
+
+                    seen.Add(candidate);
+                }
+                else
+                {
+                    if (!string.Equals(e.DisplayName, baseName, StringComparison.Ordinal))
+                    {
+                        e.SetDisplayNameInternal(baseName);
+                        repaired++;
+                    }
+
+                    seen.Add(baseName);
+                }
+            }
+
+            if (repaired > 0)
+            {
+                Debug.LogWarning(
+                    $"[{nameof(ItemDefinitionsDatabase)}] {repaired} display name(s) were normalized or disambiguated for case-insensitive uniqueness on '{name}'.",
+                    this);
+#if UNITY_EDITOR
+                EditorUtility.SetDirty(this);
+#endif
+            }
+        }
+
         private static string NewUuid()
         {
             return Guid.NewGuid().ToString("N");
@@ -203,6 +308,7 @@ namespace Core.Data.ItemDefinitions
             }
 #endif
             EnsureUniqueUuids();
+            EnsureUniqueDisplayNames();
         }
     }
 }

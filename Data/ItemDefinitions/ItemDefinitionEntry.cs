@@ -68,6 +68,12 @@ namespace Core.Data.ItemDefinitions
         internal void SetSecondPrefabInternal(GameObject value) => secondPrefab = value;
 
         /// <summary>
+        /// Snapshot of the four optional bundled references (thumbnail, main image, two prefabs).
+        /// </summary>
+        public ItemDefinitionAssets ToAssets() =>
+            new ItemDefinitionAssets(thumbnailTexture, mainImageTexture, mainPrefab, secondPrefab);
+
+        /// <summary>
         /// Editor: one-time migration from the old bitfield tags. Returns true if data changed.
         /// </summary>
         internal bool ConsumeLegacyTagBits()
@@ -133,5 +139,31 @@ namespace Core.Data.ItemDefinitions
             addIf(1 << 6, "Cosmetic");
             addIf(1 << 7, "Hidden");
         }
+    }
+
+    /// <summary>
+    /// The four optional bundled Unity references for an item definition row.
+    /// </summary>
+    public readonly struct ItemDefinitionAssets
+    {
+        public ItemDefinitionAssets(
+            Texture2D thumbnailTexture,
+            Texture2D mainImageTexture,
+            GameObject mainPrefab,
+            GameObject secondPrefab)
+        {
+            ThumbnailTexture = thumbnailTexture;
+            MainImageTexture = mainImageTexture;
+            MainPrefab = mainPrefab;
+            SecondPrefab = secondPrefab;
+        }
+
+        public Texture2D ThumbnailTexture { get; }
+
+        public Texture2D MainImageTexture { get; }
+
+        public GameObject MainPrefab { get; }
+
+        public GameObject SecondPrefab { get; }
     }
 }
