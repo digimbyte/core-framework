@@ -5,12 +5,13 @@ using UnityEngine.Scripting.APIUpdating;
 using Sirenix.OdinInspector;
 using System.Collections.Generic;
 using System;
+using System.IO;
 
 namespace Core.Registry
 {
     /// <summary>
     /// Asset Registry that manages a collection of asset entries organized by UID/path.
-    /// Each registry is TYPE-LOCKED to only store one type of asset (prefab, texture, material, mesh, or audio).
+    /// Each registry is TYPE-LOCKED to only store one type of asset (prefab, texture, sprite, material, mesh, or audio).
     /// </summary>
     [CreateAssetMenu(fileName = "NewRegistry", menuName = "Core/Data/Registry")]
     public class Registry : ScriptableObject
@@ -18,6 +19,7 @@ namespace Core.Registry
         [SerializeField]
         [LabelText("Asset Type")]
         [InfoBox("Type of assets this registry will store - CANNOT BE CHANGED after adding items")]
+        [DisableIf("@itemEntries.Count > 0")]
         [OnValueChanged("OnAssetTypeChanged")]
         private RegistryAssetType assetType = RegistryAssetType.Prefab;
 
@@ -455,6 +457,130 @@ namespace Core.Registry
             }
         }
 
+#if UNITY_EDITOR
+        /// <summary>
+        /// True when the asset path uses Unity's Sprite texture import type (not a Default/Normal texture).
+        /// </summary>
+        public static bool IsSpriteImportPath(string assetPath)
+        {
+            if (string.IsNullOrEmpty(assetPath))
+                return false;
+
+            var importer = UnityEditor.AssetImporter.GetAtPath(assetPath) as UnityEditor.TextureImporter;
+            return importer != null && importer.textureType == UnityEditor.TextureImporterType.Sprite;
+        }
+
+        /// <summary>
+        /// File extensions considered when scanning a folder for this registry type (before import-type rules).
+        /// </summary>
+        public static bool IsCandidateAssetPath(string assetPath, RegistryAssetType type)
+        {
+            if (string.IsNullOrEmpty(assetPath))
+                return false;
+
+            string extension = Path.GetExtension(assetPath).ToLowerInvariant();
+            switch (type)
+            {
+                case RegistryAssetType.Prefab:
+                    return extension == ".prefab";
+                case RegistryAssetType.Texture:
+                case RegistryAssetType.Sprite:
+                    return IsImageExtension(extension);
+                case RegistryAssetType.Material:
+                    return extension == ".mat";
+                case RegistryAssetType.Mesh:
+                    return extension == ".fbx" || extension == ".obj" || extension == ".asset";
+                case RegistryAssetType.Audio:
+                    return extension == ".mp3" || extension == ".wav" || extension == ".ogg" || extension == ".aiff";
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Whether a path is eligible for import into this registry (extension pool + texture import rules).
+        /// </summary>
+        public static bool MatchesRegistryAssetPath(string assetPath, RegistryAssetType type)
+        {
+            if (!IsCandidateAssetPath(assetPath, type))
+                return false;
+
+            switch (type)
+            {
+                case RegistryAssetType.Texture:
+                    return !IsSpriteImportPath(assetPath);
+                case RegistryAssetType.Sprite:
+                    return IsSpriteImportPath(assetPath);
+                default:
+                    return true;
+            }
+        }
+
+        public static UnityEngine.Object LoadAssetAtPathForRegistry(string assetPath, RegistryAssetType type)
+        {
+            switch (type)
+            {
+                case RegistryAssetType.Prefab:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+                case RegistryAssetType.Texture:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                case RegistryAssetType.Sprite:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+                case RegistryAssetType.Material:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(assetPath);
+                case RegistryAssetType.Mesh:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>(assetPath);
+                case RegistryAssetType.Audio:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(assetPath);
+                default:
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
+            }
+        }
+
+        public static string GetRegistryTypeLabel(RegistryAssetType type)
+        {
+            switch (type)
+            {
+                case RegistryAssetType.Prefab:
+                    return "prefabs";
+                case RegistryAssetType.Texture:
+                    return "textures";
+                case RegistryAssetType.Sprite:
+                    return "sprites";
+                case RegistryAssetType.Material:
+                    return "materials";
+                case RegistryAssetType.Mesh:
+                    return "meshes";
+                case RegistryAssetType.Audio:
+                    return "audio clips";
+                default:
+                    return type.ToString().ToLowerInvariant();
+            }
+        }
+
+        public static List<string> CollectAssetPathsInFolder(string folderPath, bool recursive)
+        {
+            var paths = new List<string>();
+            foreach (string guid in UnityEditor.AssetDatabase.FindAssets(string.Empty, new[] { folderPath }))
+            {
+                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                string directory = Path.GetDirectoryName(path)?.Replace('\\', '/') ?? string.Empty;
+                if (!recursive && directory != folderPath)
+                    continue;
+
+                paths.Add(path);
+            }
+
+            return paths;
+        }
+
+        private static bool IsImageExtension(string extension)
+        {
+            return extension == ".png" || extension == ".jpg" || extension == ".jpeg"
+                || extension == ".tga" || extension == ".psd" || extension == ".bmp";
+        }
+#endif
+
         /// <summary>
         /// Validate that an asset matches the registry's type.
         /// </summary>
@@ -467,7 +593,15 @@ namespace Core.Registry
                 case RegistryAssetType.Prefab:
                     return asset is GameObject;
                 case RegistryAssetType.Texture:
-                    return asset is Texture || asset is Texture2D;
+                    if (asset is Sprite)
+                        return false;
+                    if (!(asset is Texture || asset is Texture2D))
+                        return false;
+#if UNITY_EDITOR
+                    return MatchesRegistryAssetPath(UnityEditor.AssetDatabase.GetAssetPath(asset), RegistryAssetType.Texture);
+#else
+                    return true;
+#endif
                 case RegistryAssetType.Sprite:
                     return asset is Sprite;
                 case RegistryAssetType.Material:

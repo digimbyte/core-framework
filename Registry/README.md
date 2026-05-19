@@ -6,7 +6,7 @@ A type-safe, high-performance asset management framework for Unity that provides
 
 The Asset Registry system provides a robust solution for managing game assets through three core components:
 
-- **Registry**: Type-locked ScriptableObject containers for organizing assets by type (Prefabs, Textures, Materials, Meshes, Audio)
+- **Registry**: Type-locked ScriptableObject containers for organizing assets by type (Prefabs, Textures, Sprites, Materials, Meshes, Audio)
 - **RegistryManager**: Runtime singleton for fast UID-based lookups across multiple registries with composite key support
 - **RegistryIntegration**: Object pooling and lifecycle management layer for instantiation optimization
 
@@ -17,7 +17,7 @@ The Asset Registry system provides a robust solution for managing game assets th
 Individual registry instances that store collections of typed assets. Each registry is **locked to a single asset type** to ensure type safety and prevent configuration errors.
 
 **Features:**
-- Type-locked asset storage (Prefab, Texture, Material, Mesh, Audio)
+- Type-locked asset storage (Prefab, Texture, Sprite, Material, Mesh, Audio)
 - Fast UID-based lookups with dictionary caching
 - Tag-based filtering and categorization
 - Custom metadata support per item
@@ -30,7 +30,7 @@ Right-click in Project → Create → Core/Registry
 ```
 
 Configure the registry:
-1. Set **Asset Type** (cannot change after adding items)
+1. Set **Asset Type** (disabled in the inspector after the first item is added)
 2. Assign **Default/Fallback Asset** (required, must match asset type)
 3. Add **Description** for documentation
 4. Populate **Items** list

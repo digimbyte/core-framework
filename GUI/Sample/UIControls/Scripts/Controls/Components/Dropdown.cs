@@ -79,6 +79,57 @@ namespace NovaSamples.UIControls
             RefreshAfterOptionsChanged();
         }
 
+        /// <summary>
+        /// Selects the option at <paramref name="index"/>, updates the main label, refreshes the list if it was bound,
+        /// collapses the dropdown like a list click, and invokes <see cref="OnValueChanged"/> when the index actually changes.
+        /// </summary>
+        /// <returns><c>true</c> if the index is in range; otherwise <c>false</c>.</returns>
+        public bool SetSelect(int index)
+        {
+            if (DropdownOptions?.Options == null || index < 0 || index >= DropdownOptions.Options.Count)
+            {
+                return false;
+            }
+
+            int previousIndex = DropdownOptions.SelectedIndex;
+            DropdownOptions.SelectedIndex = index;
+            string selectedText = DropdownOptions.Options[index];
+
+            if (View.TryGetVisuals(out DropdownVisuals visuals))
+            {
+                visuals.InitSelectionLabel(selectedText);
+                visuals.RefreshDataSourceList();
+                visuals.Collapse();
+            }
+
+            if (index != previousIndex)
+            {
+                OnValueChanged?.Invoke(selectedText);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Selects the first option equal to <paramref name="value"/> using case-insensitive comparison.
+        /// </summary>
+        /// <inheritdoc cref="SetSelect(int)"/>
+        public bool SetSelect(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || DropdownOptions?.Options == null)
+            {
+                return false;
+            }
+
+            int index = IndexOfOptionIgnoreCase(value, DropdownOptions.Options);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            return SetSelect(index);
+        }
+
         private static int IndexOfOptionIgnoreCase(string option, List<string> options)
         {
             for (int i = 0; i < options.Count; i++)
