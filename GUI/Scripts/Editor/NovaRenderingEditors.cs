@@ -714,6 +714,9 @@ namespace Nova.Editor.GUIs
                     NovaGUI.Space(2 / NovaGUI.IndentSize);
                     SerializedProperty contentTypeProp = blockSerializedObject.FindProperty("contentType");
                     SerializedProperty passwordMaskProp = blockSerializedObject.FindProperty("passwordMask");
+                    SerializedProperty useNumberRangeProp = blockSerializedObject.FindProperty("useNumberRange");
+                    SerializedProperty numberMinProp = blockSerializedObject.FindProperty("numberMin");
+                    SerializedProperty numberMaxProp = blockSerializedObject.FindProperty("numberMax");
 
                     EditorGUI.BeginChangeCheck();
                     if (contentTypeProp != null)
@@ -723,15 +726,47 @@ namespace Nova.Editor.GUIs
                     }
 
                     bool showPasswordMask = true;
+                    bool showNumberRange = false;
                     if (contentTypeProp != null && !contentTypeProp.hasMultipleDifferentValues)
                     {
                         showPasswordMask = contentTypeProp.enumValueIndex == (int)TextBlock.ContentType.Password;
+                        showNumberRange = contentTypeProp.enumValueIndex == (int)TextBlock.ContentType.Numbers;
                     }
 
                     if (passwordMaskProp != null && showPasswordMask)
                     {
                         Rect maskRect = NovaGUI.Layout.GetControlRect();
                         EditorGUI.PropertyField(maskRect, passwordMaskProp, new GUIContent("Password Mask"));
+                    }
+
+                    if (showNumberRange)
+                    {
+                        if (useNumberRangeProp != null)
+                        {
+                            Rect useRangeRect = NovaGUI.Layout.GetControlRect();
+                            EditorGUI.PropertyField(useRangeRect, useNumberRangeProp, new GUIContent("Use Number Range"));
+                        }
+
+                        bool drawMinMax = useNumberRangeProp == null || useNumberRangeProp.boolValue;
+                        if (useNumberRangeProp != null && useNumberRangeProp.hasMultipleDifferentValues)
+                        {
+                            drawMinMax = true;
+                        }
+
+                        if (drawMinMax)
+                        {
+                            if (numberMinProp != null)
+                            {
+                                Rect minRect = NovaGUI.Layout.GetControlRect();
+                                EditorGUI.PropertyField(minRect, numberMinProp, new GUIContent("Number Min"));
+                            }
+
+                            if (numberMaxProp != null)
+                            {
+                                Rect maxRect = NovaGUI.Layout.GetControlRect();
+                                EditorGUI.PropertyField(maxRect, numberMaxProp, new GUIContent("Number Max"));
+                            }
+                        }
                     }
 
                     if (EditorGUI.EndChangeCheck())

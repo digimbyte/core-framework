@@ -7,6 +7,7 @@ using Nova.Internal.Rendering;
 using Nova.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Mathematics;
@@ -23,7 +24,7 @@ namespace Nova
     public sealed class TextBlock : UIBlock, ITextBlock
     {
         /// <summary>
-        /// Controls how the TextBlock treats its text content (e.g., normal, password-masked, or digits-only).
+        /// Controls how the TextBlock treats its text content (e.g., normal, password-masked, or numeric input).
         /// </summary>
         public enum ContentType
         {
@@ -38,10 +39,74 @@ namespace Nova
         [SerializeField]
         private string passwordMask = "\u2022";
 
+        [SerializeField]
+        private bool useNumberRange = false;
+
+        [SerializeField]
+        private long numberMin = 0;
+
+        [SerializeField]
+        private long numberMax = 999999999;
+
+        /// <summary>
+        /// When <see cref="TextContentType"/> is <see cref="ContentType.Numbers"/>, clamps parsed values to
+        /// <see cref="NumberMin"/> and <see cref="NumberMax"/> when enabled.
+        /// </summary>
+        public bool UseNumberRange
+        {
+            get => useNumberRange;
+            set
+            {
+                if (useNumberRange == value)
+                {
+                    return;
+                }
+
+                useNumberRange = value;
+                ReapplyNumbersFilter();
+            }
+        }
+
+        /// <summary>
+        /// Inclusive minimum when <see cref="UseNumberRange"/> is enabled.
+        /// </summary>
+        public long NumberMin
+        {
+            get => numberMin;
+            set
+            {
+                if (numberMin == value)
+                {
+                    return;
+                }
+
+                numberMin = value;
+                ReapplyNumbersFilter();
+            }
+        }
+
+        /// <summary>
+        /// Inclusive maximum when <see cref="UseNumberRange"/> is enabled.
+        /// </summary>
+        public long NumberMax
+        {
+            get => numberMax;
+            set
+            {
+                if (numberMax == value)
+                {
+                    return;
+                }
+
+                numberMax = value;
+                ReapplyNumbersFilter();
+            }
+        }
+
         /// <summary>
         /// The content type for this TextBlock. When set to <see cref="ContentType.Password"/>,
         /// the block will store the real text and display a masked string using <see cref="passwordMask"/>.
-        /// When set to <see cref="ContentType.Numbers"/>, only characters <c>0</c>–<c>9</c> are kept;
+        /// When set to <see cref="ContentType.Numbers"/>, only digits and an optional leading <c>-</c> are kept;
         /// other input is discarded.
         /// </summary>
         public ContentType TextContentType
@@ -79,7 +144,7 @@ namespace Nova
 
                 if (contentType == ContentType.Numbers)
                 {
-                    return unmaskedText ?? FilterDigitsOnly(TMP.text);
+                    return unmaskedText ?? FilterNumericInput(TMP.text);
                 }
 
                 return TMP.text;
@@ -94,7 +159,7 @@ namespace Nova
                 }
                 else if (contentType == ContentType.Numbers)
                 {
-                    unmaskedText = FilterDigitsOnly(value);
+                    unmaskedText = FilterNumericInput(value);
                     TMP.text = unmaskedText;
                 }
                 else
@@ -389,11 +454,11 @@ namespace Nova
             {
                 if (unmaskedText == null)
                 {
-                    unmaskedText = FilterDigitsOnly(TMP.text);
+                    unmaskedText = FilterNumericInput(TMP.text);
                 }
                 else
                 {
-                    unmaskedText = FilterDigitsOnly(unmaskedText);
+                    unmaskedText = FilterNumericInput(unmaskedText);
                 }
 
                 TMP.richText = false;
@@ -412,45 +477,118 @@ namespace Nova
             }
         }
 
-        private static string FilterDigitsOnly(string s)
+        private void ReapplyNumbersFilter()
+        {
+            if (contentType != ContentType.Numbers)
+            {
+                return;
+            }
+
+            ApplyContentTypeToTMP();
+        }
+
+        private bool AllowNegativePrefix => !useNumberRange || numberMin < 0;
+
+        private string FilterNumericInput(string s)
+        {
+            return ApplyNumberRange(FilterNumericCharacters(s, AllowNegativePrefix));
+        }
+
+        private static string FilterNumericCharacters(string s, bool allowNegativePrefix)
         {
             if (string.IsNullOrEmpty(s))
             {
                 return string.Empty;
             }
 
-            int digitCount = 0;
+            int validCount = 0;
+            bool hasLeadingMinus = false;
             for (int i = 0; i < s.Length; ++i)
             {
                 char c = s[i];
-                if (c >= '0' && c <= '9')
+                if (c == '-')
                 {
-                    digitCount++;
+                    if (allowNegativePrefix && i == 0 && !hasLeadingMinus)
+                    {
+                        validCount++;
+                        hasLeadingMinus = true;
+                    }
+                }
+                else if (c >= '0' && c <= '9')
+                {
+                    validCount++;
                 }
             }
 
-            if (digitCount == 0)
+            if (validCount == 0)
             {
                 return string.Empty;
             }
 
-            if (digitCount == s.Length)
+            if (validCount == s.Length)
             {
                 return s;
             }
 
-            char[] arr = new char[digitCount];
+            char[] arr = new char[validCount];
             int j = 0;
+            hasLeadingMinus = false;
             for (int i = 0; i < s.Length; ++i)
             {
                 char c = s[i];
-                if (c >= '0' && c <= '9')
+                if (c == '-')
+                {
+                    if (allowNegativePrefix && j == 0 && !hasLeadingMinus)
+                    {
+                        arr[j++] = c;
+                        hasLeadingMinus = true;
+                    }
+                }
+                else if (c >= '0' && c <= '9')
                 {
                     arr[j++] = c;
                 }
             }
 
             return new string(arr);
+        }
+
+        private string ApplyNumberRange(string s)
+        {
+            if (!useNumberRange || string.IsNullOrEmpty(s) || s == "-")
+            {
+                return s;
+            }
+
+            if (!long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out long value))
+            {
+                return s;
+            }
+
+            long min = numberMin;
+            long max = numberMax;
+            if (min > max)
+            {
+                long swap = min;
+                min = max;
+                max = swap;
+            }
+
+            if (value > max)
+            {
+                return max.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (value < min)
+            {
+                string minText = min.ToString(CultureInfo.InvariantCulture);
+                if (s.Length >= minText.Length)
+                {
+                    return minText;
+                }
+            }
+
+            return s;
         }
 
         private string MaskString(string s)
@@ -644,15 +782,15 @@ namespace Nova
 
             if (textBlock.contentType == ContentType.Numbers)
             {
-                string digits = FilterDigitsOnly(textMeshPro.text);
-                if (digits != textMeshPro.text)
+                string filtered = textBlock.FilterNumericInput(textMeshPro.text);
+                if (filtered != textMeshPro.text)
                 {
-                    textBlock.unmaskedText = digits;
-                    textMeshPro.text = digits;
+                    textBlock.unmaskedText = filtered;
+                    textMeshPro.text = filtered;
                 }
                 else
                 {
-                    textBlock.unmaskedText = digits;
+                    textBlock.unmaskedText = filtered;
                 }
             }
 
