@@ -23,12 +23,13 @@ namespace Nova
     public sealed class TextBlock : UIBlock, ITextBlock
     {
         /// <summary>
-        /// Controls how the TextBlock treats its text content (e.g., normal or password-masked).
+        /// Controls how the TextBlock treats its text content (e.g., normal, password-masked, or digits-only).
         /// </summary>
         public enum ContentType
         {
             Standard = 0,
-            Password = 1
+            Password = 1,
+            Numbers = 2
         }
 
         [SerializeField]
@@ -40,6 +41,8 @@ namespace Nova
         /// <summary>
         /// The content type for this TextBlock. When set to <see cref="ContentType.Password"/>,
         /// the block will store the real text and display a masked string using <see cref="passwordMask"/>.
+        /// When set to <see cref="ContentType.Numbers"/>, only characters <c>0</c>–<c>9</c> are kept;
+        /// other input is discarded.
         /// </summary>
         public ContentType TextContentType
         {
@@ -56,7 +59,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The current unmasked text when using password content type.
+        /// Buffered text when using <see cref="ContentType.Password"/> or <see cref="ContentType.Numbers"/>.
         /// </summary>
         [NonSerialized]
         private string unmaskedText = null;
@@ -74,6 +77,11 @@ namespace Nova
                     return unmaskedText ?? TMP.text;
                 }
 
+                if (contentType == ContentType.Numbers)
+                {
+                    return unmaskedText ?? FilterDigitsOnly(TMP.text);
+                }
+
                 return TMP.text;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -83,6 +91,11 @@ namespace Nova
                 {
                     unmaskedText = value ?? string.Empty;
                     TMP.text = MaskString(unmaskedText);
+                }
+                else if (contentType == ContentType.Numbers)
+                {
+                    unmaskedText = FilterDigitsOnly(value);
+                    TMP.text = unmaskedText;
                 }
                 else
                 {
@@ -372,6 +385,20 @@ namespace Nova
                 TMP.richText = false;
                 TMP.text = MaskString(unmaskedText);
             }
+            else if (contentType == ContentType.Numbers)
+            {
+                if (unmaskedText == null)
+                {
+                    unmaskedText = FilterDigitsOnly(TMP.text);
+                }
+                else
+                {
+                    unmaskedText = FilterDigitsOnly(unmaskedText);
+                }
+
+                TMP.richText = false;
+                TMP.text = unmaskedText;
+            }
             else
             {
                 // Restore the real text if we have it
@@ -383,6 +410,47 @@ namespace Nova
 
                 TMP.richText = true;
             }
+        }
+
+        private static string FilterDigitsOnly(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+
+            int digitCount = 0;
+            for (int i = 0; i < s.Length; ++i)
+            {
+                char c = s[i];
+                if (c >= '0' && c <= '9')
+                {
+                    digitCount++;
+                }
+            }
+
+            if (digitCount == 0)
+            {
+                return string.Empty;
+            }
+
+            if (digitCount == s.Length)
+            {
+                return s;
+            }
+
+            char[] arr = new char[digitCount];
+            int j = 0;
+            for (int i = 0; i < s.Length; ++i)
+            {
+                char c = s[i];
+                if (c >= '0' && c <= '9')
+                {
+                    arr[j++] = c;
+                }
+            }
+
+            return new string(arr);
         }
 
         private string MaskString(string s)
@@ -572,6 +640,20 @@ namespace Nova
             if (textBlock == null)
             {
                 return;
+            }
+
+            if (textBlock.contentType == ContentType.Numbers)
+            {
+                string digits = FilterDigitsOnly(textMeshPro.text);
+                if (digits != textMeshPro.text)
+                {
+                    textBlock.unmaskedText = digits;
+                    textMeshPro.text = digits;
+                }
+                else
+                {
+                    textBlock.unmaskedText = digits;
+                }
             }
 
             if (textBlock.TMP.textInfo.characterCount > 0)
