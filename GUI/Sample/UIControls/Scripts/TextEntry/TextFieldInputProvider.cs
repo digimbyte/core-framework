@@ -42,6 +42,11 @@ namespace NovaSamples.UIControls
         /// <returns></returns>
         protected bool IsValidChar(char c)
         {
+            if (inputField != null && !inputField.IsValidInputCharacter(c))
+            {
+                return false;
+            }
+
             // Don't allow return chars or tabulator key to be entered into single line fields.
             if (!allowNewlines && (c == '\t' || c == '\r' || c == 10))
             {

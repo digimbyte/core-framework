@@ -124,6 +124,28 @@ namespace Nova
         }
 
         /// <summary>
+        /// The mask character used when <see cref="TextContentType"/> is <see cref="ContentType.Password"/>.
+        /// </summary>
+        public string PasswordMask
+        {
+            get => string.IsNullOrEmpty(passwordMask) ? "\u2022" : passwordMask;
+            set
+            {
+                string newMask = value ?? "\u2022";
+                if (passwordMask == newMask)
+                {
+                    return;
+                }
+
+                passwordMask = newMask;
+                if (contentType == ContentType.Password)
+                {
+                    ApplyContentTypeToTMP();
+                }
+            }
+        }
+
+        /// <summary>
         /// Buffered text when using <see cref="ContentType.Password"/> or <see cref="ContentType.Numbers"/>.
         /// </summary>
         [NonSerialized]

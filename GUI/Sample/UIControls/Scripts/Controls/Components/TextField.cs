@@ -2,6 +2,7 @@
 using Nova;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 
@@ -149,6 +150,92 @@ namespace NovaSamples.UIControls
                 return textBlock;
             }
         }
+
+        #region Text Block Content
+        /// <summary>
+        /// Content filtering and masking for the linked <see cref="TextBlock"/>.
+        /// Configure on the Text Block component or via these pass-through properties.
+        /// </summary>
+        public TextBlock.ContentType TextContentType
+        {
+            get => TextBlock.TextContentType;
+            set => TextBlock.TextContentType = value;
+        }
+
+        /// <summary>
+        /// Mask character when <see cref="TextContentType"/> is <see cref="TextBlock.ContentType.Password"/>.
+        /// </summary>
+        public string PasswordMask
+        {
+            get => TextBlock.PasswordMask;
+            set => TextBlock.PasswordMask = value;
+        }
+
+        /// <summary>
+        /// When <see cref="TextContentType"/> is <see cref="TextBlock.ContentType.Numbers"/>, clamps parsed values.
+        /// </summary>
+        public bool UseNumberRange
+        {
+            get => TextBlock.UseNumberRange;
+            set => TextBlock.UseNumberRange = value;
+        }
+
+        /// <summary>
+        /// Inclusive minimum when <see cref="UseNumberRange"/> is enabled.
+        /// </summary>
+        public long NumberMin
+        {
+            get => TextBlock.NumberMin;
+            set => TextBlock.NumberMin = value;
+        }
+
+        /// <summary>
+        /// Inclusive maximum when <see cref="UseNumberRange"/> is enabled.
+        /// </summary>
+        public long NumberMax
+        {
+            get => TextBlock.NumberMax;
+            set => TextBlock.NumberMax = value;
+        }
+
+        /// <summary>
+        /// Configures the linked <see cref="TextBlock"/> for numeric input with an optional range.
+        /// </summary>
+        public void SetNumbersMode(long min, long max, bool useRange = true)
+        {
+            TextContentType = TextBlock.ContentType.Numbers;
+            NumberMin = min;
+            NumberMax = max;
+            UseNumberRange = useRange;
+        }
+
+        /// <summary>
+        /// Parses <see cref="Text"/> as a number when <see cref="TextContentType"/> is <see cref="TextBlock.ContentType.Numbers"/>.
+        /// </summary>
+        public bool TryGetNumericValue(out long value)
+        {
+            if (TextContentType != TextBlock.ContentType.Numbers)
+            {
+                value = 0;
+                return false;
+            }
+
+            return long.TryParse(Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+        }
+
+        /// <summary>
+        /// Returns whether <paramref name="c"/> may be inserted for the current <see cref="TextContentType"/>.
+        /// </summary>
+        public bool IsValidInputCharacter(char c)
+        {
+            if (TextContentType == TextBlock.ContentType.Numbers)
+            {
+                return (c >= '0' && c <= '9') || c == '-';
+            }
+
+            return true;
+        }
+        #endregion
 
         /// <summary>
         /// The current cursor position.<br/>
