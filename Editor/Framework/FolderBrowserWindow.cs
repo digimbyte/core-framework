@@ -253,39 +253,82 @@ namespace Core.Framework.Editor
 
 			int folderId = folderObj.GetInstanceID();
 
+			SwitchToTwoColumnView(win);
+
+			if (TryShowFolderContents(win, folderId))
+				return;
+
+			if (TrySetFolderSelection(win, folderId))
+				return;
+
+			Debug.LogError($"FolderBrowserWindow: Could not open folder contents for '{folderPath}'.");
+		}
+
+		private static void SwitchToTwoColumnView(EditorWindow win)
+		{
+			var setTwoColumns = ProjectBrowserType.GetMethod(
+				"SetTwoColumns",
+				BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+				null,
+				Type.EmptyTypes,
+				null);
+
+			setTwoColumns?.Invoke(win, null);
+		}
+
+		private static bool TryShowFolderContents(EditorWindow win, int folderId)
+		{
+			var showFolderContents = ProjectBrowserType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+				.FirstOrDefault(m =>
+				{
+					if (m.Name != "ShowFolderContents") return false;
+					var p = m.GetParameters();
+					return p.Length == 2 && p[1].ParameterType == typeof(bool);
+				});
+
+			if (showFolderContents == null || !TryCreateFolderId(folderId, showFolderContents.GetParameters()[0].ParameterType, out var id))
+				return false;
+
+			showFolderContents.Invoke(win, new[] { id, (object)true });
+			return true;
+		}
+
+		private static bool TrySetFolderSelection(EditorWindow win, int folderId)
+		{
 			var setFolderSelection = ProjectBrowserType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 				.FirstOrDefault(m =>
 				{
 					if (m.Name != "SetFolderSelection") return false;
 					var p = m.GetParameters();
-					return p.Length == 2 &&
-						   p[0].ParameterType == typeof(int[]) &&
-						   p[1].ParameterType == typeof(bool);
+					return p.Length == 2 && p[0].ParameterType.IsArray && p[1].ParameterType == typeof(bool);
 				});
 
-			if (setFolderSelection != null)
+			if (setFolderSelection == null)
+				return false;
+
+			var elementType = setFolderSelection.GetParameters()[0].ParameterType.GetElementType();
+			if (!TryCreateFolderId(folderId, elementType, out var id))
+				return false;
+
+			var selection = Array.CreateInstance(elementType, 1);
+			selection.SetValue(id, 0);
+			setFolderSelection.Invoke(win, new object[] { selection, true });
+			return true;
+		}
+
+		private static bool TryCreateFolderId(int folderId, Type targetType, out object id)
+		{
+			if (targetType == typeof(int))
 			{
-				setFolderSelection.Invoke(win, new object[] { new[] { folderId }, true });
-				return;
+				id = folderId;
+				return true;
 			}
 
-			var frameObject = ProjectBrowserType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				.FirstOrDefault(m =>
-				{
-					if (m.Name != "FrameObject") return false;
-					var p = m.GetParameters();
-					return p.Length == 2 &&
-						   p[0].ParameterType == typeof(int) &&
-						   p[1].ParameterType == typeof(bool);
-				});
+			if (EntityIdType != null && targetType == EntityIdType)
+				return TryConvertInstanceIdToEntityId(folderId, out id);
 
-			if (frameObject != null)
-			{
-				frameObject.Invoke(win, new object[] { folderId, false });
-				return;
-			}
-
-			EditorGUIUtility.PingObject(folderObj);
+			id = null;
+			return false;
 		}
 
 		private static bool TryApplyRecursiveFolderExpansion(string folderPath, bool expand)
