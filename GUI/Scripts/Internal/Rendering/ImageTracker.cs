@@ -74,8 +74,8 @@ namespace Nova.Internal.Rendering
             if (sprite != null && sprite.texture != null)
             {
                 texture = sprite.texture;
-                imageDescriptor.TextureID = texture.GetInstanceID();
-                imageDescriptor.SpriteID = sprite.GetInstanceID();
+                imageDescriptor.TextureID = texture.GetEntityId();
+                imageDescriptor.SpriteID = sprite.GetEntityId();
 
                 Rect rect = sprite.textureRect;
 
@@ -99,7 +99,7 @@ namespace Nova.Internal.Rendering
 
             if (texture != null)
             {
-                imageDescriptor.TextureID = texture.GetInstanceID();
+                imageDescriptor.TextureID = texture.GetEntityId();
                 imageDescriptor.Rect = new Rect(Vector2.zero, new Vector2(texture.width, texture.height));
             }
 
@@ -247,7 +247,7 @@ namespace Nova.Internal.Rendering
         /// </summary>
         public bool EditorOnly_TryUpdateSprites(Texture baseTexture, UnityEngine.Object[] sprites)
         {
-            var textureID = baseTexture.GetInstanceID();
+            TextureID textureID = baseTexture.GetEntityId();
             if (!IsTracked(textureID))
             {
                 // If texture is not tracked, it means we're not using any of the sprites
@@ -261,7 +261,7 @@ namespace Nova.Internal.Rendering
             {
                 var key = keys[i];
                 var imageDescriptor = dataStore.ImageDescriptors[key];
-                if (imageDescriptor.TextureID != textureID || imageDescriptor.SpriteID == 0)
+                if (imageDescriptor.TextureID != textureID || imageDescriptor.SpriteID == EntityId.None)
                 {
                     // Different texture
                     continue;
@@ -274,7 +274,7 @@ namespace Nova.Internal.Rendering
                         continue;
                     }
 
-                    if (sprite.GetInstanceID() != imageDescriptor.SpriteID)
+                    if (sprite.GetEntityId() != imageDescriptor.SpriteID)
                     {
                         // Different sprite
                         continue;
@@ -302,7 +302,7 @@ namespace Nova.Internal.Rendering
         /// </summary>
         public bool EditorOnly_TryUpdateTextureDescriptor(Texture texture)
         {
-            TextureID id = texture.GetInstanceID();
+            TextureID id = texture.GetEntityId();
 
             if (!dataStore.TextureDescriptors.TryGetValue(id, out TextureDescriptor currentDescriptor))
             {

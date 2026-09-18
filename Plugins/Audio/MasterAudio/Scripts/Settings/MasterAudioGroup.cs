@@ -103,11 +103,11 @@ namespace DarkTonic.MasterAudio {
         public int frames = 0;
         // ReSharper restore InconsistentNaming
 
-        private List<int> _activeAudioSourcesIds = new List<int>();
+        private List<EntityId> _activeAudioSourcesIds = new List<EntityId>();
         private string _objectName = string.Empty;
         private Transform _trans;
         private float _originalVolume = 1;
-        private readonly List<int> _actorInstanceIds = new List<int>();
+        private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
         private bool isPaused = false;
 
         public enum TargetDespawnedBehavior {
@@ -153,7 +153,7 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        public void AddActiveAudioSourceId(int varInstanceId) {
+        public void AddActiveAudioSourceId(EntityId varInstanceId) {
             if (ActiveAudioSourceIds.Contains(varInstanceId)) {
                 return;
             }
@@ -166,7 +166,7 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        public void RemoveActiveAudioSourceId(int varInstanceId) {
+        public void RemoveActiveAudioSourceId(EntityId varInstanceId) {
             ActiveAudioSourceIds.Remove(varInstanceId);
 
             var bus = BusForGroup;
@@ -175,7 +175,7 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        public void AddActorInstanceId(int instanceId)
+        public void AddActorInstanceId(EntityId instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId))
             {
@@ -185,7 +185,7 @@ namespace DarkTonic.MasterAudio {
             _actorInstanceIds.Add(instanceId);
         }
 
-        public void RemoveActorInstanceId(int instanceId)
+        public void RemoveActorInstanceId(EntityId instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }
@@ -391,12 +391,12 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        private List<int> ActiveAudioSourceIds {
+        private List<EntityId> ActiveAudioSourceIds {
             get {
                 if (_activeAudioSourcesIds != null) {
                     return _activeAudioSourcesIds;
                 }
-                _activeAudioSourcesIds = new List<int>(Trans.childCount);
+                _activeAudioSourcesIds = new List<EntityId>(Trans.childCount);
 
                 return _activeAudioSourcesIds;
             }

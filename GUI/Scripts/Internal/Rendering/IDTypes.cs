@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
+using UnityEngine;
 #pragma warning disable CS0660
 #pragma warning disable CS0661
 
@@ -225,12 +226,12 @@ namespace Nova.Internal.Rendering
 
     internal struct TextMaterialID : IEquatable<TextMaterialID>, IComparable<TextMaterialID>
     {
-        private int val;
+        private EntityId val;
 
         public bool IsValid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => val != 0;
+            get => val != EntityId.None;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -246,7 +247,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator TextMaterialID(int val) => new TextMaterialID()
+        public static implicit operator TextMaterialID(EntityId val) => new TextMaterialID()
         {
             val = val
         };
@@ -265,7 +266,7 @@ namespace Nova.Internal.Rendering
 
         public int CompareTo(TextMaterialID other)
         {
-            return val - other.val;
+            return val.CompareTo(other.val);
         }
 
         public override string ToString()
@@ -275,20 +276,20 @@ namespace Nova.Internal.Rendering
 
         public static readonly TextMaterialID Invalid = new TextMaterialID()
         {
-            val = 0
+            val = EntityId.None
         };
     }
 
     internal struct TextureID : IEquatable<TextureID>, IComparable<TextureID>
     {
-        private int val;
+        private EntityId val;
 
-        public static readonly TextureID Invalid = 0;
+        public static readonly TextureID Invalid = EntityId.None;
 
         public bool IsValid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => val != 0;
+            get => val != EntityId.None;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -318,17 +319,17 @@ namespace Nova.Internal.Rendering
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CompareTo(TextureID other)
         {
-            return val - other.val;
+            return val.CompareTo(other.val);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator TextureID(int val) => new TextureID()
+        public static implicit operator TextureID(EntityId val) => new TextureID()
         {
             val = val,
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator int(TextureID val) => val.val;
+        public static implicit operator EntityId(TextureID val) => val.val;
 
         public override string ToString()
         {

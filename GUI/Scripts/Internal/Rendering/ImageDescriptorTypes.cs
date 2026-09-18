@@ -104,7 +104,7 @@ namespace Nova.Internal.Rendering
         /// I hate that we need this, but in order to handle when a sprite
         /// being edited in the sprite editor, we need to track this
         /// </summary>
-        public int SpriteID;
+        public EntityId SpriteID;
         public SpriteBorder Border;
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Nova.Internal.Rendering
         {
             Mode = imagePackMode;
             TextureID = TextureID.Invalid;
-            SpriteID = 0;
+            SpriteID = EntityId.None;
             Rect = default;
             Border = default;
         }
@@ -140,7 +140,7 @@ namespace Nova.Internal.Rendering
         public static ImageDescriptor Invalid = new ImageDescriptor()
         {
             TextureID = TextureID.Invalid,
-            SpriteID = 0,
+            SpriteID = EntityId.None,
         };
     }
 

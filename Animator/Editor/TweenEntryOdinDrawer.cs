@@ -320,7 +320,7 @@ namespace Core.Animator
         {
             // Persist expanded state per entry without relying on Odin Context APIs (version differences).
             var animate = GetAnimateTarget();
-            int ownerId = animate != null ? animate.GetInstanceID() : 0;
+            EntityId ownerId = animate != null ? animate.GetEntityId() : EntityId.None;
             string key = $"Animate.TweenEntry.Expanded.{ownerId}.{Property.Path}";
 
             bool expanded = SessionState.GetBool(key, true);

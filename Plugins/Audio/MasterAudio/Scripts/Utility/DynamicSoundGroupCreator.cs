@@ -58,7 +58,7 @@ namespace DarkTonic.MasterAudio {
         private bool _hasCreated;
         private readonly List<Transform> _groupsToRemove = new List<Transform>();
         private Transform _trans;
-        private int _instanceId = -1;
+        private EntityId _instanceId = EntityId.None;
 
         public enum CreateItemsWhen {
             FirstEnableOnly,
@@ -556,11 +556,11 @@ namespace DarkTonic.MasterAudio {
         }
 
 		/*! \cond PRIVATE */
-		public int InstanceId {
+		public EntityId InstanceId {
             get {
-                if (_instanceId < 0)
+                if (_instanceId == EntityId.None)
                 {
-                    _instanceId = GetInstanceID();
+                    _instanceId = GetEntityId();
                 }
 
                 return _instanceId;

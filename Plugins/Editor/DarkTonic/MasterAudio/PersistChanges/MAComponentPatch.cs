@@ -122,7 +122,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             if (!_isComponentObjectNull)
             {
-                ComponentObject = EditorUtility.InstanceIDToObject(ComponentObject.GetInstanceID()) as Component;
+                ComponentObject = EditorUtility.EntityIdToObject(ComponentObject.GetEntityId()) as Component;
             }
             else
             {

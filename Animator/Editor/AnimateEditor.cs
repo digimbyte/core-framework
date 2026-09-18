@@ -1003,7 +1003,7 @@ namespace Core.Animator
 
         private static string ExpandedKey(UnityEngine.Object o, int index)
         {
-            int id = o != null ? o.GetInstanceID() : 0;
+            EntityId id = o != null ? o.GetEntityId() : EntityId.None;
             return $"Animate.LegacyEditor.Expanded.{id}.{index}";
         }
 

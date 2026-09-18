@@ -412,7 +412,7 @@ namespace Nova
             for (int i = 0; i < renderData.MeshData.Length; ++i)
             {
                 ref Internal.TextBlockMeshData meshData = ref renderData.MeshData.ElementAt(i);
-                int newMaterialID = textInfo.meshInfo[i].material.GetInstanceID();
+                EntityId newMaterialID = textInfo.meshInfo[i].material.GetEntityId();
                 if (meshData.MaterialID != newMaterialID)
                 {
                     RenderingDataStore.Instance.TextMaterials[newMaterialID] = textInfo.meshInfo[i].material;

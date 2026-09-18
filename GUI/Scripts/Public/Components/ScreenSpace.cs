@@ -243,7 +243,7 @@ namespace Nova
         [SerializeField]
         private List<Camera> additionalCameras = new List<Camera>();
 
-        int IScreenSpace.CameraID => targetCamera.GetInstanceID();
+        EntityId IScreenSpace.CameraID => targetCamera.GetEntityId();
 
         List<Camera> IScreenSpace.AdditionalCameras => additionalCameras;
 

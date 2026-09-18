@@ -21,16 +21,16 @@ namespace Nova.Internal.Rendering
     {
         public NovaHashMap<DataStoreID, RenderRootType> Roots;
         public NovaHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
-        public NovaHashMap<DataStoreID, int> ScreenSpaceCameraTargets;
-        public NovaHashMap<DataStoreID, NovaList<int>> ScreenSpaceAdditionalCameras;
+        public NovaHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
+        public NovaHashMap<DataStoreID, NovaList<EntityId>> ScreenSpaceAdditionalCameras;
 
-        private NativeList<NovaList<int>> additionalCameraPool;
+        private NativeList<NovaList<EntityId>> additionalCameraPool;
 
         public void AddScreenSpaceRoot(DataStoreID dataStoreID, IScreenSpace screenSpace)
         {
             ScreenSpaceCameraTargets[dataStoreID] = screenSpace.CameraID;
 
-            if (!ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out NovaList<int> additionalCameras))
+            if (!ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out NovaList<EntityId> additionalCameras))
             {
                 additionalCameras = additionalCameraPool.GetFromPoolOrInit();
             }
@@ -44,7 +44,7 @@ namespace Nova.Internal.Rendering
                     continue;
                 }
 
-                additionalCameras.Add(cam.GetInstanceID());
+                additionalCameras.Add(cam.GetEntityId());
             }
 
             ScreenSpaceAdditionalCameras[dataStoreID] = additionalCameras;
@@ -53,7 +53,7 @@ namespace Nova.Internal.Rendering
         public void RemoveScreenSpaceRoot(DataStoreID dataStoreID)
         {
             ScreenSpaceCameraTargets.Remove(dataStoreID);
-            if (ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out NovaList<int> additionalCameras))
+            if (ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out NovaList<EntityId> additionalCameras))
             {
                 additionalCameraPool.ReturnToPool(ref additionalCameras);
                 ScreenSpaceAdditionalCameras.Remove(dataStoreID);

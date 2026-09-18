@@ -268,7 +268,7 @@ namespace Nova.Internal.Rendering
             return shader;
         }
 
-        public static bool HandleTMPFontPropertyChanged(int instanceID, Material tmpMaterial)
+        public static bool HandleTMPFontPropertyChanged(EntityId instanceID, Material tmpMaterial)
         {
             bool isUsingFontMaterial = false;
             TextMaterialID materialID = TextMaterialID.Invalid;

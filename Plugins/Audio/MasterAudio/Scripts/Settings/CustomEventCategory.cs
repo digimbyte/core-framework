@@ -1,6 +1,7 @@
 ﻿/*! \cond PRIVATE */
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace DarkTonic.MasterAudio {
@@ -13,9 +14,9 @@ namespace DarkTonic.MasterAudio {
 		public bool IsTemporary = false;
 		public string ProspectiveName = MasterAudio.NoCategory;
 
-        private readonly List<int> _actorInstanceIds = new List<int>();
+        private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
 
-        public void AddActorInstanceId(int instanceId)
+        public void AddActorInstanceId(EntityId instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId))
             {
@@ -25,7 +26,7 @@ namespace DarkTonic.MasterAudio {
             _actorInstanceIds.Add(instanceId);
         }
 
-        public void RemoveActorInstanceId(int instanceId)
+        public void RemoveActorInstanceId(EntityId instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }

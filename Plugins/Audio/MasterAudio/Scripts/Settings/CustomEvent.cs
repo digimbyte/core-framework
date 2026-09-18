@@ -1,6 +1,7 @@
 /*! \cond PRIVATE */
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace DarkTonic.MasterAudio {
@@ -21,14 +22,14 @@ namespace DarkTonic.MasterAudio {
         public string categoryName = MasterAudio.NoCategory;
         // ReSharper restore InconsistentNaming
 
-        private readonly List<int> _actorInstanceIds = new List<int>();
+        private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
 
         public CustomEvent(string eventName) {
             EventName = eventName;
             ProspectiveName = eventName;
         }
 
-        public void AddActorInstanceId(int instanceId)
+        public void AddActorInstanceId(EntityId instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId))
             {
@@ -38,7 +39,7 @@ namespace DarkTonic.MasterAudio {
             _actorInstanceIds.Add(instanceId);
         }
 
-        public void RemoveActorInstanceId(int instanceId)
+        public void RemoveActorInstanceId(EntityId instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }

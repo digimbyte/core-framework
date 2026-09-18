@@ -29,12 +29,12 @@ namespace DarkTonic.MasterAudio {
         public bool bypassReverbZones = false;
 
         // ReSharper restore InconsistentNaming
-        private readonly List<int> _activeAudioSourcesIds = new List<int>(50);
-        private readonly List<int> _actorInstanceIds = new List<int>();
+        private readonly List<EntityId> _activeAudioSourcesIds = new List<EntityId>(50);
+        private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
         private float _originalVolume = 1;
         private bool isPaused = false;
 
-        public void AddActorInstanceId(int instanceId)
+        public void AddActorInstanceId(EntityId instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId)) {
                 return;
@@ -43,12 +43,12 @@ namespace DarkTonic.MasterAudio {
             _actorInstanceIds.Add(instanceId);
         }
 
-        public void RemoveActorInstanceId(int instanceId)
+        public void RemoveActorInstanceId(EntityId instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }
 
-        public void AddActiveAudioSourceId(int id) {
+        public void AddActiveAudioSourceId(EntityId id) {
             if (_activeAudioSourcesIds.Contains(id)) {
                 return;
             }
@@ -65,7 +65,7 @@ namespace DarkTonic.MasterAudio {
         }
 
 
-        public void RemoveActiveAudioSourceId(int id) {
+        public void RemoveActiveAudioSourceId(EntityId id) {
             _activeAudioSourcesIds.Remove(id);
         }
         /*! \endcond */

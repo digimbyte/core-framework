@@ -88,7 +88,7 @@ namespace DarkTonic.MasterAudio {
         private AudioChorusFilter _chorusFilter;
         private string _objectName = string.Empty;
         private float _maxVol = 1f;
-        private int _instanceId = -1;
+        private EntityId _instanceId = EntityId.None;
         private bool? _audioLoops;
         private int _maxLoops;
         private SoundGroupVariationUpdater _varUpdater;
@@ -1359,10 +1359,10 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        public int InstanceId {
+        public EntityId InstanceId {
             get {
-                if (_instanceId < 0) {
-                    _instanceId = GetInstanceID();
+                if (_instanceId == EntityId.None) {
+                    _instanceId = GetEntityId();
                 }
 
                 return _instanceId;

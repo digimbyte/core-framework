@@ -6,7 +6,7 @@ namespace Nova.Internal.Rendering
 {
     internal interface IScreenSpace
     {
-        int CameraID { get; }
+        EntityId CameraID { get; }
 
         List<Camera> AdditionalCameras { get; }
 

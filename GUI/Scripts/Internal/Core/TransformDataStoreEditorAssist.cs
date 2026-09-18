@@ -16,7 +16,7 @@ namespace Nova.Internal.Core
         public class TransformRegistrationTracker
         {
             private HashList<DataStoreID> untrackedTransforms = null;
-            private HashSet<int> transformInstanceIDs = null;
+            private HashSet<EntityId> transformInstanceIDs = null;
             private TransformDataStore<TDataStore, T> owner = null;
 
             public void LockTransforms()
@@ -96,7 +96,7 @@ namespace Nova.Internal.Core
 
                 if (transform != null)
                 {
-                    transformInstanceIDs.Add(transform.GetInstanceID());
+                    transformInstanceIDs.Add(transform.GetEntityId());
                 }
 
                 SetTransformTrackingState(provider);
@@ -111,7 +111,7 @@ namespace Nova.Internal.Core
 
                 if (transform != null)
                 {
-                    transformInstanceIDs.Remove(transform.GetInstanceID());
+                    transformInstanceIDs.Remove(transform.GetEntityId());
                 }
 
                 untrackedTransforms.Remove(idToRemove);
@@ -129,7 +129,7 @@ namespace Nova.Internal.Core
                     return false;
                 }
 
-                return transformInstanceIDs.Contains(transform.GetInstanceID());
+                return transformInstanceIDs.Contains(transform.GetEntityId());
             }
 
             public void Init(TransformDataStore<TDataStore, T> transformDataStore)
@@ -141,7 +141,7 @@ namespace Nova.Internal.Core
 
                 owner = transformDataStore;
                 untrackedTransforms = new HashList<DataStoreID>();
-                transformInstanceIDs = new HashSet<int>();
+                transformInstanceIDs = new HashSet<EntityId>();
             }
 
             public void Dispose()

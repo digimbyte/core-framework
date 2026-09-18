@@ -66,7 +66,7 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NovaHashMap<ShaderDescriptor, ShaderCacheIndex> CachedShaders;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, int> ScreenSpaceCameraTargets;
+        public NovaHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
         [ReadOnly]
         public NativeList<DataStoreIndex, VisualModifierID> VisualModifierIDs;
         [ReadOnly]
@@ -177,7 +177,7 @@ namespace Nova.Internal.Rendering
             }
             else
             {
-                materialDescriptor.TextMaterialID = 0;
+                materialDescriptor.TextMaterialID = TextMaterialID.Invalid;
             }
 
             if (CachedMaterials.TryGetValue(materialDescriptor, out MaterialCacheIndex toRet))

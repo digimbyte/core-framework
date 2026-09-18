@@ -48,7 +48,7 @@ namespace Nova.Editor
                 return;
             }
 
-            UpdateTMPFont(fontAsset.material.GetInstanceID(), fontAsset.material);
+            UpdateTMPFont(fontAsset.material.GetEntityId(), fontAsset.material);
         }
 
         private static void HandleUndoRedo()
@@ -96,7 +96,7 @@ namespace Nova.Editor
 
         private static void HandleEvent(ref ChangeAssetObjectPropertiesEventArgs data)
         {
-            Object obj = EditorUtility.InstanceIDToObject(data.instanceId);
+            Object obj = EditorUtility.EntityIdToObject(data.entityId);
 
             switch (obj)
             {
@@ -106,7 +106,7 @@ namespace Nova.Editor
                         break;
                     }
 
-                    UpdateTMPFont(data.instanceId, material);
+                    UpdateTMPFont(data.entityId, material);
                     break;
 
                 case PlayerSettings playerSettings:
@@ -115,7 +115,7 @@ namespace Nova.Editor
             }
         }
 
-        private static void UpdateTMPFont(int instanceID, Material tmpMaterial)
+        private static void UpdateTMPFont(EntityId instanceID, Material tmpMaterial)
         {
             if (!MaterialCache.HandleTMPFontPropertyChanged(instanceID, tmpMaterial))
             {
@@ -127,7 +127,7 @@ namespace Nova.Editor
 
         private static void HandleEvent(ref ChangeGameObjectOrComponentPropertiesEventArgs data)
         {
-            Object obj = EditorUtility.InstanceIDToObject(data.instanceId);
+            Object obj = EditorUtility.EntityIdToObject(data.entityId);
 
             switch (obj)
             {
@@ -176,7 +176,7 @@ namespace Nova.Editor
 
         private static void HandleEvent(ref ChangeGameObjectParentEventArgs data)
         {
-            Object obj = EditorUtility.InstanceIDToObject(data.instanceId);
+            Object obj = EditorUtility.EntityIdToObject(data.entityId);
 
             switch (obj)
             {

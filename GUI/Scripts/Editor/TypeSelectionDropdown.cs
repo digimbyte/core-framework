@@ -117,7 +117,7 @@ namespace Nova.Editor.GUIs
                 return parent;
             }
 
-            AdvancedDropdownItem next = parent.children.Where(x => string.Compare(x.name, subPaths[subPathIndex], ignoreCase: true) == 0 && !(x is TypeSelectionDropdownItem)).FirstOrDefault();
+            AdvancedDropdownItem next = parent.childList.Where(x => string.Compare(x.name, subPaths[subPathIndex], ignoreCase: true) == 0 && !(x is TypeSelectionDropdownItem)).FirstOrDefault();
 
             if (next == null)
             {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,7 +22,6 @@ namespace Core.Framework.Editor
 
 		private static readonly Type ProjectBrowserType;
 		private static readonly Type InternalEditorUtilityType;
-		private static readonly Type EntityIdType;
 
 		static FolderBrowserWindow()
 		{
@@ -32,7 +30,6 @@ namespace Core.Framework.Editor
 
 			ProjectBrowserType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.ProjectBrowser");
 			InternalEditorUtilityType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditorInternal.InternalEditorUtility");
-			EntityIdType = typeof(UnityEngine.Object).Assembly.GetType("UnityEngine.EntityId");
 		}
 
 		private static void OnProjectItemGUI(string guid, Rect rect)
@@ -251,7 +248,7 @@ namespace Core.Framework.Editor
 			var folderObj = AssetDatabase.LoadAssetAtPath<DefaultAsset>(folderPath);
 			if (folderObj == null) return;
 
-			int folderId = folderObj.GetInstanceID();
+			EntityId folderId = folderObj.GetEntityId();
 
 			SwitchToTwoColumnView(win);
 
@@ -276,59 +273,24 @@ namespace Core.Framework.Editor
 			setTwoColumns?.Invoke(win, null);
 		}
 
-		private static bool TryShowFolderContents(EditorWindow win, int folderId)
+		private static bool TryShowFolderContents(EditorWindow win, EntityId folderId)
 		{
-			var showFolderContents = ProjectBrowserType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				.FirstOrDefault(m =>
-				{
-					if (m.Name != "ShowFolderContents") return false;
-					var p = m.GetParameters();
-					return p.Length == 2 && p[1].ParameterType == typeof(bool);
-				});
-
-			if (showFolderContents == null || !TryCreateFolderId(folderId, showFolderContents.GetParameters()[0].ParameterType, out var id))
-				return false;
-
-			showFolderContents.Invoke(win, new[] { id, (object)true });
+			var method = ProjectBrowserType.GetMethod("ShowFolderContents",
+				BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+				null, new[] { typeof(EntityId), typeof(bool) }, null);
+			if (method == null) return false;
+			method.Invoke(win, new object[] { folderId, true });
 			return true;
 		}
 
-		private static bool TrySetFolderSelection(EditorWindow win, int folderId)
+		private static bool TrySetFolderSelection(EditorWindow win, EntityId folderId)
 		{
-			var setFolderSelection = ProjectBrowserType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				.FirstOrDefault(m =>
-				{
-					if (m.Name != "SetFolderSelection") return false;
-					var p = m.GetParameters();
-					return p.Length == 2 && p[0].ParameterType.IsArray && p[1].ParameterType == typeof(bool);
-				});
-
-			if (setFolderSelection == null)
-				return false;
-
-			var elementType = setFolderSelection.GetParameters()[0].ParameterType.GetElementType();
-			if (!TryCreateFolderId(folderId, elementType, out var id))
-				return false;
-
-			var selection = Array.CreateInstance(elementType, 1);
-			selection.SetValue(id, 0);
-			setFolderSelection.Invoke(win, new object[] { selection, true });
+			var method = ProjectBrowserType.GetMethod("SetFolderSelection",
+				BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+				null, new[] { typeof(EntityId[]), typeof(bool), typeof(bool) }, null);
+			if (method == null) return false;
+			method.Invoke(win, new object[] { new[] { folderId }, true, false });
 			return true;
-		}
-
-		private static bool TryCreateFolderId(int folderId, Type targetType, out object id)
-		{
-			if (targetType == typeof(int))
-			{
-				id = folderId;
-				return true;
-			}
-
-			if (EntityIdType != null && targetType == EntityIdType)
-				return TryConvertInstanceIdToEntityId(folderId, out id);
-
-			id = null;
-			return false;
 		}
 
 		private static bool TryApplyRecursiveFolderExpansion(string folderPath, bool expand)
@@ -341,14 +303,14 @@ namespace Core.Framework.Editor
 				return false;
 
 			var expandedProp = InternalEditorUtilityType.GetProperty(
-				"expandedProjectWindowItems",
+				"expandedProjectWindowItemIds",
 				BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
 			if (expandedProp == null || !expandedProp.PropertyType.IsArray)
 				return false;
 
 			var elementType = expandedProp.PropertyType.GetElementType();
-			if (elementType == null)
+			if (elementType != typeof(EntityId))
 				return false;
 
 			if (!TryGetExpandedItemsArray(expandedProp, elementType, out var current))
@@ -508,33 +470,9 @@ namespace Core.Framework.Editor
 		private static bool TryGetAssetPathForExpandedElement(object element, Type elementType, out string assetPath)
 		{
 			assetPath = null;
-			if (element == null)
-				return false;
-
-			UnityEngine.Object unityObject = null;
-
-			if (elementType == typeof(int))
-				unityObject = EditorUtility.InstanceIDToObject((int)element);
-			else if (EntityIdType != null && elementType == EntityIdType)
-			{
-				foreach (var method in typeof(EditorUtility).GetMethods(BindingFlags.Public | BindingFlags.Static))
-				{
-					if (method.Name != "EntityIdToObject")
-						continue;
-
-					var parameters = method.GetParameters();
-					if (parameters.Length != 1 || parameters[0].ParameterType != elementType)
-						continue;
-
-					unityObject = method.Invoke(null, new[] { element }) as UnityEngine.Object;
-					if (unityObject != null)
-						break;
-				}
-			}
-
-			if (unityObject == null)
-				return false;
-
+			if (!(element is EntityId id)) return false;
+			var unityObject = EditorUtility.EntityIdToObject(id);
+			if (unityObject == null) return false;
 			assetPath = AssetDatabase.GetAssetPath(unityObject);
 			return !string.IsNullOrEmpty(assetPath);
 		}
@@ -542,35 +480,11 @@ namespace Core.Framework.Editor
 		private static bool TryCreateExpandedElementForFolder(string folderPath, Type elementType, out object element)
 		{
 			element = null;
+			if (elementType != typeof(EntityId)) return false;
 			var folderObject = AssetDatabase.LoadAssetAtPath<DefaultAsset>(NormalizeFolderPath(folderPath));
-			if (folderObject == null)
-				return false;
-
-			if (elementType == typeof(int))
-			{
-				element = folderObject.GetInstanceID();
-				return true;
-			}
-
-			if (EntityIdType != null && elementType == EntityIdType)
-			{
-				var getEntityId = typeof(UnityEngine.Object).GetMethod(
-					"GetEntityId",
-					BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-					null,
-					Type.EmptyTypes,
-					null);
-
-				if (getEntityId != null && EntityIdType.IsAssignableFrom(getEntityId.ReturnType))
-				{
-					element = getEntityId.Invoke(folderObject, null);
-					return true;
-				}
-
-				return TryConvertInstanceIdToEntityId(folderObject.GetInstanceID(), out element);
-			}
-
-			return false;
+			if (folderObject == null) return false;
+			element = folderObject.GetEntityId();
+			return true;
 		}
 
 		private static Array SortExpandedArray(Array source, Type elementType)
@@ -593,20 +507,7 @@ namespace Core.Framework.Editor
 
 		private static int CompareExpandedElements(object a, object b, Type elementType)
 		{
-			var keyA = ExpandedSortKey(a, elementType);
-			var keyB = ExpandedSortKey(b, elementType);
-			return keyA.CompareTo(keyB);
-		}
-
-		private static long ExpandedSortKey(object element, Type elementType)
-		{
-			if (elementType == typeof(int))
-				return (int)element;
-
-			if (TryConvertEntityIdToInstanceId(element, out var instanceId))
-				return instanceId;
-
-			return 0;
+			return ((EntityId)a).CompareTo((EntityId)b);
 		}
 
 		private static bool FolderHasExpandableContent(string folderPath)
@@ -625,158 +526,11 @@ namespace Core.Framework.Editor
 			return false;
 		}
 
-		private static bool TryConvertEntityIdToInstanceId(object entityIdValue, out int instanceId)
-		{
-			instanceId = 0;
-			if (entityIdValue == null)
-				return false;
-
-			var valueType = entityIdValue.GetType();
-
-			foreach (var method in valueType.GetMethods(BindingFlags.Public | BindingFlags.Static))
-			{
-				if (method.Name != "op_Implicit" || method.ReturnType != typeof(int))
-					continue;
-
-				var parameters = method.GetParameters();
-				if (parameters.Length == 1 && parameters[0].ParameterType == valueType)
-				{
-					instanceId = (int)method.Invoke(null, new[] { entityIdValue });
-					return true;
-				}
-			}
-
-			foreach (var method in typeof(EditorUtility).GetMethods(BindingFlags.Public | BindingFlags.Static))
-			{
-				if (method.Name != "EntityIdToObject")
-					continue;
-
-				var parameters = method.GetParameters();
-				if (parameters.Length != 1 || parameters[0].ParameterType != valueType)
-					continue;
-
-				var unityObject = method.Invoke(null, new[] { entityIdValue }) as UnityEngine.Object;
-				if (unityObject != null)
-				{
-					instanceId = unityObject.GetInstanceID();
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		private static bool TryConvertInstanceIdToEntityId(int instanceId, out object entityIdBoxed)
-		{
-			entityIdBoxed = null;
-			if (EntityIdType == null)
-				return false;
-
-			var fromInstanceId = EntityIdType.GetMethod(
-				"FromInstanceID",
-				BindingFlags.Public | BindingFlags.Static,
-				null,
-				new[] { typeof(int) },
-				null);
-
-			if (fromInstanceId != null && EntityIdType.IsAssignableFrom(fromInstanceId.ReturnType))
-			{
-				entityIdBoxed = fromInstanceId.Invoke(null, new object[] { instanceId });
-				return true;
-			}
-
-			foreach (var method in EntityIdType.GetMethods(BindingFlags.Public | BindingFlags.Static))
-			{
-				if (method.Name != "op_Implicit" || method.ReturnType != EntityIdType)
-					continue;
-
-				var parameters = method.GetParameters();
-				if (parameters.Length == 1 && parameters[0].ParameterType == typeof(int))
-				{
-					entityIdBoxed = method.Invoke(null, new object[] { instanceId });
-					return true;
-				}
-			}
-
-			var ctor = EntityIdType.GetConstructor(new[] { typeof(int) });
-			if (ctor != null)
-			{
-				entityIdBoxed = ctor.Invoke(new object[] { instanceId });
-				return true;
-			}
-
-			var unityObject = EditorUtility.InstanceIDToObject(instanceId);
-			if (unityObject == null)
-				return false;
-
-			var getEntityId = typeof(UnityEngine.Object).GetMethod(
-				"GetEntityId",
-				BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-				null,
-				Type.EmptyTypes,
-				null);
-
-			if (getEntityId == null || !EntityIdType.IsAssignableFrom(getEntityId.ReturnType))
-				return false;
-
-			entityIdBoxed = getEntityId.Invoke(unityObject, null);
-			return true;
-		}
-
 		private static object BuildExpandedListForTreeState(Type propertyType, Array filtered)
 		{
-			if (filtered == null)
+			if (propertyType != typeof(List<EntityId>) || !(filtered is EntityId[] ids))
 				return null;
-
-			var filteredElementType = filtered.GetType().GetElementType();
-
-			if (propertyType == typeof(List<int>) && filteredElementType == typeof(int))
-			{
-				var list = new List<int>(filtered.Length);
-				for (var index = 0; index < filtered.Length; index++)
-					list.Add((int)filtered.GetValue(index));
-
-				return list;
-			}
-
-			if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
-			{
-				var listElementType = propertyType.GetGenericArguments()[0];
-				var list = (IList)Activator.CreateInstance(propertyType);
-
-				if (listElementType == filteredElementType)
-				{
-					for (var index = 0; index < filtered.Length; index++)
-						list.Add(filtered.GetValue(index));
-
-					return list;
-				}
-
-				if (listElementType == typeof(int) && EntityIdType != null && filteredElementType == EntityIdType)
-				{
-					for (var index = 0; index < filtered.Length; index++)
-					{
-						if (TryConvertEntityIdToInstanceId(filtered.GetValue(index), out var id))
-							list.Add(id);
-					}
-
-					return list;
-				}
-
-				if (EntityIdType != null && listElementType == EntityIdType && filteredElementType == typeof(int))
-				{
-					for (var index = 0; index < filtered.Length; index++)
-					{
-						var id = (int)filtered.GetValue(index);
-						if (TryConvertInstanceIdToEntityId(id, out var boxed))
-							list.Add(boxed);
-					}
-
-					return list;
-				}
-			}
-
-			return null;
+			return new List<EntityId>(ids);
 		}
 
 		private static void PushExpandedStateToAllProjectBrowsers(Array filteredExpanded)

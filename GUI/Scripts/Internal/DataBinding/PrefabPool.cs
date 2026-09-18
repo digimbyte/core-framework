@@ -49,7 +49,7 @@ namespace Nova.Internal.DataBinding
         private Dictionary<Type, MulticastDelegate> prefabProviders = new Dictionary<Type, MulticastDelegate>();
         private Dictionary<Type, List<Type>> prefabToDataTypeBinders = new Dictionary<Type, List<Type>>();
 
-        private Dictionary<int, ItemView> detachedPrefabsToSourcePrefabs = new Dictionary<int, ItemView>();
+        private Dictionary<EntityId, ItemView> detachedPrefabsToSourcePrefabs = new Dictionary<EntityId, ItemView>();
 
         private bool initialized = false;
 
@@ -250,13 +250,13 @@ namespace Nova.Internal.DataBinding
                 }
             }
 
-            detachedPrefabsToSourcePrefabs.Add(prefabInstance.GetInstanceID(), vals.Prefab);
+            detachedPrefabsToSourcePrefabs.Add(prefabInstance.GetEntityId(), vals.Prefab);
             return true;
         }
 
         public bool TryReattachInstance(ItemView prefabInstance)
         {
-            if (prefabInstance == null || !detachedPrefabsToSourcePrefabs.TryGetValue(prefabInstance.GetInstanceID(), out ItemView prefabSource))
+            if (prefabInstance == null || !detachedPrefabsToSourcePrefabs.TryGetValue(prefabInstance.GetEntityId(), out ItemView prefabSource))
             {
                 return false;
             }
@@ -291,7 +291,7 @@ namespace Nova.Internal.DataBinding
             }
 
             prefabPool.Push(prefabInstance);
-            detachedPrefabsToSourcePrefabs.Remove(prefabInstance.GetInstanceID());
+            detachedPrefabsToSourcePrefabs.Remove(prefabInstance.GetEntityId());
 
             return true;
         }

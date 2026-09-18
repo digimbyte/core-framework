@@ -77,8 +77,8 @@ namespace Core.Animator
 
         private void Start()
         {
-            // XOR tick-count with instance ID so simultaneous starts still diverge.
-            _rng = new System.Random(System.Environment.TickCount ^ GetInstanceID());
+            // Mix the object identity into the random seed; the hash is not used as an identity.
+            _rng = new System.Random(System.Environment.TickCount ^ GetEntityId().GetHashCode());
 
             if (applyOnStart)
                 ApplyRandom();

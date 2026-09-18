@@ -769,7 +769,7 @@ namespace DarkTonic.MasterAudio {
             public bool newMetadataPropCanHaveMult = false;
             // ReSharper restore InconsistentNaming
 
-            private readonly List<int> _actorInstanceIds = new List<int>();
+            private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
 
             public enum CrossfadeTimeMode {
                 UseMasterSetting,
@@ -780,7 +780,7 @@ namespace DarkTonic.MasterAudio {
                 MusicSettings = new List<MusicSetting>();
             }
 
-            public void AddActorInstanceId(int instanceId)
+            public void AddActorInstanceId(EntityId instanceId)
             {
                 if (_actorInstanceIds.Contains(instanceId))
                 {
@@ -790,7 +790,7 @@ namespace DarkTonic.MasterAudio {
                 _actorInstanceIds.Add(instanceId);
             }
 
-            public void RemoveActorInstanceId(int instanceId)
+            public void RemoveActorInstanceId(EntityId instanceId)
             {
                 _actorInstanceIds.Remove(instanceId);
             }
@@ -5067,7 +5067,7 @@ namespace DarkTonic.MasterAudio {
         /// <param name="creatorInstanceId">The InstanceId of the Game Object creating the Sound Group.</param>
         /// <param name="errorOnExisting">Whether to log an error if the Group already exists (same name).</param>
         /// <returns>Whether or not the Sound Group was created.</returns>
-        public static Transform CreateSoundGroup(DynamicSoundGroup aGroup, int? creatorInstanceId, bool errorOnExisting = true) {
+        public static Transform CreateSoundGroup(DynamicSoundGroup aGroup, EntityId? creatorInstanceId, bool errorOnExisting = true) {
             if (!SceneHasMasterAudio) {
                 return null;
             }
@@ -6553,7 +6553,7 @@ namespace DarkTonic.MasterAudio {
         /// <param name="actorInstanceId">The actor instanceId of the creator. Used the track if another Dynamic Sound Group Creator is still active with the bus so we don't delete it yet.</param>
         /// <param name="errorOnExisting">Whether to log an error if the bus already exists (same name).</param>
 		/// <param name="isTemporary">Used by DGSC to create temporary buses.</param>
-		public static bool CreateBus(string busName, int? actorInstanceId, bool errorOnExisting = true, bool isTemporary = false) {
+		public static bool CreateBus(string busName, EntityId? actorInstanceId, bool errorOnExisting = true, bool isTemporary = false) {
             var match = GroupBuses.FindAll(delegate (GroupBus obj) {
                 return obj.busName == busName;
             });
@@ -8429,7 +8429,7 @@ namespace DarkTonic.MasterAudio {
         /// <param name="actorInstanceId">The actor instanceId of the creator. Used the track if another Dynamic Sound Group Creator is still active with the bus so we don't delete it yet.</param>
         /// <param name="errorOnDuplicates">Will log a duplicate if you pass "true" in.</param>
         /// <param name="isTemporary">If set to <c>true</c> is temporary.</param>
-        public static CustomEventCategory CreateCustomEventCategoryIfNotThere(string categoryName, int? actorInstanceId, bool errorOnDuplicates, bool isTemporary) {
+        public static CustomEventCategory CreateCustomEventCategoryIfNotThere(string categoryName, EntityId? actorInstanceId, bool errorOnDuplicates, bool isTemporary) {
             if (AppIsShuttingDown) {
                 return null;
             }
@@ -8478,7 +8478,7 @@ namespace DarkTonic.MasterAudio {
         /// <param name="errorOnDuplicate">Whether or not to log an error if the event already exists.</param>
         public static void CreateCustomEvent(string customEventName, CustomEventReceiveMode eventReceiveMode,
             float distanceThreshold, EventReceiveFilter receiveFilter, int filterModeQty,
-            int? actorInstanceId,
+            EntityId? actorInstanceId,
             string categoryName = "", 
             bool isTemporary = false, bool errorOnDuplicate = true) {
 

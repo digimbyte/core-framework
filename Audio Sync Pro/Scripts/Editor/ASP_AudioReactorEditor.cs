@@ -37,7 +37,7 @@ namespace TelePresent.AudioSyncPro
 
             for (int i = 0; i < reactionComponentsProp.arraySize; i++)
             {
-                string foldoutKey = $"{FoldoutKeyPrefix}{audioReactor.GetInstanceID()}_{i}";
+                string foldoutKey = $"{FoldoutKeyPrefix}{audioReactor.GetEntityId()}_{i}";
                 foldouts.Add(EditorPrefs.GetBool(foldoutKey, false));
                 var componentProp = reactionComponentsProp.GetArrayElementAtIndex(i);
 
@@ -197,7 +197,7 @@ namespace TelePresent.AudioSyncPro
             if (Event.current.type == EventType.MouseDown && textRect.Contains(Event.current.mousePosition))
             {
                 foldouts[index] = !foldouts[index];
-                string foldoutKey = $"{FoldoutKeyPrefix}{audioReactor.GetInstanceID()}_{index}";
+                string foldoutKey = $"{FoldoutKeyPrefix}{audioReactor.GetEntityId()}_{index}";
                 EditorPrefs.SetBool(foldoutKey, foldouts[index]);
                 Event.current.Use();
             }

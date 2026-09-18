@@ -147,7 +147,7 @@ namespace Nova.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void UpdateInfo(TMP_MeshInfo meshInfo)
         {
-            MaterialID = meshInfo.material.GetInstanceID();
+            MaterialID = meshInfo.material.GetEntityId();
             Resize(meshInfo.vertices.Length);
             NovaList<Vector3> asVec3 = VertexPositions.Reinterpret<float3, Vector3>();
             asVec3.CopyFrom(meshInfo.vertices, VertCount);

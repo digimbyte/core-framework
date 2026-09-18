@@ -13,7 +13,7 @@ namespace Nova.Internal.Rendering
             public float4x4 CameraFromWorld;
             public float4x4 WorldFromCamera;
             public float4x4 ProjectionMatrix;
-            public int CameraInstanceID;
+            public EntityId CameraInstanceID;
             public CameraType CameraType;
             private bool useOrthographicSorting;
 
@@ -174,7 +174,7 @@ namespace Nova.Internal.Rendering
                 // This will be initialized later in burst compiled code since it requires
                 // a matrix inverse
                 WorldFromCamera = default;
-                CameraInstanceID = cam.GetInstanceID();
+                CameraInstanceID = cam.GetEntityId();
                 CameraType = cam.cameraType;
 
                 switch (cam.transparencySortMode)
