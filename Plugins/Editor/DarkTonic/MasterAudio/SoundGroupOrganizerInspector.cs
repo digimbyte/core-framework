@@ -70,10 +70,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 sources.Add(ma.gameObject);
             }
 
-#if UNITY_2023_1_OR_NEWER
-            var dgscs = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+            var dgscs = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include);
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var dgscs = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
             var dgscs = FindObjectsOfType(typeof(DynamicSoundGroupCreator));
+    #endif
 #endif
 
             // ReSharper disable once LoopCanBeConvertedToQuery

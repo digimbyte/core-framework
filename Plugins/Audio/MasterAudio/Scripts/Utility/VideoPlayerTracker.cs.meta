@@ -14,6 +14,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 287785
   packageName: 'Master Audio 2024: AAA Sound'
-  packageVersion: 1.0.3
+  packageVersion: 1.0.5
   assetPath: Assets/Core/Plugins/Audio/MasterAudio/Scripts/Utility/VideoPlayerTracker.cs
-  uploadId: 829872
+  uploadId: 940320

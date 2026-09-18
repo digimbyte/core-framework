@@ -1,4 +1,5 @@
 ﻿/*! \cond PRIVATE */
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,11 +20,15 @@ namespace DarkTonic.MasterAudio {
         public string textGroupFilter = string.Empty;
         public TransferMode transMode = TransferMode.None;
         public GameObject sourceObject = null;
+        [NonSerialized]
         public List<SoundGroupSelection> selectedSourceSoundGroups = new List<SoundGroupSelection>();
         public GameObject destObject = null;
+        [NonSerialized]
         public List<SoundGroupSelection> selectedDestSoundGroups = new List<SoundGroupSelection>();
         public MAItemType itemType = MAItemType.SoundGroups;
+        [NonSerialized]
         public List<CustomEventSelection> selectedSourceCustomEvents = new List<CustomEventSelection>();
+        [NonSerialized]
         public List<CustomEventSelection> selectedDestCustomEvents = new List<CustomEventSelection>();
         public List<CustomEvent> customEvents = new List<CustomEvent>();
         public List<CustomEventCategory> customEventCategories = new List<CustomEventCategory> {

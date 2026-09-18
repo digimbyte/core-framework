@@ -69,10 +69,14 @@ namespace RelationsInspector.Backend.Scene
 			{
 				// option: use all gameobjects of the active scene as targets
 				if (GUILayout.Button("Show active scene", EditorStyles.toolbarButton)) {
-#if UNITY_2023_1_OR_NEWER
-                    api.ResetTargets(Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).Cast<object>().ToArray());
+#if UNITY_6000_4_OR_NEWER
+                    api.ResetTargets(Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include).Cast<object>().ToArray());
 #else
-                    api.ResetTargets(Object.FindObjectsOfType<GameObject>().Cast<object>().ToArray());
+	#if UNITY_2023_1_OR_NEWER
+					api.ResetTargets(Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).Cast<object>().ToArray());
+	#else
+					api.ResetTargets(Object.FindObjectsOfType<GameObject>().Cast<object>().ToArray());
+	#endif
 #endif
 
                 }

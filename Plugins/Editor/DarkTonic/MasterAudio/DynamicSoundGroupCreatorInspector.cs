@@ -7,6 +7,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
+using static DarkTonic.MasterAudio.EditorScripts.DTGUIHelper;
 
 namespace DarkTonic.MasterAudio.EditorScripts
 {
@@ -690,6 +691,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         case DTGUIHelper.DTFunctionButtons.Stop:
                             MasterAudioInspector.StopPreviewer();
                             break;
+                        case DTGUIHelper.DTFunctionButtons.Find:
+                            DTGUIHelper.ShowFilteredRelationsGraph(aGroup.gameObject.name);
+                            break;
                     }
 
                     if (groupDirty)
@@ -844,6 +848,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         else
                         {
                             EditorGUILayout.LabelField("Existing bus. No control.");
+                        }
+
+                        if (!Application.isPlaying) {
+                            if (ShowFindUsages("Bus")) {
+                                DTGUIHelper.ShowFilteredRelationsGraph(null, aBus.busName);
+                            }
                         }
 
                         if (DTGUIHelper.AddDeleteIcon("Bus"))

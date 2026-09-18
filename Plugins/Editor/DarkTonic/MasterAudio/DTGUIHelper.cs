@@ -827,8 +827,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 {
                     return DTFunctionButtons.Stop;
                 }
-            }
-            else
+
+                if (ShowFindUsages("Sound Group")) {
+                    return DTFunctionButtons.Find;
+                }
+
+            } else
             {
                 GUILayout.Space(76);
             }
@@ -1537,6 +1541,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             MasterAudioEventBackend.GroupFilter = groupFilter;
             MasterAudioEventBackend.BusFilter = busFilter;
+
             RelationsInspectorLink.ResetTargets(new object[] { "currentScene" }, "MasterAudioEventBackend");
         }
 

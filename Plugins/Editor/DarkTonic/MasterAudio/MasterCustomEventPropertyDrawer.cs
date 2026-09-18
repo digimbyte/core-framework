@@ -42,10 +42,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 labelText += " (MA not in Scene)";
             }
 
-#if UNITY_2023_1_OR_NEWER
-            var creators = Object.FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None) as DynamicSoundGroupCreator[];
+#if UNITY_6000_4_OR_NEWER
+            var creators = Object.FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include) as DynamicSoundGroupCreator[];
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var creators = Object.FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None) as DynamicSoundGroupCreator[];
+    #else
             var creators = Object.FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+    #endif
 #endif
 
             // ReSharper disable once PossibleNullReferenceException

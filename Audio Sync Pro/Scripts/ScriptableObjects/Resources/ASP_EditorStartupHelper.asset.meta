@@ -10,6 +10,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 294046
   packageName: Audio Sync Pro
-  packageVersion: 1.2.4
-  assetPath: Assets/TelePresent/Audio Sync Pro/Scripts/ScriptableObjects/Resources/ASP_EditorStartupHelper.asset
-  uploadId: 828908
+  packageVersion: 1.2.5
+  assetPath: Assets/Core/Audio Sync Pro/Scripts/ScriptableObjects/Resources/ASP_EditorStartupHelper.asset
+  uploadId: 967346

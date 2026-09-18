@@ -125,10 +125,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
         // ReSharper disable once InconsistentNaming
         private static List<GameObject> GetNonMAAudioSources()
         {
-#if UNITY_2023_1_OR_NEWER
-            var sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+            var sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include);
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
             var sources = FindObjectsOfType(typeof(AudioSource));
+    #endif
 #endif
 
             var audSources = new List<GameObject>();

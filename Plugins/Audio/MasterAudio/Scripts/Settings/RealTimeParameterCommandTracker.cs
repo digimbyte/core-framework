@@ -9,8 +9,11 @@ namespace DarkTonic.MasterAudio {
         public bool IsActive = false;
         public ParameterCommand ParameterCommand;
         public Transform Actor;
+        [NonSerialized]
         public List<PlaySoundResult> ElementResults = new List<PlaySoundResult>(2);
+        [NonSerialized]
         public Guid InstanceId = Guid.Empty;
+        [NonSerialized]
         public float? TimeInvoked = null;
 
         public void Reset(bool stopElements = false) {

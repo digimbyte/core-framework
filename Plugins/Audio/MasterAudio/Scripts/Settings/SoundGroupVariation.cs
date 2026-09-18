@@ -88,7 +88,11 @@ namespace DarkTonic.MasterAudio {
         private AudioChorusFilter _chorusFilter;
         private string _objectName = string.Empty;
         private float _maxVol = 1f;
-        private EntityId _instanceId = EntityId.None;
+#if UNITY_6000_4_OR_NEWER
+        private EntityId? _instanceId = null;
+#else
+        private int _instanceId = -1;
+#endif
         private bool? _audioLoops;
         private int _maxLoops;
         private SoundGroupVariationUpdater _varUpdater;
@@ -887,7 +891,7 @@ namespace DarkTonic.MasterAudio {
             {
                 return;
             }
-#endif            
+#endif
 
             if (IsPlaying && !_isStopRequested) {
                 _isStopRequested = true;
@@ -1308,7 +1312,7 @@ namespace DarkTonic.MasterAudio {
                     return false;
                 }
 
-                if (!_playSndParam.IsPlaying && VarAudio.time == 0f) {
+                if (!_playSndParam.IsPlaying && (VarAudio.clip == null || VarAudio.time == 0f)) {
                     return true; // paused aren't available
                 }
 
@@ -1359,15 +1363,27 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        public EntityId InstanceId {
+#if UNITY_6000_4_OR_NEWER
+        public EntityId? InstanceId {
             get {
-                if (_instanceId == EntityId.None) {
+                if (_instanceId == null) {
                     _instanceId = GetEntityId();
                 }
 
                 return _instanceId;
             }
         }
+#else
+        public int InstanceId {
+            get {
+                if (_instanceId < 0) {
+                    _instanceId = GetInstanceID();
+                }
+
+                return _instanceId;
+            }
+        }
+#endif
 
         public bool IsStopRequested {
             get {

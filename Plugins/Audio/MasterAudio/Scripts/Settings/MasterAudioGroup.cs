@@ -103,11 +103,19 @@ namespace DarkTonic.MasterAudio {
         public int frames = 0;
         // ReSharper restore InconsistentNaming
 
+#if UNITY_6000_4_OR_NEWER
         private List<EntityId> _activeAudioSourcesIds = new List<EntityId>();
+#else
+        private List<int> _activeAudioSourcesIds = new List<int>();
+#endif
         private string _objectName = string.Empty;
         private Transform _trans;
         private float _originalVolume = 1;
+#if UNITY_6000_4_OR_NEWER
         private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
+#else
+        private readonly List<int> _actorInstanceIds = new List<int>();
+#endif
         private bool isPaused = false;
 
         public enum TargetDespawnedBehavior {
@@ -153,7 +161,22 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-        public void AddActiveAudioSourceId(EntityId varInstanceId) {
+
+#if UNITY_6000_4_OR_NEWER
+        public void AddActiveAudioSourceId(EntityId? varInstanceId) {
+            if (ActiveAudioSourceIds.Contains(varInstanceId.Value)) {
+                return;
+            }
+
+            ActiveAudioSourceIds.Add(varInstanceId.Value);
+
+            var bus = BusForGroup;
+            if (bus != null) {
+                bus.AddActiveAudioSourceId(varInstanceId.Value);
+            }
+        }
+#else
+        public void AddActiveAudioSourceId(int varInstanceId) {
             if (ActiveAudioSourceIds.Contains(varInstanceId)) {
                 return;
             }
@@ -165,8 +188,19 @@ namespace DarkTonic.MasterAudio {
                 bus.AddActiveAudioSourceId(varInstanceId);
             }
         }
+#endif
 
-        public void RemoveActiveAudioSourceId(EntityId varInstanceId) {
+#if UNITY_6000_4_OR_NEWER
+        public void RemoveActiveAudioSourceId(EntityId? varInstanceId) {
+            ActiveAudioSourceIds.Remove(varInstanceId.Value);
+
+            var bus = BusForGroup;
+            if (bus != null) {
+                bus.RemoveActiveAudioSourceId(varInstanceId.Value);
+            }
+        }
+#else
+        public void RemoveActiveAudioSourceId(int varInstanceId) {
             ActiveAudioSourceIds.Remove(varInstanceId);
 
             var bus = BusForGroup;
@@ -174,8 +208,18 @@ namespace DarkTonic.MasterAudio {
                 bus.RemoveActiveAudioSourceId(varInstanceId);
             }
         }
+#endif
 
-        public void AddActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+        public void AddActorInstanceId(EntityId? instanceId) {
+            if (_actorInstanceIds.Contains(instanceId.Value)) {
+                return;
+            }
+
+            _actorInstanceIds.Add(instanceId.Value);
+        }
+#else
+        public void AddActorInstanceId(int instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId))
             {
@@ -184,11 +228,18 @@ namespace DarkTonic.MasterAudio {
 
             _actorInstanceIds.Add(instanceId);
         }
+#endif
 
-        public void RemoveActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+        public void RemoveActorInstanceId(EntityId? instanceId) {
+            _actorInstanceIds.Remove(instanceId.Value);
+        }
+#else
+        public void RemoveActorInstanceId(int instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }
+#endif
 
         public float SpatialBlendForGroup {
             get {
@@ -391,6 +442,7 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
+#if UNITY_6000_4_OR_NEWER
         private List<EntityId> ActiveAudioSourceIds {
             get {
                 if (_activeAudioSourcesIds != null) {
@@ -401,6 +453,18 @@ namespace DarkTonic.MasterAudio {
                 return _activeAudioSourcesIds;
             }
         }
+#else
+        private List<int> ActiveAudioSourceIds {
+            get {
+                if (_activeAudioSourcesIds != null) {
+                    return _activeAudioSourcesIds;
+                }
+                _activeAudioSourcesIds = new List<int>(Trans.childCount);
+
+                return _activeAudioSourcesIds;
+            }
+        }
+#endif
 #endregion
         /*! \endcond */
     }

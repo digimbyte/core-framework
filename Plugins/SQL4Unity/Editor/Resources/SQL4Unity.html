@@ -177,6 +177,7 @@
 							<ul>
 								<li><a href="#section07B1"><span class="label">Constructor</span></a></li>
 								<li><a href="#section07B2"><span class="label">Methods</span></a></li>
+								<li><a href="#section07B3"><span class="label">Example Code</span></a></li>
 							</ul>
 						</li>
 						<li>
@@ -2431,6 +2432,39 @@ your own.<br>
 commands will be allowed to be executed against the database(s).<br>
 										<br>
 										Save your changes!<br>
+										<br>
+										<b>Extension for SQL*Server access.</b><br>
+										<br>
+										Instead of having direct SQL*Server access via the application
+ the service can expose a Http server which can then access a SQL*Server
+ database.<br>
+										The following key/value pairs are used<br><br>
+										&lt;add key="ClientHttpPort" value="0" /&gt;<br>
+										&lt;add key="IPAddress" value="127.0.0.1" /&gt;<br>
+										&lt;add key="Secure" value="false" /&gt;<br>
+										&lt;add key="CorsOrigin" value="http://127.0.0.1" /&gt;<br>
+										&lt;add key="ClientAuth" value="false" /&gt;<br>
+										&lt;add key="DBIPAddress" value="127.0.0.1" /&gt;<br>
+										&lt;add key="DBInstance" value="SQLEXPRESS" /&gt;<br>
+										&lt;add key="DBPort" value="56179" /&gt;<br>
+										&lt;add key="DBName" value="MYDATABASE" /&gt;<br>
+										&lt;add key="DBUser" value="MYUSER" /&gt;<br>
+										&lt;add key="DBPassword" value="MYPASSWORD" /&gt;<br>
+										<br>
+										These key/values can be set as follows<br>
+										<br>
+										ClientHttpPort   - The port number for the http server to listen on. 0 to disable the listener.<br>
+										IPAddress        - The IP address or domain name of the server<br>
+										Secure           - true or false. If true https protocol will be used<br>
+										CorsOrigin       - The url to use for CORS requests<br>
+										ClientAuth       - false. Reserverd for future use<br>
+										DBIPAddress      - The IP address of the SQL*Server instance<br>
+										DBInstance       - The name of the SQL*Server instance<br>
+										DBPort           - The TCP port number used by the SQL*Server instance<br>
+										DBName           - The name of the SQL*Server database to open<br>
+										DBUser           - The SQL*Server user name for the database<br>
+										DBPassword       - The password for the SQL*Server user<br>
+										<br>
 									</p>
 								</section>
 								<p style="text-align:right"><a href="#section07A1">&lt;- Previous</a> <a href="#section07A2B">Next -&gt;</a></p><br><br>
@@ -2881,6 +2915,7 @@ correctly irrespective of the Unity target platform.
 				<section>
 					<p>
 						The SQLServer class is designed to give direct access to a Microsoft SQL*Server database<br>
+						The SQL4UnityHttp class is designed to access a SQL*Server database via the SQL4UnityService<br>
 						There are 2 prerequisites required on the SQL*Server side<br>
 						1) The Instance must be enabled for TCP connections<br>
 						2) The Instance must accept SQL Authentication<br>
@@ -2899,6 +2934,17 @@ string ipAddress= "127.0.0.1", int portNr= 51908, string instance=
 								ipAddress is the IP Address of the instance. Default 127.0.0.1. i.e localhost.<br>
 								portNr is the TCP port the instance is listening on. Default 51908<br>
 								instance is the name of the SQL*Server instance. Default SQLEXPRESS.<br>
+								<br>
+								<b>SQL4UnityHTTP http = SQL4UnityHTTP.Create(Protocol protocol, 
+string UUID = "", string ipAddress = "127.0.0.1", int portNr = 8000, 
+MonoBehaviour mono = null, bool secure = false)</b><br>
+								where:<br>
+								Protocol is Protocol.Http<br>
+								UUID is the UUID of the service<br>
+								ipAddress is the ip or domain name of the service<br>
+								portNr is the port number of the service http listener<br>
+								mono is any active Monobehaviour class<br>
+								secure is true or false. If true https protocol will be used.<br>
 							</p>
 						</section>
 						<p style="text-align:right"><a href="#section07A5">&lt;- Previous</a> <a href="#section07B2">Next -&gt;</a></p><br><br>
@@ -2907,14 +2953,118 @@ string ipAddress= "127.0.0.1", int portNr= 51908, string instance=
 						<span class="label1">Methods</span>
 						<section>
 							<p>
+								The following methods apply to both the SQLServer and the SQL4UnityHttp classes unless otherwise specified<br><br>
 								<b>bool Open()</b> - Open the Database. Returns true if the database opened succesfuly<br>
 								<b>bool Close()</b> - Close the database. Returns true if the database closed succesfuly<br>
-								<b>bool ExecuteNonQuery(string sqlcmd, bool close=true)</b> - Execute a Non Query sql command. Return true if successful.<br>
-								<b>System.Data.DataTable ExecuteQuery(string sqlcmd, bool close=true)</b> - Executes a Select query. Returns a Datatable with the results.<br>
-								<b>int Count()</b> - Returns a count of the number of records affected by the previous sql command.<br>
+								<b>bool ExecuteNonQuery(string sqlcmd, bool close=true)</b> - Execute a Non Query sql command. Return true if successful. (SQLServer)<br>
+								or<br>
+								  <b>void ExecuteNonQuery(string sqlcmd, Action&lt;bool, System.Data.DataTable&gt; callback = null)</b> (SQL4UnityHttp)<br>
+								<b>System.Data.DataTable ExecuteQuery(string sqlcmd, bool close=true)</b> - Executes a Select query. Returns a Datatable with the results.(SQLServer)<br>
+								or<br>
+								  <b>void ExecuteQuery(string sqlcmd, Action&lt;bool, System.Data.DataTable&gt; callback = null)</b> (SQL4UnityHttp)<br>
+								<b>int Count()</b> - Returns a count of the number of records affected by the previous sql command.<br><br>
+								In addition the SQL4UnityHttp class has the following methods<br>
+								<b>void Commit()</b> - Commit any changes<br>
+								<b>void Rollback()</b> - Rollback any changes<br>
 							</p>
 						</section>
 						<p style="text-align:right"><a href="#section07B1">&lt;- Previous</a> <a href="#section07C">Next -&gt;</a></p><br><br>
+					</div>
+					<div class="subcontent" id="section07B3">
+						<span class="label1">Example Code</span>
+						<section>
+							<p>
+								<b>SQLServer</b>
+</p><pre style="width:100%"><code class="prettyprint prettyprinted" style=""><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">System</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">UnityEngine</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> SQL4Unity</span><span class="pun">.</span><span class="typ">Server</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">System</span><span class="pun">.</span><span class="typ">Data</span><span class="pun">;</span><span class="pln">
+
+	</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">class</span><span class="pln"> </span><span class="typ">SQLServerExample</span><span class="pln"> </span><span class="pun">:</span><span class="pln"> </span><span class="typ">MonoBehaviour</span><span class="pln">
+	</span><span class="pun">{</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> </span><span class="typ">DBName</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="str">"MyDB"</span><span class="pun">;</span><span class="pln"> </span><span class="com">// Name of SQL*Server Database</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> </span><span class="typ">User</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="str">"MyUser"</span><span class="pun">;</span><span class="pln"> </span><span class="com">// User Name</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> </span><span class="typ">Password</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="str">"MyPassword"</span><span class="pun">;</span><span class="pln"> </span><span class="com">// User Password</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> </span><span class="typ">IPAddress</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="str">"127.0.0.1"</span><span class="pun">;</span><span class="pln"> </span><span class="com">// IP Address of SQL*Server instance</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">int</span><span class="pln"> </span><span class="typ">PortNr</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="lit">51908</span><span class="pun">;</span><span class="pln"> </span><span class="com">// TCP Port number of SQL*Server Instance</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> </span><span class="typ">Instance</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="str">"SQLExpress"</span><span class="pun">;</span><span class="pln"> </span><span class="com">// Instance name of SQL*Server</span><span class="pln">
+
+		</span><span class="com">// NOTE: As per the documentation the SQL*Server implementation MUST have TCP connections and SQL Authentication enabled</span><span class="pln">
+
+		</span><span class="kwd">void</span><span class="pln"> </span><span class="typ">Start</span><span class="pun">()</span><span class="pln">
+		</span><span class="pun">{</span><span class="pln">
+			</span><span class="kwd">try</span><span class="pln">
+			</span><span class="pun">{</span><span class="pln">
+				</span><span class="typ">SQLServer</span><span class="pln"> db </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">SQLServer</span><span class="pun">(</span><span class="typ">DBName</span><span class="pun">,</span><span class="pln"> </span><span class="typ">User</span><span class="pun">,</span><span class="pln"> </span><span class="typ">Password</span><span class="pun">,</span><span class="pln"> </span><span class="typ">IPAddress</span><span class="pun">,</span><span class="pln"> </span><span class="typ">PortNr</span><span class="pun">,</span><span class="pln"> </span><span class="typ">Instance</span><span class="pun">);</span><span class="pln">
+
+				</span><span class="kwd">string</span><span class="pln"> query </span><span class="pun">=</span><span class="pln"> </span><span class="str">"select * from users"</span><span class="pun">;</span><span class="str">"
+				db.Open();
+
+				DataTable result = db.ExecuteQuery(query, false);
+
+				if (result.Rows.Count &gt; 0)
+				{
+					foreach (DataRow row in result.Rows)
+					{
+						foreach (DataColumn column in result.Columns)
+						{
+							Debug.Log($"</span><span class="pun">{</span><span class="pln">column</span><span class="pun">.</span><span class="typ">ColumnName</span><span class="pun">}</span><span class="pln"> </span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">row</span><span class="pun">[</span><span class="pln">column</span><span class="pun">].</span><span class="typ">ToString</span><span class="pun">()}</span><span class="str">");
+						}
+					}
+				}
+				else
+				{
+					Debug.Log("</span><span class="typ">No</span><span class="pln"> data found</span><span class="str">");
+				}
+			} catch (Exception ex)
+			{
+				Debug.Log($"</span><span class="typ">Error</span><span class="pln"> </span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">ex</span><span class="pun">.</span><span class="typ">Message</span><span class="pun">}</span><span class="str">");
+			}
+		}
+	}</span></code></pre>
+							<p></p>
+							<p>
+								<b>SQL4UnityHttp</b>
+</p><pre style="width:100%"><code class="prettyprint prettyprinted" style=""><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">System</span><span class="pun">.</span><span class="typ">Collections</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">System</span><span class="pun">.</span><span class="typ">Collections</span><span class="pun">.</span><span class="typ">Generic</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">UnityEngine</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> SQL4Unity</span><span class="pun">.</span><span class="typ">Server</span><span class="pun">;</span><span class="pln">
+	</span><span class="kwd">using</span><span class="pln"> </span><span class="typ">System</span><span class="pun">.</span><span class="typ">Data</span><span class="pun">;</span><span class="pln">
+
+	</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">class</span><span class="pln"> </span><span class="typ">TestHttp</span><span class="pln"> </span><span class="pun">:</span><span class="pln"> </span><span class="typ">MonoBehaviour</span><span class="pln">
+	</span><span class="pun">{</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> ipAddress </span><span class="pun">=</span><span class="pln"> </span><span class="str">"127.0.0.1"</span><span class="pun">;</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">bool</span><span class="pln"> secure </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">false</span><span class="pun">;</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">int</span><span class="pln"> portNr </span><span class="pun">=</span><span class="pln"> </span><span class="lit">8000</span><span class="pun">;</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> userName</span><span class="pun">;</span><span class="pln">
+		</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">string</span><span class="pln"> password</span><span class="pun">;</span><span class="pln">
+		</span><span class="com">// Generated UUID. Possible also to use Unity Application.identifier or Application.buildGUID</span><span class="pln">
+		</span><span class="kwd">string</span><span class="pln"> UUID </span><span class="pun">=</span><span class="pln"> </span><span class="str">"fcf368db-3c7f-43e4-8f0e-95e3ccdb999d"</span><span class="pun">;</span><span class="pln">
+
+		SQL4UnityHTTP http</span><span class="pun">;</span><span class="pln">
+
+		</span><span class="kwd">void</span><span class="pln"> </span><span class="typ">Start</span><span class="pun">()</span><span class="pln">
+		</span><span class="pun">{</span><span class="pln">
+			http </span><span class="pun">=</span><span class="pln"> SQL4UnityHTTP</span><span class="pun">.</span><span class="typ">Create</span><span class="pun">(</span><span class="typ">Protocol</span><span class="pun">.</span><span class="typ">Http</span><span class="pun">,</span><span class="pln"> UUID</span><span class="pun">,</span><span class="pln"> ipAddress</span><span class="pun">,</span><span class="pln"> portNr</span><span class="pun">,</span><span class="pln"> </span><span class="kwd">this</span><span class="pun">,</span><span class="pln"> </span><span class="kwd">false</span><span class="pun">);</span><span class="pln">
+			http</span><span class="pun">.</span><span class="typ">Open</span><span class="pun">();</span><span class="pln">
+			</span><span class="kwd">string</span><span class="pln"> query </span><span class="pun">=</span><span class="pln"> </span><span class="str">"Select * from users;"</span><span class="pun">;</span><span class="pln">
+			http</span><span class="pun">.</span><span class="typ">ExecuteQuery</span><span class="pun">(</span><span class="pln">query</span><span class="pun">,</span><span class="pln"> </span><span class="typ">Callback</span><span class="pun">);</span><span class="pln">
+			</span><span class="pun">}</span><span class="pln">
+
+			</span><span class="kwd">void</span><span class="pln"> </span><span class="typ">Callback</span><span class="pun">(</span><span class="kwd">bool</span><span class="pln"> status</span><span class="pun">,</span><span class="pln"> </span><span class="typ">DataTable</span><span class="pln"> data</span><span class="pun">)</span><span class="pln">
+			</span><span class="pun">{</span><span class="pln">
+			</span><span class="typ">Debug</span><span class="pun">.</span><span class="typ">Log</span><span class="pun">(</span><span class="pln">$</span><span class="str">"Status: {status} {http.GetMessage()}"</span><span class="pun">);</span><span class="pln">
+			</span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">status</span><span class="pun">)</span><span class="pln">
+			</span><span class="pun">{</span><span class="pln">
+				</span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">data </span><span class="pun">!=</span><span class="pln"> </span><span class="kwd">null</span><span class="pun">)</span><span class="pln"> </span><span class="typ">Debug</span><span class="pun">.</span><span class="typ">Log</span><span class="pun">(</span><span class="pln">$</span><span class="str">"Rows found: {data.Rows.Count}"</span><span class="pun">);</span><span class="pln">
+			</span><span class="pun">}</span><span class="pln">
+		</span><span class="pun">}</span><span class="pln">
+	</span><span class="pun">}</span></code></pre>
+							<p></p>
+						</section>
+						<p style="text-align:right"><a href="#section07B2">&lt;- Previous</a> <a href="#section07C">Next -&gt;</a></p><br><br>
 					</div>
 				</section>
 			</div>

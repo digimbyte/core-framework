@@ -129,8 +129,7 @@ ModelImporter:
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 628db233c728e4648b9d1c87e7af0a67,
-    type: 3}
+  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 628db233c728e4648b9d1c87e7af0a67, type: 3}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
@@ -146,6 +145,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 294046
   packageName: Audio Sync Pro
-  packageVersion: 1.2.4
-  assetPath: Assets/TelePresent/Audio Sync Pro/DemoAssets/Character/ASP_DemoMan.fbx
-  uploadId: 828908
+  packageVersion: 1.2.5
+  assetPath: Assets/Core/Audio Sync Pro/DemoAssets/Character/ASP_DemoMan.fbx
+  uploadId: 967346

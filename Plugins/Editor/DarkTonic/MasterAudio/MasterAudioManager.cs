@@ -69,11 +69,16 @@ namespace DarkTonic.MasterAudio.EditorScripts
             var ma = MasterAudio.Instance;
             var maInScene = ma != null;
 
-#if UNITY_2023_1_OR_NEWER
-            var organizers = FindObjectsByType<SoundGroupOrganizer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+            var organizers = FindObjectsByType<SoundGroupOrganizer>(FindObjectsInactive.Include);
             SoundGroupOrganizer organizer = (organizers.Length > 0) ? organizers[0] : null;
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var organizers = FindObjectsByType<SoundGroupOrganizer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            SoundGroupOrganizer organizer = (organizers.Length > 0) ? organizers[0] : null;
+    #else
             var organizer = FindObjectOfType(typeof(SoundGroupOrganizer));
+    #endif
 #endif
 
             var hasOrganizer = organizer != null;

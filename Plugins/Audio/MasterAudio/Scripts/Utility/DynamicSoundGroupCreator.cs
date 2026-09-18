@@ -58,7 +58,11 @@ namespace DarkTonic.MasterAudio {
         private bool _hasCreated;
         private readonly List<Transform> _groupsToRemove = new List<Transform>();
         private Transform _trans;
-        private EntityId _instanceId = EntityId.None;
+#if UNITY_6000_4_OR_NEWER
+        private EntityId _instanceId;
+#else
+        private int _instanceId = -1;
+#endif
 
         public enum CreateItemsWhen {
             FirstEnableOnly,
@@ -555,17 +559,29 @@ namespace DarkTonic.MasterAudio {
             get { return _groupsToCreate; }
         }
 
-		/*! \cond PRIVATE */
-		public EntityId InstanceId {
+        /*! \cond PRIVATE */
+#if UNITY_6000_4_OR_NEWER
+        public EntityId? InstanceId {
             get {
-                if (_instanceId == EntityId.None)
-                {
+                if (_instanceId == null) {
                     _instanceId = GetEntityId();
                 }
 
                 return _instanceId;
             }
         }
+#else
+        public int InstanceId {
+            get {
+                if (_instanceId < 0)
+                {
+                    _instanceId = GetInstanceID();
+                }
+
+                return _instanceId;
+            }
+        }
+#endif
 
         /// <summary>
         /// This is used by the Inspector, do not call.

@@ -1202,6 +1202,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                     foreach (var t in _group.groupVariations)
                     {
+                        if (t == null) {
+                            continue;
+                        }
                         if (!t.isExpanded)
                         {
                             continue;
@@ -1538,6 +1541,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                         GUILayout.Space(4);
                     }
+
+
+
                     EditorGUILayout.EndHorizontal();
                     DTGUIHelper.AddHelpIconNoStyle("https://www.dtdevtools.com/docs/masteraudio/SoundGroups.htm#Variations");
 

@@ -29,12 +29,26 @@ namespace DarkTonic.MasterAudio {
         public bool bypassReverbZones = false;
 
         // ReSharper restore InconsistentNaming
+#if UNITY_6000_4_OR_NEWER
         private readonly List<EntityId> _activeAudioSourcesIds = new List<EntityId>(50);
         private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
+#else
+        private readonly List<int> _activeAudioSourcesIds = new List<int>(50);
+        private readonly List<int> _actorInstanceIds = new List<int>();
+#endif
         private float _originalVolume = 1;
         private bool isPaused = false;
 
-        public void AddActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+        public void AddActorInstanceId(EntityId? instanceId) {
+            if (_actorInstanceIds.Contains(instanceId.Value)) {
+                return;
+            }
+
+            _actorInstanceIds.Add(instanceId.Value);
+        }
+#else
+        public void AddActorInstanceId(int instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId)) {
                 return;
@@ -42,19 +56,36 @@ namespace DarkTonic.MasterAudio {
 
             _actorInstanceIds.Add(instanceId);
         }
+#endif
 
-        public void RemoveActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+        public void RemoveActorInstanceId(EntityId? instanceId) {
+            _actorInstanceIds.Remove(instanceId.Value);
+        }
+#else
+        public void RemoveActorInstanceId(int instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }
+#endif
 
-        public void AddActiveAudioSourceId(EntityId id) {
+#if UNITY_6000_4_OR_NEWER
+        public void AddActiveAudioSourceId(EntityId? id) {
+            if (_activeAudioSourcesIds.Contains(id.Value)) {
+                return;
+            }
+
+            _activeAudioSourcesIds.Add(id.Value);
+        }
+#else
+        public void AddActiveAudioSourceId(int id) {
             if (_activeAudioSourcesIds.Contains(id)) {
                 return;
             }
 
             _activeAudioSourcesIds.Add(id);
         }
+#endif
 
         public void Pause() {
             isPaused = true;
@@ -64,10 +95,15 @@ namespace DarkTonic.MasterAudio {
             isPaused = false;
         }
 
-
-        public void RemoveActiveAudioSourceId(EntityId id) {
+#if UNITY_6000_4_OR_NEWER
+        public void RemoveActiveAudioSourceId(EntityId? id) {
+            _activeAudioSourcesIds.Remove(id.Value);
+        }
+#else
+        public void RemoveActiveAudioSourceId(int id) {
             _activeAudioSourcesIds.Remove(id);
         }
+#endif
         /*! \endcond */
 
         /// <summary>

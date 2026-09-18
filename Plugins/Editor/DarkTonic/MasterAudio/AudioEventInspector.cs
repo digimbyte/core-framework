@@ -46,11 +46,16 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 groups = ma.GroupNames;
             }
 
-#if UNITY_2023_1_OR_NEWER
-            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include);
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
             var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+    #endif
 #endif
+
 
             // ReSharper disable once PossibleNullReferenceException
             foreach (var dsgc in creators)
@@ -98,10 +103,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 parameterNames = new List<string>();
             }
 
-#if UNITY_2023_1_OR_NEWER
-            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None) as DynamicSoundGroupCreator[];
+#if UNITY_6000_4_OR_NEWER
+            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include) as DynamicSoundGroupCreator[];
 #else
-            var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+    #if UNITY_2023_1_OR_NEWER
+                var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None) as DynamicSoundGroupCreator[];
+    #else
+                var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+    #endif
 #endif
 
             // ReSharper disable once PossibleNullReferenceException
@@ -224,10 +233,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             _changedList.Clear();
 
+#if UNITY_6000_4_OR_NEWER
+            var pcs = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include);
+#else
 #if UNITY_2023_1_OR_NEWER
             var pcs = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
             var pcs = FindObjectsOfType(typeof(PlaylistController));
+#endif
 #endif
 
             foreach (var t in pcs)

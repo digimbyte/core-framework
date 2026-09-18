@@ -112,10 +112,14 @@ namespace RelationsInspector.Backend.Scene
 			// the fake scene object gets special care
 			if ( IsSceneObject( entity ) )
 			{
-#if UNITY_2023_1_OR_NEWER
-                var allGOs = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+                var allGOs = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include);
 #else
-                var allGOs = Object.FindObjectsOfType<GameObject>();
+	#if UNITY_2023_1_OR_NEWER
+				var allGOs = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+	#else
+				var allGOs = Object.FindObjectsOfType<GameObject>();
+	#endif
 #endif
 
                 var rootGOs = allGOs.Where( go => go.transform.parent == null );

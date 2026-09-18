@@ -2,6 +2,13 @@ MASTER AUDIO PLUGIN - By DarkTonic, Inc. (c) 2012-2026
 
 - Code by Brian Hunsaker
 
+-V 1.0.5	- Fixed warnings in Unity 6.5
+
+-V 1.0.4	- Fixed bug where Resource files sometimes would log a warning when trying to play.
+			- Fixed garbage collection issue in MasterAudio.cs
+			- Fixed bug where Group Inspector would crash very rarely.
+			- Fixed about 50 warnings in Unity 6.4.
+			- Added Find icon to Dynamic Sound Group Creator inspector for Sound Groups and Buses
 
 -V 1.0.3	- Fixed remote bug in PlaylistController with Resource files.
 			- Fixed bug where sometimes Playlist wouldn't start up on Start in Playlist Controller.
@@ -634,7 +641,7 @@ Master Audio / Master Audio 2021 releases ended.
 		   - Added option "Follow Audio Listener" on Advanced Settings. Defaults to on. This aids previewing, and will move the Master Audio game object to Audio Listener's location every frame, including at edit time. This will enable previewing of sounds from the Master Audio game object at all times. Before it was based on distance from the Audio Listener.
 		   - Sound Group's Inspector now has mute and solo button like its Mixer row.
 		   - Playlist Controller's Inspector now has mute button like its section in the Master Audio game object.
-		   - Now showing indicator of playing / not playing and �time� on Group & Variation Inspectors so you can see which Variations are playing.
+		   - Now showing indicator of playing / not playing and  time  on Group & Variation Inspectors so you can see which Variations are playing.
 
 -V 3.5.8.4 - Fixed bug: ButtonClicker script spams Console when no Master Audio game object in Scene.
 		   - Fixed bug: Hitting stop in the Jukebox with Song Ended Custom Event set up on Playlist Controller logs "Duplicate Custom Event fired".

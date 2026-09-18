@@ -122,9 +122,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             if (!_isComponentObjectNull)
             {
+#if UNITY_6000_4_OR_NEWER
                 ComponentObject = EditorUtility.EntityIdToObject(ComponentObject.GetEntityId()) as Component;
-            }
-            else
+#else
+                ComponentObject = EditorUtility.InstanceIDToObject(ComponentObject.GetInstanceID()) as Component;
+#endif
+            } else
             {
                 ComponentObject = null;
             }

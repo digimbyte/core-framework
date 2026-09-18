@@ -226,10 +226,14 @@ namespace DarkTonic.MasterAudio {
 
             // check for "extra" Playlist Controllers of the same name.
             // ReSharper disable once ArrangeStaticMemberQualifier
-#if UNITY_2023_1_OR_NEWER
-            var controllers = (PlaylistController[])GameObject.FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+            var controllers = (PlaylistController[])GameObject.FindObjectsByType<PlaylistController>(FindObjectsInactive.Include);
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var controllers = (PlaylistController[])GameObject.FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
             var controllers = (PlaylistController[])GameObject.FindObjectsOfType(typeof(PlaylistController));
+    #endif
 #endif
 
             var sameNameCount = 0;
@@ -249,10 +253,14 @@ namespace DarkTonic.MasterAudio {
             if (sameNameCount > 1) { 
                 DestroyImmediate(gameObject);
 
-#if UNITY_2023_1_OR_NEWER
-                var mas = FindObjectsByType<MasterAudio>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+                var mas = FindObjectsByType<MasterAudio>(FindObjectsInactive.Include);
 #else
+    #if UNITY_2023_1_OR_NEWER
+                var mas = FindObjectsByType<MasterAudio>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
                 var mas = FindObjectsOfType(typeof(MasterAudio));
+    #endif
 #endif
                 bool shouldLog = false;
                 for (var i = 0; i < mas.Length; i++) {
@@ -2436,10 +2444,14 @@ namespace DarkTonic.MasterAudio {
                 }
                 _instances = new List<PlaylistController>();
 
-#if UNITY_2023_1_OR_NEWER
-                var controllers = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+                var controllers = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include);
 #else
-                var controllers = FindObjectsOfType(typeof(PlaylistController));
+    #if UNITY_2023_1_OR_NEWER
+                    var controllers = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
+                    var controllers = FindObjectsOfType(typeof(PlaylistController));
+    #endif
 #endif
                 // ReSharper disable once ForCanBeConvertedToForeach
                 for (var i = 0; i < controllers.Length; i++) {

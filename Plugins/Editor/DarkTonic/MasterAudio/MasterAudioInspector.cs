@@ -6716,10 +6716,14 @@ namespace DarkTonic.MasterAudio.EditorScripts {
         }
 
         private static void SetSpatialBlendForPlaylistsEdit() {
-#if UNITY_2023_1_OR_NEWER
-            var controllers = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+            var controllers = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include);
 #else
+    #if UNITY_2023_1_OR_NEWER
+            var controllers = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    #else
             var controllers = FindObjectsOfType(typeof(PlaylistController));
+    #endif
 #endif
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = 0; i < controllers.Length; i++) {

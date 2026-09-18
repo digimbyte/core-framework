@@ -13,6 +13,13 @@ SteveSmith.Software
 
 Release Notes:
 
+	V.1.0.8 April 2026
+		Bug fix for Resources in a sub folder
+		Added scrollbar to table list in Workbench
+
+	V.1.0.7 March 2025
+		Bug fix. SQLExecute.ReplaceIfNewer missing data
+
 	V.1.0.8 November 2024
 		Bug fix for Table Editor GUI Foldout error.
 

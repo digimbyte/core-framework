@@ -63,6 +63,10 @@ namespace DarkTonic.MasterAudio {
         public static readonly List<string> ExemptChildNames = new List<string> { AmbientUtil.FollowerHolderName };
         public static readonly HashSet<int> ErrorNumbersLogged = new HashSet<int>();
         public static List<string> ImportanceChoices = new List<string> { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+
+        // Cached HashSet for O(1) GC-free lookups in the per-frame hot path (avoids allocating a new List on every access).
+        private static readonly HashSet<string> _hardCodedParameterNamesSet =
+            new HashSet<string>(ParameterHardCodedNames, StringComparer.Ordinal);
         public static List<string> propertyDrawerGroupNames = null;
 #if ADDRESSABLES_ENABLED
         public static List<string> AddressableDeadIds = new List<string>();
@@ -257,6 +261,7 @@ namespace DarkTonic.MasterAudio {
         public bool showParameterCommands = false; 
         public List<ParameterCommand> parameterCommands = new List<ParameterCommand>();
 
+        [NonSerialized]
         public Dictionary<string, DuckGroupInfo> duckingBySoundType = new Dictionary<string, DuckGroupInfo>(StringComparer.OrdinalIgnoreCase);
         // populated at runtime
 
@@ -769,7 +774,11 @@ namespace DarkTonic.MasterAudio {
             public bool newMetadataPropCanHaveMult = false;
             // ReSharper restore InconsistentNaming
 
+#if UNITY_6000_4_OR_NEWER
             private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
+#else
+            private readonly List<int> _actorInstanceIds = new List<int>();
+#endif
 
             public enum CrossfadeTimeMode {
                 UseMasterSetting,
@@ -780,7 +789,16 @@ namespace DarkTonic.MasterAudio {
                 MusicSettings = new List<MusicSetting>();
             }
 
-            public void AddActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+            public void AddActorInstanceId(EntityId? instanceId) {
+                if (_actorInstanceIds.Contains(instanceId.Value)) {
+                    return;
+                }
+
+                _actorInstanceIds.Add(instanceId.Value);
+            }
+#else
+            public void AddActorInstanceId(int instanceId)
             {
                 if (_actorInstanceIds.Contains(instanceId))
                 {
@@ -789,12 +807,18 @@ namespace DarkTonic.MasterAudio {
 
                 _actorInstanceIds.Add(instanceId);
             }
+#endif
 
-            public void RemoveActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+            public void RemoveActorInstanceId(EntityId? instanceId) {
+                _actorInstanceIds.Remove(instanceId.Value);
+            }
+#else
+            public void RemoveActorInstanceId(int instanceId)
             {
                 _actorInstanceIds.Remove(instanceId);
             }
-
+#endif
             public bool HasLiveActors {
                 get {
                     return _actorInstanceIds.Count > 0;
@@ -813,7 +837,7 @@ namespace DarkTonic.MasterAudio {
             }
         }
         /*! \endcond */
-        #endregion
+#endregion
 
         #region MonoDevelop events and Helpers
 
@@ -1187,10 +1211,14 @@ namespace DarkTonic.MasterAudio {
 
                 // Event Sounds warmer
                 // ReSharper disable once ArrangeStaticMemberQualifier
+#if UNITY_6000_4_OR_NEWER
+                var evts = GameObject.FindObjectsByType<EventSounds>(FindObjectsInactive.Include);
+#else
 #if UNITY_2023_1_OR_NEWER
                 var evts = GameObject.FindObjectsByType<EventSounds>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
                 var evts = GameObject.FindObjectsOfType(typeof(EventSounds));
+#endif
 #endif
                 if (evts.Length > 0) {
                     var evt = evts[0] as EventSounds;
@@ -1769,8 +1797,8 @@ namespace DarkTonic.MasterAudio {
 
                 RealTimeParameter selectedParam = GetRealTimeParameterFromCommand(tracker.ParameterCommand);
 
-                if (selectedParam == null && !ParameterHardCodedNames.Contains(tracker.ParameterCommand.ParameterName)) {
-                    Debug.LogError("Parameter Command '" + tracker.ParameterCommand + "' uses Real Time Parameter '" + tracker.ParameterCommand.ParameterName + ", which was not found in Master Audio.");
+                if (selectedParam == null && !_hardCodedParameterNamesSet.Contains(tracker.ParameterCommand.ParameterName)) {
+                    Debug.LogError("Parameter Command '" + tracker.ParameterCommand + "' uses Real Time Parameter '" + tracker.ParameterCommand.ParameterName + "', which was not found in Master Audio.");
                     tracker.Reset();
                     continue;
                 }
@@ -1970,7 +1998,7 @@ namespace DarkTonic.MasterAudio {
         }
         /*! \endcond */
 
-        #endregion
+#endregion
 
         #region Sound Playing / Stopping Methods
 
@@ -5067,7 +5095,13 @@ namespace DarkTonic.MasterAudio {
         /// <param name="creatorInstanceId">The InstanceId of the Game Object creating the Sound Group.</param>
         /// <param name="errorOnExisting">Whether to log an error if the Group already exists (same name).</param>
         /// <returns>Whether or not the Sound Group was created.</returns>
-        public static Transform CreateSoundGroup(DynamicSoundGroup aGroup, EntityId? creatorInstanceId, bool errorOnExisting = true) {
+        public static Transform CreateSoundGroup(DynamicSoundGroup aGroup,
+#if UNITY_6000_4_OR_NEWER
+            EntityId? creatorInstanceId,
+#else
+            int? creatorInstanceId, 
+#endif
+            bool errorOnExisting = true) {
             if (!SceneHasMasterAudio) {
                 return null;
             }
@@ -5787,10 +5821,14 @@ namespace DarkTonic.MasterAudio {
                 }
             }
 
+#if UNITY_6000_4_OR_NEWER
+            var dgscs = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include);
+#else
 #if UNITY_2023_1_OR_NEWER
             var dgscs = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
             var dgscs = FindObjectsOfType<DynamicSoundGroupCreator>();
+#endif
 #endif
             for (var i = 0; i < dgscs.Count(); i++) {
                 var d = dgscs[i];
@@ -6552,8 +6590,14 @@ namespace DarkTonic.MasterAudio {
         /// <param name="busName">The name of the new bus.</param>
         /// <param name="actorInstanceId">The actor instanceId of the creator. Used the track if another Dynamic Sound Group Creator is still active with the bus so we don't delete it yet.</param>
         /// <param name="errorOnExisting">Whether to log an error if the bus already exists (same name).</param>
-		/// <param name="isTemporary">Used by DGSC to create temporary buses.</param>
-		public static bool CreateBus(string busName, EntityId? actorInstanceId, bool errorOnExisting = true, bool isTemporary = false) {
+        /// <param name="isTemporary">Used by DGSC to create temporary buses.</param>
+        public static bool CreateBus(string busName,
+#if UNITY_6000_4_OR_NEWER
+            EntityId? actorInstanceId,
+#else
+            int? actorInstanceId, 
+#endif
+            bool errorOnExisting = true, bool isTemporary = false) {
             var match = GroupBuses.FindAll(delegate (GroupBus obj) {
                 return obj.busName == busName;
             });
@@ -7178,7 +7222,7 @@ namespace DarkTonic.MasterAudio {
             Instance._isStoppingMultiple = false;
         }
 
-        #endregion
+#endregion
 
         #region Ducking methods
 
@@ -8429,7 +8473,13 @@ namespace DarkTonic.MasterAudio {
         /// <param name="actorInstanceId">The actor instanceId of the creator. Used the track if another Dynamic Sound Group Creator is still active with the bus so we don't delete it yet.</param>
         /// <param name="errorOnDuplicates">Will log a duplicate if you pass "true" in.</param>
         /// <param name="isTemporary">If set to <c>true</c> is temporary.</param>
-        public static CustomEventCategory CreateCustomEventCategoryIfNotThere(string categoryName, EntityId? actorInstanceId, bool errorOnDuplicates, bool isTemporary) {
+        public static CustomEventCategory CreateCustomEventCategoryIfNotThere(string categoryName,
+#if UNITY_6000_4_OR_NEWER
+            EntityId? actorInstanceId,
+#else
+            int? actorInstanceId, 
+#endif
+            bool errorOnDuplicates, bool isTemporary) {
             if (AppIsShuttingDown) {
                 return null;
             }
@@ -8478,7 +8528,11 @@ namespace DarkTonic.MasterAudio {
         /// <param name="errorOnDuplicate">Whether or not to log an error if the event already exists.</param>
         public static void CreateCustomEvent(string customEventName, CustomEventReceiveMode eventReceiveMode,
             float distanceThreshold, EventReceiveFilter receiveFilter, int filterModeQty,
+#if UNITY_6000_4_OR_NEWER
             EntityId? actorInstanceId,
+#else
+            int? actorInstanceId,
+#endif
             string categoryName = "", 
             bool isTemporary = false, bool errorOnDuplicate = true) {
 
@@ -8821,7 +8875,7 @@ namespace DarkTonic.MasterAudio {
         }
         /*! \endcond */
 
-        #endregion
+#endregion
 
         #region Real Time Parameter Commands
 
@@ -9191,8 +9245,8 @@ namespace DarkTonic.MasterAudio {
 
             RealTimeParameter selectedParam = GetRealTimeParameterFromCommand(paramCmd);
 
-            if (selectedParam == null && !ParameterHardCodedNames.Contains(paramCmd.ParameterName)) {
-                Debug.LogError("Parameter Command '" + parameterCommandName + "' uses Real Time Parameter '" + paramCmd.ParameterName + ", which was not found in Master Audio.");
+            if (selectedParam == null && !_hardCodedParameterNamesSet.Contains(paramCmd.ParameterName)) {
+                Debug.LogError("Parameter Command '" + parameterCommandName + "' uses Real Time Parameter '" + paramCmd.ParameterName + "', which was not found in Master Audio.");
                 return null;
             }
 
@@ -9752,10 +9806,14 @@ namespace DarkTonic.MasterAudio {
                 if (_listenerTrans == null || !DTMonoHelper.IsActive(_listenerTrans.gameObject)) {
                     _listenerTrans = null; // to make sure
 
+#if UNITY_6000_4_OR_NEWER
+                    var listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include);
+#else
 #if UNITY_2023_1_OR_NEWER
                     var listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
                     var listeners = FindObjectsOfType<AudioListener>();
+#endif
 #endif
                     // ReSharper disable once ForCanBeConvertedToForeach
                     for (var i = 0; i < listeners.Length; i++) {
@@ -9928,6 +9986,12 @@ namespace DarkTonic.MasterAudio {
                 }
 
                 // ReSharper disable once ArrangeStaticMemberQualifier
+#if UNITY_6000_4_OR_NEWER
+                var mas = GameObject.FindObjectsByType<MasterAudio>(FindObjectsInactive.Include);
+                if (mas.Length > 0) {
+                    _instance = mas[0];
+                }
+#else
 #if UNITY_2023_1_OR_NEWER
                 var mas = GameObject.FindObjectsByType<MasterAudio>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 if (mas.Length > 0) {
@@ -9935,6 +9999,7 @@ namespace DarkTonic.MasterAudio {
                 }
 #else
                 _instance = (MasterAudio)GameObject.FindObjectOfType(typeof(MasterAudio));
+#endif
 #endif
                 return _instance;
             }
@@ -9949,6 +10014,12 @@ namespace DarkTonic.MasterAudio {
                     return _instance;
                 }
                 // ReSharper disable once ArrangeStaticMemberQualifier
+#if UNITY_6000_4_OR_NEWER
+                var mas = GameObject.FindObjectsByType<MasterAudio>(FindObjectsInactive.Include);
+                if (mas.Length > 0) {
+                    _instance = mas[0];
+                }
+#else
 #if UNITY_2023_1_OR_NEWER
                 var mas = GameObject.FindObjectsByType<MasterAudio>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 if (mas.Length > 0) {
@@ -9956,6 +10027,7 @@ namespace DarkTonic.MasterAudio {
                 }
 #else
                 _instance = (MasterAudio)GameObject.FindObjectOfType(typeof(MasterAudio));
+#endif
 #endif
 
                 if (_instance == null && Application.isPlaying) {
@@ -10000,10 +10072,14 @@ namespace DarkTonic.MasterAudio {
                     others.Add(childName);
                 }
 
-#if UNITY_2023_1_OR_NEWER
-                var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#if UNITY_6000_4_OR_NEWER
+                var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include);
 #else
-                var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+#if UNITY_2023_1_OR_NEWER
+            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+#endif
 #endif
                 // ReSharper disable once PossibleNullReferenceException
                 foreach (var dsgc in creators) {
@@ -10550,7 +10626,7 @@ namespace DarkTonic.MasterAudio {
 #endif
         /*! \endcond */
 
-        #endregion
+#endregion
 
         #region Prefab Creation
         /*! \cond PRIVATE */

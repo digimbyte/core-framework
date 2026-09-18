@@ -94,6 +94,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 115308
   packageName: SQL for Unity Database
-  packageVersion: 1.0.7
-  assetPath: Assets/core-framework/Plugins/SQL4Unity/Editor/Resources/SQL4Unity_files/ScreenShot_033.png
-  uploadId: 743976
+  packageVersion: 1.0.8
+  assetPath: Assets/Core/Plugins/SQL4Unity/Editor/Resources/SQL4Unity_files/ScreenShot_033.png
+  uploadId: 906592

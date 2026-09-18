@@ -1,6 +1,7 @@
         $(document).ready(function (event) {
             $('.content').hide();
             $('#section00').show();
+            $('#sectionA').show();
         });
         $(document).on('click', 'li', function (event) {
             $(this).children('ul').toggle();

@@ -46,7 +46,7 @@ namespace TelePresent.AudioSyncPro
                 targetTransform = this.transform;
                 if (audioSourcePlus == null)
                 {
-                    AudioSourcePlus[] audioSourcePluses = FindObjectsByType<AudioSourcePlus>(FindObjectsSortMode.None);
+                    AudioSourcePlus[] audioSourcePluses = FindObjectsByType<AudioSourcePlus>();
                     if (audioSourcePluses.Length == 1)
                     {
                         audioSourcePlus = audioSourcePluses[0];

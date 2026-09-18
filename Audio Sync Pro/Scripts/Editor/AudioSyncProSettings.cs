@@ -397,14 +397,14 @@ namespace TelePresent.AudioSyncPro
 
         private void GatherAllAudioSourcePlus()
         {
-            AudioSourcePlus[] audioSources = Object.FindObjectsByType<AudioSourcePlus>(FindObjectsSortMode.None);
+            AudioSourcePlus[] audioSources = Object.FindObjectsByType<AudioSourcePlus>();
             audioSourcePlusList.Clear();
             audioSourcePlusList.AddRange(audioSources);
         }
 
         private void GatherAllAudioSources()
         {
-            AudioSource[] allAudioSources = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+            AudioSource[] allAudioSources = Object.FindObjectsByType<AudioSource>();
             audioSourceList.Clear();
 
             foreach (AudioSource audioSource in allAudioSources)

@@ -14,9 +14,22 @@ namespace DarkTonic.MasterAudio {
 		public bool IsTemporary = false;
 		public string ProspectiveName = MasterAudio.NoCategory;
 
+#if UNITY_6000_4_OR_NEWER
         private readonly List<EntityId> _actorInstanceIds = new List<EntityId>();
+#else
+        private readonly List<int> _actorInstanceIds = new List<int>();
+#endif
 
-        public void AddActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+        public void AddActorInstanceId(EntityId instanceId) {
+            if (_actorInstanceIds.Contains(instanceId)) {
+                return;
+            }
+
+            _actorInstanceIds.Add(instanceId);
+        }
+#else
+        public void AddActorInstanceId(int instanceId)
         {
             if (_actorInstanceIds.Contains(instanceId))
             {
@@ -25,11 +38,18 @@ namespace DarkTonic.MasterAudio {
 
             _actorInstanceIds.Add(instanceId);
         }
+#endif
 
-        public void RemoveActorInstanceId(EntityId instanceId)
+#if UNITY_6000_4_OR_NEWER
+        public void RemoveActorInstanceId(EntityId? instanceId) {
+            _actorInstanceIds.Remove(instanceId.Value);
+        }
+#else
+        public void RemoveActorInstanceId(int instanceId)
         {
             _actorInstanceIds.Remove(instanceId);
         }
+#endif
 
         public bool HasLiveActors {
             get {
