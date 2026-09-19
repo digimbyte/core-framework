@@ -79,6 +79,13 @@ namespace Crosstales.Radio.EditorUtil
          InstantiatePrefab(prefabName, EditorConfig.PREFAB_PATH);
       }
 
+      public new static void InstantiatePrefab(string prefabName, string path)
+      {
+         PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path + prefabName + ".prefab"));
+         if (isEditorMode)
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+      }
+
       /// <summary>Shows a banner for "Online Check".</summary>
       public static void BannerOC()
       {
@@ -135,11 +142,7 @@ namespace Crosstales.Radio.EditorUtil
       {
          if (logo == null)
          {
-#if CT_DEVELOP
-            logo = (Texture2D)AssetDatabase.LoadAssetAtPath("Assets" + EditorConfig.ASSET_PATH + "Icons/" + fileName, typeof(Texture2D));
-#else
-                logo = (Texture2D)EditorGUIUtility.Load("crosstales/Radio/" + fileName);
-#endif
+            logo = AssetDatabase.LoadAssetAtPath<Texture2D>(EditorConfig.ASSET_PATH + "Icons/" + fileName);
 
             if (logo == null)
                Debug.LogWarning("Image not found: " + fileName);

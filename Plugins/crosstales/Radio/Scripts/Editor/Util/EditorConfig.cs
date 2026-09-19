@@ -55,40 +55,28 @@ namespace Crosstales.Radio.EditorUtil
          {
             if (assetPath == null)
             {
-               try
-               {
-                  if (Crosstales.Common.Util.FileHelper.ExistsFile(Application.dataPath + EditorConstants.DEFAULT_ASSET_PATH + idPath + idName))
-                  {
-                     assetPath = EditorConstants.DEFAULT_ASSET_PATH;
-                  }
-                  else
-                  {
-                     string[] files = System.IO.Directory.GetFiles(Application.dataPath, idName, System.IO.SearchOption.AllDirectories);
+               string markerPath = AssetDatabase.GUIDToAssetPath("46542c2c5e315b944bacd48ee07c8ba4");
+               if (string.IsNullOrEmpty(markerPath))
+                  throw new System.IO.FileNotFoundException("Could not locate Radio asset: " + idName);
 
-                     if (files.Length > 0)
-                     {
-                        string name = files[0].Substring(Application.dataPath.Length);
-                        assetPath = name.Substring(0, name.Length - idPath.Length - idName.Length).Replace("\\", "/");
-                     }
-                     else
-                     {
-                        Debug.LogWarning("Could not locate the asset! File not found: " + idName);
-                        assetPath = EditorConstants.DEFAULT_ASSET_PATH;
-                     }
-                  }
-               }
-               catch (System.Exception ex)
-               {
-                  Debug.LogWarning("Could not locate asset: " + ex);
-               }
+               assetPath = markerPath.Substring(0, markerPath.Length - idPath.Length - idName.Length);
             }
-
             return assetPath;
          }
       }
 
-      /// <summary>Returns the path of the prefabs.</summary>
-      /// <returns>The path of the prefabs.</returns>
+      /// <summary>Returns the physical asset directory for file access.</summary>
+      public static string ASSET_DIRECTORY
+      {
+         get
+         {
+            var package = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(ASSET_PATH);
+            return package == null
+               ? System.IO.Path.GetFullPath(ASSET_PATH) + "/"
+               : package.resolvedPath + ASSET_PATH.Substring(package.assetPath.Length);
+         }
+      }
+
       public static string PREFAB_PATH => ASSET_PATH + EditorConstants.PREFAB_SUBPATH;
 
       #endregion

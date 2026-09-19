@@ -12,7 +12,6 @@ namespace Crosstales.Radio.EditorTask
          if (importedAssets.Any(str => str.Contains(Crosstales.Radio.EditorUtil.EditorConstants.ASSET_UID.ToString())))
          {
             Crosstales.Common.EditorTask.SetupResources.Setup();
-            SetupResources.Setup();
 
             Crosstales.Radio.EditorIntegration.ConfigWindow.ShowWindow(4);
          }

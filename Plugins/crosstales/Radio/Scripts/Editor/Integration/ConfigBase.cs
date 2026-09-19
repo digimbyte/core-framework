@@ -400,7 +400,7 @@ namespace Crosstales.Radio.EditorIntegration
             {
                if (readme == null)
                {
-                  string path = Application.dataPath + EditorConfig.ASSET_PATH + "README.txt";
+                  string path = EditorConfig.ASSET_DIRECTORY + "README.txt";
 
                   try
                   {
@@ -423,7 +423,7 @@ namespace Crosstales.Radio.EditorIntegration
             {
                if (versions == null)
                {
-                  string path = Application.dataPath + EditorConfig.ASSET_PATH + "Documentation/VERSIONS.txt";
+                  string path = EditorConfig.ASSET_DIRECTORY + "Documentation/VERSIONS.txt";
 
                   try
                   {
