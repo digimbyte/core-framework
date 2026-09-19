@@ -1,0 +1,9 @@
+{
+    "name": "Crosstales.Radio.Runtime",
+    "references": [
+        "NLayer",
+        "NVorbis",
+        "UDE",
+        "Unity.ugui"
+    ]
+}

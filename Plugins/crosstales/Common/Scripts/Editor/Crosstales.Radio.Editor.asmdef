@@ -1,0 +1,9 @@
+{
+    "name": "Crosstales.Radio.Editor",
+    "references": [
+        "Crosstales.Radio.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
+}
