@@ -17,7 +17,7 @@ namespace Core.Enums
     /// Generated constants are of the form key.value, e.g. ammo.small == "ammo.small".
     /// </summary>
     [CreateAssetMenu(fileName = "StringEnums", menuName = "Core/Data/String Enum Library")]
-    public class StringEnumLibrary : ScriptableObject
+    public class StringEnumLibrary : ScriptableObject, ISerializationCallbackReceiver
     {
         [Serializable]
         public class EnumGroup
@@ -32,8 +32,25 @@ namespace Core.Enums
         [SerializeField]
         public List<EnumGroup> groups = new List<EnumGroup>();
 
+        internal void NormalizeStoredValues()
+        {
+            if (groups == null) return;
+            foreach (var group in groups)
+            {
+                if (group == null) continue;
+                group.key = group.key?.ToLowerInvariant();
+                if (group.values == null) continue;
+                for (int i = 0; i < group.values.Count; i++)
+                    group.values[i] = group.values[i]?.ToLowerInvariant();
+            }
+        }
+
+        public void OnBeforeSerialize() => NormalizeStoredValues();
+        public void OnAfterDeserialize() => NormalizeStoredValues();
+        private void OnValidate() => NormalizeStoredValues();
+
         /// <summary>
-        /// Same normalization as generated constants: trim and replace spaces with underscores.
+        /// Same normalization as generated constants: lowercase, trim and replace spaces with underscores.
         /// </summary>
         public static string NormalizeKeyPart(string text)
         {
@@ -42,7 +59,7 @@ namespace Core.Enums
                 return string.Empty;
             }
 
-            return text.Trim().Replace(' ', '_');
+            return text.Trim().Replace(' ', '_').ToLowerInvariant();
         }
 
         /// <summary>
@@ -98,7 +115,7 @@ namespace Core.Enums
                         continue;
                     }
 
-                    string v = raw.Trim();
+                    string v = NormalizeKeyPart(raw);
                     if (!seen.Add(v))
                     {
                         continue;
@@ -150,6 +167,7 @@ namespace Core.Enums
         {
             if (library == null) return;
 
+            library.NormalizeStoredValues();
             string snapshot = BuildSnapshot(library);
             GenerateInternal(library, outputPath, namespaceName);
 
@@ -174,10 +192,10 @@ namespace Core.Enums
                 if (group == null) continue;
                 if (string.IsNullOrWhiteSpace(group.key)) continue;
 
-                string key = group.key.Trim();
+                string key = group.key.Trim().ToLowerInvariant();
                 var vals = (group.values ?? new List<string>())
                     .Where(v => !string.IsNullOrWhiteSpace(v))
-                    .Select(v => v.Trim())
+                    .Select(v => v.Trim().ToLowerInvariant())
                     .OrderBy(v => v, StringComparer.Ordinal);
 
                 parts.Add(key + ":" + string.Join(",", vals));
@@ -215,7 +233,7 @@ namespace Core.Enums
 
                     var valueList = (group.values ?? new List<string>())
                         .Where(v => !string.IsNullOrWhiteSpace(v))
-                        .Select(v => v.Trim())
+                        .Select(v => NormalizeKey(v))
                         .Distinct(StringComparer.Ordinal)
                         .OrderBy(v => v, StringComparer.Ordinal)
                         .ToList();
@@ -261,7 +279,7 @@ namespace Core.Enums
                 return null;
 
             // Convert arbitrary text into a C# identifier: letters/digits/underscore only.
-            // We keep case but replace anything else (including spaces and '.') with '_'.
+            // Replace anything else (including spaces and '.') with '_'.
             var chars = name.Select(c =>
                 char.IsLetterOrDigit(c) ? c :
                 c == '_' ? '_' :
@@ -281,7 +299,7 @@ namespace Core.Enums
 
         /// <summary>
         /// Normalize user-entered keys/values into key-safe strings.
-        /// Currently just trims and replaces spaces with underscores.
+        /// Lowercases, trims and replaces spaces with underscores.
         /// </summary>
         private static string NormalizeKey(string text)
         {

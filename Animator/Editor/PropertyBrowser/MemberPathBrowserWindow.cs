@@ -280,6 +280,16 @@ namespace Core.Animator
                 }
             }
 
+            // Bare Nova position axes are scalar raw-value bindings, not Length editors.
+            for (int i = 0; i < results.Count; i++)
+            {
+                var entry = results[i];
+                if (Animate.NormalizeNovaPositionAxisPath(root, entry.path) == entry.path) continue;
+                entry.typeName = typeof(float).Name;
+                entry.display = $"{entry.path} : raw value ({entry.typeName})";
+                results[i] = entry;
+            }
+
             // Same logical path may appear twice (e.g. override + inherited DeclaredOnly), or nested prop+field.
             return DedupeNestedEntriesByPath(results);
         }
@@ -325,6 +335,7 @@ namespace Core.Animator
         public static Type ResolveMemberType(object root, string path)
         {
             if (root == null || string.IsNullOrEmpty(path)) return null;
+            path = Animate.NormalizeNovaPositionAxisPath(root, path);
             Type currentType = root.GetType();
 
             foreach (var segment in path.Split('.'))
@@ -382,6 +393,9 @@ namespace Core.Animator
         public static string ResolveMemberTypeDebug(object root, string path)
         {
             var sb = new StringBuilder();
+            string resolvedPath = Animate.NormalizeNovaPositionAxisPath(root, path);
+            if (resolvedPath != path) sb.AppendLine($"Nova raw position alias: {path} -> {resolvedPath}");
+            path = resolvedPath;
             if (root == null)
             {
                 sb.AppendLine("Root is null");

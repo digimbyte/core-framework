@@ -371,7 +371,8 @@ namespace Core.Animator
             private bool UsesMaterialProperty => type == TweenType.RendererColor || type == TweenType.MaterialFloat;
             private bool IsSiblingOrder => type == TweenType.SiblingOrder;
 
-            private string Det => string.IsNullOrEmpty(detectedPropertyType) ? string.Empty : detectedPropertyType;
+            private string Det => NormalizeNovaPositionAxisPath(targetComponent, propertyName) != propertyName
+                ? nameof(Single) : string.IsNullOrEmpty(detectedPropertyType) ? string.Empty : detectedPropertyType;
 
             // Matches RuntimeType.Name and member-browser strings: Boolean, System.Boolean (case/culture tolerant for "Boolean").
             private static bool IsBooleanDet(string d)

@@ -174,7 +174,7 @@ namespace Core.Animator
             var siblingTimingProp = entry.FindPropertyRelative("siblingTiming");
 
             var tweenType = (Animate.TweenType)typeProp.enumValueIndex;
-            string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
+            string det = GetDetectedType(entry);
             string selectedPath = propertyNameProp != null ? propertyNameProp.stringValue : string.Empty;
 
             bool isCustom = tweenType == Animate.TweenType.CustomProperty;
@@ -516,7 +516,7 @@ namespace Core.Animator
             var propertyModeProp = entry.FindPropertyRelative("propertyMode");
             var methodInvokeTimingProp = entry.FindPropertyRelative("methodInvokeTiming");
 
-            string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
+            string det = GetDetectedType(entry);
 
             DrawSectionHeader(ref rect, "Custom Property");
 
@@ -552,7 +552,7 @@ namespace Core.Animator
             var propertyNameProp = entry.FindPropertyRelative("propertyName");
             var targetComponentProp = entry.FindPropertyRelative("targetComponent");
 
-            string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
+            string det = GetDetectedType(entry);
             string selectedPath = propertyNameProp != null ? propertyNameProp.stringValue : string.Empty;
 
             bool isCustom = tweenType == Animate.TweenType.CustomProperty;
@@ -691,7 +691,7 @@ namespace Core.Animator
             var tweenType = (Animate.TweenType)typeProp.enumValueIndex;
 
             var detectedTypeProp = entry.FindPropertyRelative("detectedPropertyType");
-            string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
+            string det = GetDetectedType(entry);
 
             bool isCustom = tweenType == Animate.TweenType.CustomProperty;
             bool isRendererColor = tweenType == Animate.TweenType.RendererColor;
@@ -750,7 +750,7 @@ namespace Core.Animator
             var methodInvokeTimingProp = entry.FindPropertyRelative("methodInvokeTiming");
             var siblingTimingProp = entry.FindPropertyRelative("siblingTiming");
 
-            string det = detectedTypeProp != null ? detectedTypeProp.stringValue : string.Empty;
+            string det = GetDetectedType(entry);
             var mode = propertyModeProp != null ? (Animate.CustomPropertyMode)propertyModeProp.enumValueIndex : Animate.CustomPropertyMode.AutoTween;
             var invokeTiming = methodInvokeTimingProp != null ? (Animate.MethodInvokeTiming)methodInvokeTimingProp.enumValueIndex : Animate.MethodInvokeTiming.OnEnd;
             var siblingInvoke = siblingTimingProp != null ? (Animate.MethodInvokeTiming)siblingTimingProp.enumValueIndex : Animate.MethodInvokeTiming.OnEnd;
@@ -809,6 +809,14 @@ namespace Core.Animator
                     return false;
             }
             return true;
+        }
+
+        private static string GetDetectedType(SerializedProperty entry)
+        {
+            string path = entry.FindPropertyRelative("propertyName")?.stringValue;
+            var component = entry.FindPropertyRelative("targetComponent")?.objectReferenceValue;
+            if (Animate.NormalizeNovaPositionAxisPath(component, path) != path) return typeof(float).Name;
+            return entry.FindPropertyRelative("detectedPropertyType")?.stringValue ?? string.Empty;
         }
 
         private static bool IsBooleanDetectedType(string det)

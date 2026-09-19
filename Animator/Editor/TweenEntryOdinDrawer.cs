@@ -67,6 +67,9 @@ namespace Core.Animator
             bool isSiblingOrder = tweenType == Animate.TweenType.SiblingOrder;
 
             string det = GetResolvedDetectedTypeString(detectedTypeProp, index);
+            string axisPath = ResolvePropertyPath(propertyNameProp, index, detectedTypeProp ?? propertyNameProp);
+            if (Animate.NormalizeNovaPositionAxisPath(targetComponentProp?.ValueEntry?.WeakSmartValue, axisPath) != axisPath)
+                det = typeof(float).Name;
             var mode = GetEnum<Animate.CustomPropertyMode>(propertyModeProp, Animate.CustomPropertyMode.AutoTween);
             var invokeTiming = GetEnum<Animate.MethodInvokeTiming>(methodInvokeTimingProp, Animate.MethodInvokeTiming.OnEnd);
 

@@ -668,12 +668,43 @@ namespace Core.Animator
         }
 
         /// <summary>
-        /// UIBlock-specific CustomProperty shortcuts (layout-friendly Size/Position paths, discrete Alignment delay).
+        /// Interpret a bare Nova position axis as its scalar raw value in playback and property browsing.
         /// </summary>
-        /// <returns><see langword="true"/> when this path handled the entry (result may still be null, e.g. Alignment).</returns>
+        public static string NormalizeNovaPositionAxisPath(object target, string path)
+        {
+            if (!(target is UIBlock) || string.IsNullOrEmpty(path)) return path;
+            string positionPath = StripNovaLayoutPathPrefix(path);
+            return positionPath == "Position.X" || positionPath == "Position.Y" || positionPath == "Position.Z"
+                ? positionPath + ".Raw" : path;
+        }
+
+        /// <summary>UIBlock-specific CustomProperty bindings, including layout-friendly Size/Position paths.</summary>
         private bool TryNovaUIBlockCustomPropertyFastPath(TweenEntry e, Component comp, string resolvedPath, out Coroutine result)
         {
             result = null;
+
+            string rawAxisPath = StripNovaLayoutPathPrefix(NormalizeNovaPositionAxisPath(comp, resolvedPath));
+            if (comp is UIBlock positionBlock &&
+                (rawAxisPath == "Position.X.Raw" || rawAxisPath == "Position.Y.Raw" || rawAxisPath == "Position.Z.Raw"))
+            {
+                char axis = rawAxisPath[9];
+                Func<float> getter = () => axis == 'X' ? positionBlock.Position.X.Raw
+                    : axis == 'Y' ? positionBlock.Position.Y.Raw : positionBlock.Position.Z.Raw;
+                Action<float> setter = value =>
+                {
+                    // Raw means raw: preserve Length.Type and the other axes.
+                    if (axis == 'X') positionBlock.Position.X.Raw = value;
+                    else if (axis == 'Y') positionBlock.Position.Y.Raw = value;
+                    else positionBlock.Position.Z.Raw = value;
+                };
+                if (e.propertyMode == CustomPropertyMode.SetAtEnd)
+                {
+                    result = StartCoroutine(ApplyActionAfterSeconds(() => setter(e.toFloat), e.duration));
+                    return true;
+                }
+                result = TweenFloatWithSourceDeferred(getter, setter, e.toFloat, e.duration, e.curve, e.startSource, e.fromFloat);
+                return true;
+            }
 
             if (comp is UIBlock sizeBlock)
             {

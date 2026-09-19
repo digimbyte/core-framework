@@ -62,6 +62,7 @@ namespace Core.Enums.Editor
                 rect.y += 2f;
                 rect.height = EditorGUIUtility.singleLineHeight;
                 EditorGUI.PropertyField(rect, element, GUIContent.none);
+                element.stringValue = element.stringValue.ToLowerInvariant();
             };
             list.onAddCallback = reorderableList =>
             {
@@ -104,7 +105,7 @@ namespace Core.Enums.Editor
             }
 
             EditorGUILayout.LabelField("Enum Groups", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Each group is Name:[Entries], e.g. Name = 'Ammo', Entries = ['Small','Medium','Large'].", MessageType.None);
+            EditorGUILayout.HelpBox("Each group is Name:[Entries], e.g. Name = 'ammo', Entries = ['small','medium','large']. Names and entries are saved in lowercase.", MessageType.None);
 
             const int removeButtonWidth = 22;
 
@@ -129,7 +130,7 @@ namespace Core.Enums.Editor
                 // Group header: [ foldout ][ name ][ - ]
                 EditorGUILayout.BeginHorizontal();
                 groupFoldouts[i] = EditorGUILayout.Foldout(groupFoldouts[i], GUIContent.none, true, EditorStyles.foldout);
-                keyProp.stringValue = EditorGUILayout.TextField("Enum Name", keyProp.stringValue ?? string.Empty);
+                keyProp.stringValue = EditorGUILayout.TextField("Enum Name", keyProp.stringValue ?? string.Empty).ToLowerInvariant();
                 if (GUILayout.Button("-", GUILayout.Width(removeButtonWidth)))
                 {
                     groupsProp.DeleteArrayElementAtIndex(i);
