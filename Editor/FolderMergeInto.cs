@@ -233,6 +233,12 @@ public static class FolderMergeInto
 
 	// ---------- Path/asset helpers ----------
 
+	private static string ResolveMergeDestination(string sourceFolder, string selectedDestination)
+	{
+		var matchingChild = CombineAssetPath(selectedDestination, Path.GetFileName(sourceFolder));
+		return AssetDatabase.IsValidFolder(matchingChild) ? matchingChild : selectedDestination;
+	}
+
 	private static bool AssetExists(string assetPath)
 	{
 		if (AssetDatabase.IsValidFolder(assetPath)) return true;
@@ -326,8 +332,16 @@ public static class FolderMergeInto
 					if (!IsValidDestination(out var destPath))
 						return;
 
-					// Persist last destination
-					var destGuid = AssetDatabase.AssetPathToGUID(destPath);
+					var structureChange = string.Equals(Path.GetFileName(_sourcePath), Path.GetFileName(destPath), StringComparison.OrdinalIgnoreCase)
+						? "The source contents will merge into the matching folder."
+						: "The source folder name will NOT be retained; its contents will move directly into the destination.";
+					if (!EditorUtility.DisplayDialog("Confirm Merge Structure",
+						$"{structureChange}\n\nFrom: {_sourcePath}/\nTo: {destPath}/\n\nEach relative file and subfolder path is preserved under this destination.\nThe source folder is removed only if empty.\nOn name collision: {_policy}",
+						"Merge (Move)", "Cancel"))
+						return;
+
+					// Persist the selected folder, not its resolved child.
+					var destGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(_destFolderAsset));
 					if (!string.IsNullOrEmpty(destGuid))
 						EditorPrefs.SetString(PrefKeyLastDestGuid, destGuid);
 
@@ -365,13 +379,15 @@ public static class FolderMergeInto
 				return false;
 			}
 
-			if (destPath == _sourcePath)
+			destPath = ResolveMergeDestination(_sourcePath, destPath);
+
+			if (string.Equals(destPath, _sourcePath, StringComparison.OrdinalIgnoreCase))
 			{
 				messageOrPath = "Destination cannot be the same as the source.";
 				return false;
 			}
 
-			if (destPath.StartsWith(_sourcePath + "/", StringComparison.Ordinal))
+			if (destPath.StartsWith(_sourcePath + "/", StringComparison.OrdinalIgnoreCase))
 			{
 				messageOrPath = "Destination cannot be inside the source folder.";
 				return false;

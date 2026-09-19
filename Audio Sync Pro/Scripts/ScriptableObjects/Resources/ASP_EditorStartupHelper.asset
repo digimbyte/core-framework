@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 211a908d2dba6d54999bf621abacb272, type: 3}
   m_Name: ASP_EditorStartupHelper
   m_EditorClassIdentifier: 
-  displayWelcomeMessageOnLaunch: 1
-  firstInitialization: 1
+  displayWelcomeMessageOnLaunch: 0
+  firstInitialization: 0
