@@ -110,7 +110,7 @@ namespace Nova.Internal.Rendering
 
             toRet.Flags |= QuadDescriptorFlags.HasBorder;
 
-            if (data.Border.Color.IsOpaque() && !data.RadialFill.EnabledAndNot360)
+            if (data.Border.DisabledSegments == 0 && data.Border.Color.IsOpaque() && !data.RadialFill.EnabledAndNot360)
             {
                 toRet.Flags |= QuadDescriptorFlags.BorderOccludes;
             }

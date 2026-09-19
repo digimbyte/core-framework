@@ -295,6 +295,7 @@ namespace Nova.Internal.Rendering
 
             if (data.Border.Enabled)
             {
+                shaderData.DisabledBorderSegments = data.Border.DisabledSegments;
                 shaderData.BorderColor.Set(ref data.Border.Color);
                 shaderData.BorderWidth = data.Border.GetWidth(halfMinBlockDimension);
 

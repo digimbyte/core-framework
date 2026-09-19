@@ -56,6 +56,33 @@ namespace Nova
         [SerializeField]
         public BorderDirection Direction;
 
+        // Store disabled flags so the default value has every segment enabled.
+        [SerializeField] private bool disableTopLeft;
+        /// <summary>Whether the TopLeft border segment is visible. Uses the shared border width.</summary>
+        public bool TopLeft { get => !disableTopLeft; set => disableTopLeft = !value; }
+        [SerializeField] private bool disableTop;
+        /// <summary>Whether the Top border segment is visible. Uses the shared border width.</summary>
+        public bool Top { get => !disableTop; set => disableTop = !value; }
+        [SerializeField] private bool disableTopRight;
+        /// <summary>Whether the TopRight border segment is visible. Uses the shared border width.</summary>
+        public bool TopRight { get => !disableTopRight; set => disableTopRight = !value; }
+        [SerializeField] private bool disableLeft;
+        /// <summary>Whether the Left border segment is visible. Uses the shared border width.</summary>
+        public bool Left { get => !disableLeft; set => disableLeft = !value; }
+        [SerializeField] private bool disableRight;
+        /// <summary>Whether the Right border segment is visible. Uses the shared border width.</summary>
+        public bool Right { get => !disableRight; set => disableRight = !value; }
+        [SerializeField] private bool disableBottomLeft;
+        /// <summary>Whether the BottomLeft border segment is visible. Uses the shared border width.</summary>
+        public bool BottomLeft { get => !disableBottomLeft; set => disableBottomLeft = !value; }
+        [SerializeField] private bool disableBottom;
+        /// <summary>Whether the Bottom border segment is visible. Uses the shared border width.</summary>
+        public bool Bottom { get => !disableBottom; set => disableBottom = !value; }
+        [SerializeField] private bool disableBottomRight;
+        /// <summary>Whether the BottomRight border segment is visible. Uses the shared border width.</summary>
+        public bool BottomRight { get => !disableBottomRight; set => disableBottomRight = !value; }
+
+
         /// <summary>
         /// Constructs a new <see cref="Border"/>.
         /// </summary>
@@ -69,6 +96,15 @@ namespace Nova
             Width = width;
             Enabled = enabled;
             Direction = borderDirection;
+            disableTopLeft = false;
+            disableTop = false;
+            disableTopRight = false;
+            disableLeft = false;
+            disableRight = false;
+            disableBottomLeft = false;
+            disableBottom = false;
+            disableBottomRight = false;
+
         }
 
         internal static readonly Border Default = new Border()
@@ -85,7 +121,15 @@ namespace Nova
                 lhs.Color.Equals(rhs.Color) &&
                 lhs.Width.Equals(rhs.Width) &&
                 lhs.Enabled.Equals(rhs.Enabled) &&
-                lhs.Direction == rhs.Direction;
+                lhs.Direction == rhs.Direction &&
+                lhs.disableTopLeft == rhs.disableTopLeft &&
+                lhs.disableTop == rhs.disableTop &&
+                lhs.disableTopRight == rhs.disableTopRight &&
+                lhs.disableLeft == rhs.disableLeft &&
+                lhs.disableRight == rhs.disableRight &&
+                lhs.disableBottomLeft == rhs.disableBottomLeft &&
+                lhs.disableBottom == rhs.disableBottom &&
+                lhs.disableBottomRight == rhs.disableBottomRight;
 
         }
 
@@ -98,6 +142,14 @@ namespace Nova
             hash = (hash * 7) + Width.GetHashCode();
             hash = (hash * 7) + Enabled.GetHashCode();
             hash = (hash * 7) + Direction.GetHashCode();
+            hash = (hash * 7) + disableTopLeft.GetHashCode();
+            hash = (hash * 7) + disableTop.GetHashCode();
+            hash = (hash * 7) + disableTopRight.GetHashCode();
+            hash = (hash * 7) + disableLeft.GetHashCode();
+            hash = (hash * 7) + disableRight.GetHashCode();
+            hash = (hash * 7) + disableBottomLeft.GetHashCode();
+            hash = (hash * 7) + disableBottom.GetHashCode();
+            hash = (hash * 7) + disableBottomRight.GetHashCode();
             return hash;
         }
 

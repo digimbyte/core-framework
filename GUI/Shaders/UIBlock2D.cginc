@@ -131,6 +131,7 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     #endif
 
     #if defined(NOVA_BORDER)
+        o.BorderSegments = float3(nHalfSize, shaderData.DisabledBorderSegments);
         NovaColorToV2F(BorderColor, o, shaderData.BorderColor);
         float borderNWidth = shaderData.BorderWidth * nFactor;
         #if defined(NOVA_CENTER_BORDER)
@@ -175,6 +176,34 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     #endif
 
     return o;
+}
+
+// Bits follow the inspector grid: TL, T, TR, L, R, BL, B, BR.
+// A corner owns its bend/join; straight runs belong to their edge.
+float NovaBorderSegmentEnabled(v2f i)
+{
+#if NOVA_BORDER
+    float2 p = GetNPos(i);
+    float2 halfSize = i.BorderSegments.xy;
+    float inwardWidth = 0;
+#if defined(NOVA_INNER_BORDER) || defined(NOVA_CENTER_BORDER)
+    inwardWidth = GetBorderNWidth(i);
+#endif
+    float extent = max(GetNCornerRadius(i), inwardWidth);
+    float2 cornerStart = max(halfSize - extent, 0);
+    bool right = p.x >= 0;
+    bool top = p.y >= 0;
+    float bit;
+    if (all(abs(p) >= cornerStart))
+        bit = top ? (right ? 4 : 1) : (right ? 128 : 32);
+    else if (halfSize.x - abs(p.x) < halfSize.y - abs(p.y))
+        bit = right ? 16 : 8;
+    else
+        bit = top ? 2 : 64;
+    return 1 - fmod(floor((i.BorderSegments.z + 0.5) / bit), 2);
+#else
+    return 1;
+#endif
 }
 
 fixed4 NovaFrag(v2f i) : SV_Target
@@ -226,6 +255,8 @@ fixed4 NovaFrag(v2f i) : SV_Target
     #endif
 
     #if NOVA_BORDER
+    if (NovaBorderSegmentEnabled(i) > 0.5)
+    {
         // Need to correct the weight for when the border is very thin or has zero width
         // Use 90% alpha clip for border mask
         fixed borderBlendWeight = saturate(GetBorderNWidth(i) * softenInverse.x) * borderMask;
@@ -268,6 +299,10 @@ fixed4 NovaFrag(v2f i) : SV_Target
         half borderWeight = GetClipWeight01(distanceOutsideInnerBorderEdge, softenInverse.x);
         fixed4 blended = BlendPremul(color, borderColor);
         color = lerp(color, blended, borderWeight);
+    #endif
+
+    #if NOVA_BORDER
+    }
     #endif
 
     #if defined(NOVA_CLIP_RECT)

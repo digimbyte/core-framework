@@ -35,7 +35,7 @@
 			float RadialFillRotation;
 			float RadialFillAngle;
 
-			float _alignPadBeforeColors;
+			float DisabledBorderSegments;
 
 			NovaColor PrimaryColor;
 
@@ -192,7 +192,7 @@
 				name.RadialFillCenter.y = bufferName##_Temp.x; \
 				name.RadialFillRotation = bufferName##_Temp.y; \
 				name.RadialFillAngle = bufferName##_Temp.z; \
-				name._alignPadBeforeColors = bufferName##_Temp.w; \
+				name.DisabledBorderSegments = bufferName##_Temp.w; \
 				\
 				bufferName##_UV = GetTextureBufferUV(index, 10, 6, bufferName##_TexelSize); \
 				bufferName##_Temp = tex2Dlod(bufferName, bufferName##_UV); \

@@ -45,7 +45,7 @@ namespace Nova.Internal.Rendering
         public float RadialFillRotation;
         public float RadialFillAngle;
 
-        private float _alignPadBeforeColors;
+        public float DisabledBorderSegments;
 
         public ShaderColor PrimaryColor;
 

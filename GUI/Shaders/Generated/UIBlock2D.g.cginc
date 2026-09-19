@@ -4840,6 +4840,9 @@
 
 struct v2f
 {
+#if NOVA_BORDER
+    float3 BorderSegments : COLOR2; // normalized half size, disabled segment mask
+#endif
 	float4 pos : SV_POSITION;
 	// xy: GradientSpaceUV
 	// zw: NPos

@@ -181,8 +181,32 @@ namespace Nova.Editor.GUIs
                             borderData.Direction = strokeDirection;
                         }
                         EditorGUI.EndProperty();
+                        DrawBorderSegments(borderData.SerializedProperty);
                     }
                 }
+            }
+        }
+
+        private static void DrawBorderSegments(SerializedProperty border)
+        {
+            string[] names = { "TopLeft", "Top", "TopRight", "Left", null, "Right", "BottomLeft", "Bottom", "BottomRight" };
+            Rect grid = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight * 3);
+            EditorGUI.LabelField(new Rect(grid.x, grid.y, EditorGUIUtility.labelWidth, EditorGUIUtility.singleLineHeight), "Segments");
+            grid.xMin += EditorGUIUtility.labelWidth;
+            for (int i = 0; i < names.Length; ++i)
+            {
+                if (names[i] == null) continue;
+                SerializedProperty disabled = border.FindPropertyRelative("disable" + names[i]);
+                Rect cell = new Rect(grid.x + (i % 3) * 24, grid.y + (i / 3) * EditorGUIUtility.singleLineHeight, 20, EditorGUIUtility.singleLineHeight);
+                GUIContent label = new GUIContent("", ObjectNames.NicifyVariableName(names[i]));
+                EditorGUI.BeginProperty(cell, label, disabled);
+                using (new EditorGUI.MixedValueScope(disabled.hasMultipleDifferentValues))
+                {
+                    EditorGUI.BeginChangeCheck();
+                    bool enabled = EditorGUI.Toggle(cell, label, !disabled.boolValue);
+                    if (EditorGUI.EndChangeCheck()) disabled.boolValue = !enabled;
+                }
+                EditorGUI.EndProperty();
             }
         }
 
