@@ -8,6 +8,7 @@ namespace NovaSamples.UIControls
     /// <remarks>A means of targeting drag gesture events.</remarks>
     /// <seealso cref="Window"/>
     /// <seealso cref="WindowResizeRegion"/>
+    [System.Serializable]
     [TypeMenuPath("Nova")]
     public class WindowBar : ItemVisuals { }
 }

@@ -12,6 +12,7 @@ namespace NovaSamples.UIControls
     /// </remarks>
     /// <seealso cref="Window"/>
     /// <seealso cref="WindowBar"/>
+    [System.Serializable]
     [TypeMenuPath("Nova")]
     public class WindowResizeRegion : ItemVisuals
     {
