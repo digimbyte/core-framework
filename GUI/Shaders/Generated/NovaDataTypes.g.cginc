@@ -11,6 +11,7 @@
 			float2 UVZoom;
 			float2 CenterUV;
 			float Rotation;
+			float3 _padding;
 		};
 
 		struct UIBlock2DData
@@ -154,7 +155,8 @@
 				\
 				bufferName##_UV = GetTextureBufferUV(index, 3, 2, bufferName##_TexelSize); \
 				bufferName##_Temp = tex2Dlod(bufferName, bufferName##_UV); \
-				name.Rotation = bufferName##_Temp.x; 
+				name.Rotation = bufferName##_Temp.x; \
+				name._padding = bufferName##_Temp.yzw;
 
 			#define NOVA_GET_BUFFER_ITEM_UIBlock2DData(name, index, bufferName) \
 				float4 bufferName##_UV = GetTextureBufferUV(index, 10, 0, bufferName##_TexelSize); \

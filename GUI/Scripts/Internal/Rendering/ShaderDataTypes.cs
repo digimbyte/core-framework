@@ -16,6 +16,8 @@ namespace Nova.Internal.Rendering
         public float2 UVZoom;
         public float2 CenterUV;
         public float Rotation;
+        // WebGL stores each vertex in three RGBAFloat texels (48 bytes).
+        private float3 _padding;
     }
 
     /// <summary>
