@@ -85,6 +85,23 @@ namespace Nova
         }
 
         /// <summary>
+        /// Whether to use the mask texture's alpha channel instead of its RGB color.
+        /// </summary>
+        public bool IsAlpha
+        {
+            get => isAlpha;
+            set
+            {
+                if (isAlpha == value)
+                {
+                    return;
+                }
+                isAlpha = value;
+                RegisterOrUpdate();
+            }
+        }
+
+        /// <summary>
         /// Whether to use a procedural implicit gradient mask instead of a texture.
         /// </summary>
         public bool Procedural
@@ -160,6 +177,8 @@ namespace Nova
         [SerializeField]
         private Texture maskTexture = null;
         [SerializeField]
+        private bool isAlpha = false;
+        [SerializeField]
         private bool procedural = false;
         [SerializeField]
         private float proceduralPercent = 0.5f;
@@ -180,6 +199,7 @@ namespace Nova
                 Color = info.Color,
                 Clip = info.Clip,
                 HasMask = maskTexture != null,
+                IsAlpha = isAlpha,
                 Procedural = procedural,
                 ProceduralPercent = proceduralPercent,
                 ProceduralRotation = proceduralRotation,

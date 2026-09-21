@@ -299,7 +299,7 @@
 
             float4 maskParams = _NovaClipMaskParams[_NovaClipMaskIndex];
             // Procedural mode: treat mask as an implicit linear gradient across the rect, rotated by maskParams.zw
-            if (maskParams.x > 0.5)
+            if (maskParams.x == 1.0)
             {
                 float2 axis = float2(maskParams.z, maskParams.w);
                 // We need to normalize the projection range so percent maps 0..1 across the rect.
@@ -325,6 +325,10 @@
             // Texture mode
             half2 unityUV = ToUnityUV(novaUV);
             fixed4 clipMaskColor = tex2D(_ClipMaskTex, unityUV);
+            if (maskParams.x == 2.0)
+            {
+                clipMaskColor.rgb = 1.0;
+            }
             // Clip mask
             color = ApplyColorTint(color, clipMaskColor);
             // Color Modifiers

@@ -20,7 +20,7 @@ namespace Nova.Internal.Rendering
         /// </summary>
         public Vector4 ClipRectInfo;
         /// <summary>
-        /// x -> procedural flag (1 = procedural, 0 = texture)
+        /// x -> mask mode (0 = texture RGB, 1 = procedural, 2 = texture alpha)
         /// y -> procedural percent (0..1)
         /// z -> tangent cos
         /// w -> tangent sin

@@ -452,6 +452,10 @@ namespace Nova.Internal.Rendering
                 float cosA = math.cos(rotRad);
                 float sinA = math.sin(rotRad);
                 renderData.ClipMaskParams = new Vector4(procFlag, procPercent, cosA, sinA);
+                if (!info.Procedural && info.IsAlpha)
+                {
+                    renderData.ClipMaskParams.x = 2.0f;
+                }
             }
             else
             {

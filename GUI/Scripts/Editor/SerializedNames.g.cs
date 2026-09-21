@@ -7381,6 +7381,7 @@ namespace Nova.Editor.Serialization
             public static string info = "info";
             
             public static string maskTexture = "maskTexture";
+            public static string isAlpha = "isAlpha";
         }
         
         public class ClipMaskInfo

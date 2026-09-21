@@ -12,6 +12,7 @@ namespace Nova.Internal
         public Color Color;
         public bool Clip;
         public bool HasMask;
+        public bool IsAlpha;
         public bool Procedural;
         public float ProceduralPercent;
         public float ProceduralRotation;
@@ -34,7 +35,7 @@ namespace Nova.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ClipMaskInfo other)
         {
-            return Color.Equals(other.Color) && Clip == other.Clip && Procedural == other.Procedural && ProceduralPercent == other.ProceduralPercent && ProceduralRotation == other.ProceduralRotation;
+            return Color.Equals(other.Color) && Clip == other.Clip && IsAlpha == other.IsAlpha && Procedural == other.Procedural && ProceduralPercent == other.ProceduralPercent && ProceduralRotation == other.ProceduralRotation;
         }
     }
 }

@@ -38,6 +38,8 @@ namespace Nova.Editor.GUIs
             NovaGUI.ToggleField(Labels.ClipMask.Clip, wrapper.ClipProp);
             SerializedProperty textureProp = serializedObject.FindProperty(Names.ClipMask.maskTexture);
             EditorGUILayout.ObjectField(textureProp, Labels.ClipMask.Mask);
+            SerializedProperty isAlphaProp = serializedObject.FindProperty(Names.ClipMask.isAlpha);
+            EditorGUILayout.PropertyField(isAlphaProp, Labels.ClipMask.IsAlpha);
 
             // Procedural clip mask options (stored on the ClipMask component)
             SerializedProperty proceduralProp = serializedObject.FindProperty("procedural");

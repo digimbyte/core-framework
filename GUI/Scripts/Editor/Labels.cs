@@ -378,6 +378,7 @@ namespace Nova.Editor.GUIs
             public static readonly GUIContent Tint = EditorGUIUtility.TrTextContent("Tint", "The tint color to apply to this block and its descendants.");
             public static readonly GUIContent Clip = EditorGUIUtility.TrTextContent("Clip", "Enables or disables clipping. Can be used to make the clip mask exclusively apply a tint.");
             public static readonly GUIContent Mask = EditorGUIUtility.TrTextContent("Mask", "The texture to use as a mask, if \"Clip\" is enabled.");
+            public static readonly GUIContent IsAlpha = EditorGUIUtility.TrTextContent("Is Alpha", "Use the mask texture's alpha channel instead of its RGB color.");
         }
 
         public static class SortGroup
