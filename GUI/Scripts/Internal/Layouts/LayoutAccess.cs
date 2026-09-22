@@ -578,6 +578,11 @@ namespace Nova
                     Length3.Calculated current = CalculatedSize;
                     Length3.Calculated updated = Length3.Calc(Size, SizeMinMax, relativeTo);
 
+                    if (!AspectRatio.IsLocked)
+                    {
+                        ApplySuggestedAspectRatio(ref updated, ref AspectRatio, relativeTo);
+                    }
+
                     CalculatedSize = new Length3.Calculated()
                     {
                         X = axes.x ? updated.X : current.X,
@@ -637,6 +642,36 @@ namespace Nova
                         size[axis] = constrainedAxis;
 
                         autosize[axis] = Internal.AutoSize.None;
+                    }
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                private void ApplySuggestedAspectRatio(ref Length3.Calculated calculated, ref AspectRatio aspectRatio, float3 relativeTo)
+                {
+                    float3 ratio = aspectRatio.Ratio;
+                    bool3 active = ratio > 0;
+                    int count = math.select(0, 1, active.x) + math.select(0, 1, active.y) + math.select(0, 1, active.z);
+                    if (count < 2) return;
+
+                    float scale = float.PositiveInfinity;
+                    float minScale = 0;
+                    float maxScale = float.PositiveInfinity;
+                    for (int axis = 0; axis < 3; ++axis)
+                    {
+                        if (!active[axis]) continue;
+                        scale = math.min(scale, calculated[axis].Value / ratio[axis]);
+                        minScale = math.max(minScale, SizeMinMax[axis].Min / ratio[axis]);
+                        maxScale = math.min(maxScale, SizeMinMax[axis].Max / ratio[axis]);
+                    }
+
+                    scale = maxScale < minScale ? maxScale : math.clamp(scale, minScale, maxScale);
+                    if (!Math.ValidAndFinite(scale) || scale <= 0) return;
+
+                    for (int axis = 0; axis < 3; ++axis)
+                    {
+                        if (!active[axis]) continue;
+                        float value = SizeMinMax[axis].Clamp(ratio[axis] * scale);
+                        calculated[axis] = new Length.Calculated(value, relativeTo[axis] == 0 ? 0 : value / relativeTo[axis]);
                     }
                 }
 

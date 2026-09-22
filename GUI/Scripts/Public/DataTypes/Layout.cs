@@ -106,9 +106,8 @@ namespace Nova
         [SerializeField]
         public bool OffsetBySize;
 
-        [SerializeField, HideInInspector]
-        [NotKeyable]
-        internal Vector3 AspectRatio;
+        [SerializeField]
+        public Vector3 AspectRatio;
 
         /// <summary>
         /// Lock the aspect ratio of <see cref="Size"/> by setting the "unlocked" axis

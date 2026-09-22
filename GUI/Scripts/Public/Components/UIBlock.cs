@@ -236,6 +236,8 @@ namespace Nova
             }
         }
 
+        public ref Vector3 AspectRatio => ref Layout.AspectRatio;
+
         /// <summary>
         /// When set to a value other than <see cref="Axis.None"/>, the aspect ratio of this UIBlock's <see cref="CalculatedSize">Calculated Size</see> will remain constant, even as <see cref="Size">Size</see> is modified.
         /// </summary>

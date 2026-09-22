@@ -36,8 +36,16 @@ namespace Nova.Editor.GUIs
                 expandWeightProperty.serializedObject.ApplyModifiedProperties();
             }
 
+            float labelWidth = NovaGUI.LabelWidth;
+            NovaGUI.Layout.BeginHorizontal();
+            NovaGUI.PrefixLabel(Labels.Size.ExpandWeight, expandWeightProperty);
+            NovaGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect z);
+            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(expandWeightProperty, Labels.Size.ExpandWeight);
+            expandWeightProperty.vector2IntValue = new Vector2Int(EditorGUI.IntField(x, Labels.X, expandWeightProperty.vector2IntValue.x), expandWeightProperty.vector2IntValue.y);
+            expandWeightProperty.vector2IntValue = new Vector2Int(expandWeightProperty.vector2IntValue.x, EditorGUI.IntField(y, Labels.Y, expandWeightProperty.vector2IntValue.y));
+            NovaGUI.Layout.EndHorizontal();
+            NovaGUI.LabelWidth = labelWidth;
             if (EditorGUI.EndChangeCheck())
             {
                 v = expandWeightProperty.vector2IntValue;
@@ -48,6 +56,25 @@ namespace Nova.Editor.GUIs
                     expandWeightProperty.serializedObject.ApplyModifiedProperties();
                 }
             }
+        }
+
+        private static void DrawAspectRatioField(SerializedProperty property, bool zField)
+        {
+            float labelWidth = NovaGUI.LabelWidth;
+            NovaGUI.Layout.BeginHorizontal();
+            NovaGUI.PrefixLabel(new GUIContent("Aspect Ratio"), property);
+            NovaGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
+            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            Vector3 value = property.vector3Value;
+            value.x = EditorGUI.FloatField(x, Labels.X, value.x);
+            value.y = EditorGUI.FloatField(y, Labels.Y, value.y);
+            if (zField)
+            {
+                value.z = EditorGUI.FloatField(z, Labels.Z, value.z);
+            }
+            property.vector3Value = value;
+            NovaGUI.Layout.EndHorizontal();
+            NovaGUI.LabelWidth = labelWidth;
         }
 
         private static bool ScreenSpaceControlsSize(UIBlock uiBlock)
@@ -118,6 +145,8 @@ namespace Nova.Editor.GUIs
                     {
                         DrawExpandWeightField(layout.ExpandWeightProp);
                     }
+
+                    DrawAspectRatioField(layout.AspectRatioProp, uiBlock is UIBlock3D);
 
                     ThreeD<bool> autosizeDisables = Util.Or(uiBlock.AutoSize == AutoSize.Expand, uiBlock.AutoSize == AutoSize.Shrink);
 
