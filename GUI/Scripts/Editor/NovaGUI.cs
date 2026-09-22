@@ -1466,11 +1466,13 @@ namespace Nova.Editor.GUIs
                     Layout.EndVertical();
                     Layout.EndHorizontal();
 
-                    LabelWidth = MiniLabelWidth - 10;
+                    // Use one shared width large enough for the longest corner label so
+                    // labels never overlap their value fields while both rows stay aligned.
+                    LabelWidth = Mathf.Max(MiniLabelWidth,
+                        EditorStyles.label.CalcSize(Labels.CornerRadiiBottomRight).x + MinSpaceBetweenFields);
                     EditorGUI.BeginChangeCheck();
                     LengthField(tl, Labels.CornerRadiiTopLeft, corners.TopLeft, cornersCalc.TopLeft, min, max, lengthTypeFieldWidth);
                     LengthField(tr, Labels.CornerRadiiTopRight, corners.TopRight, cornersCalc.TopRight, min, max, lengthTypeFieldWidth);
-                    LabelWidth = MiniLabelWidth;
                     LengthField(bl, Labels.CornerRadiiBottomLeft, corners.BottomLeft, cornersCalc.BottomLeft, min, max, lengthTypeFieldWidth);
                     LengthField(br, Labels.CornerRadiiBottomRight, corners.BottomRight, cornersCalc.BottomRight, min, max, lengthTypeFieldWidth);
                     if (EditorGUI.EndChangeCheck())
