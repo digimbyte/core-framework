@@ -16,6 +16,43 @@ namespace Core.Registry
     [CreateAssetMenu(fileName = "NewRegistry", menuName = "Core/Data/Registry")]
     public class Registry : ScriptableObject
     {
+        [SerializeField, LabelText("Runtime Access"), DisableInPlayMode]
+        [InfoBox("Read Only prevents runtime writes. Cache (Read/Write) allows session-only entries. Editor authoring remains writable.")]
+        private RegistryRuntimeAccess runtimeAccess = RegistryRuntimeAccess.ReadOnly;
+
+        public RegistryRuntimeAccess RuntimeAccess => runtimeAccess;
+        public bool CanWrite => !Application.isPlaying || runtimeAccess == RegistryRuntimeAccess.Cache;
+
+        [NonSerialized] private List<ItemEntry> runtimeEntries;
+        [NonSerialized] private int runtimeSession = -1;
+        private static int currentSession;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void BeginSession() => currentSession++;
+
+        private List<ItemEntry> Entries
+        {
+            get
+            {
+                if (!Application.isPlaying)
+                {
+                    if (runtimeEntries != null)
+                    {
+                        runtimeEntries = null;
+                        InvalidateCache();
+                    }
+                    return itemEntries;
+                }
+                if (runtimeEntries == null || runtimeSession != currentSession)
+                {
+                    runtimeEntries = itemEntries.ConvertAll(entry => entry?.Copy());
+                    runtimeSession = currentSession;
+                    InvalidateCache();
+                }
+                return runtimeEntries;
+            }
+        }
+
         [SerializeField]
         [LabelText("Asset Type")]
         [InfoBox("Type of assets this registry will store - CANNOT BE CHANGED after adding items")]
@@ -60,7 +97,7 @@ namespace Core.Registry
         private bool debugQueryResults = false;
 
         public string Description => description;
-        public int ItemCount => itemEntries.Count;
+        public int ItemCount => Entries.Count;
         public RegistryAssetType AssetType => assetType;
         public UnityEngine.Object DefaultAsset => defaultAsset;
         public bool EnableLogging => enableLogging;
@@ -81,7 +118,7 @@ namespace Core.Registry
             if (itemCache.TryGetValue(uid.ToLower(), out ItemEntry entry))
             {
                 LogQuery(uid, matched: true);
-                return entry;
+                return Application.isPlaying ? entry.Copy() : entry;
             }
 
             LogQuery(uid, matched: false);
@@ -169,7 +206,7 @@ namespace Core.Registry
         public List<GameObject> GetAllPrefabs()
         {
             List<GameObject> results = new List<GameObject>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.asset is GameObject go)
                     results.Add(go);
@@ -183,7 +220,7 @@ namespace Core.Registry
         public List<Texture> GetAllTextures()
         {
             List<Texture> results = new List<Texture>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.asset is Texture tex)
                     results.Add(tex);
@@ -197,7 +234,7 @@ namespace Core.Registry
         public List<Sprite> GetAllSprites()
         {
             List<Sprite> results = new List<Sprite>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.asset is Sprite s)
                     results.Add(s);
@@ -211,7 +248,7 @@ namespace Core.Registry
         public List<Material> GetAllMaterials()
         {
             List<Material> results = new List<Material>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.asset is Material mat)
                     results.Add(mat);
@@ -225,7 +262,7 @@ namespace Core.Registry
         public List<Mesh> GetAllMeshes()
         {
             List<Mesh> results = new List<Mesh>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.asset is Mesh mesh)
                     results.Add(mesh);
@@ -239,7 +276,7 @@ namespace Core.Registry
         public List<AudioClip> GetAllAudioClips()
         {
             List<AudioClip> results = new List<AudioClip>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.asset is AudioClip clip)
                     results.Add(clip);
@@ -253,10 +290,10 @@ namespace Core.Registry
         public List<ItemEntry> GetItemsByTag(string tag)
         {
             List<ItemEntry> results = new List<ItemEntry>();
-            foreach (var entry in itemEntries)
+            foreach (var entry in Entries)
             {
                 if (entry.tags != null && entry.tags.Contains(tag))
-                    results.Add(entry);
+                    results.Add(Application.isPlaying ? entry.Copy() : entry);
             }
             return results;
         }
@@ -274,6 +311,7 @@ namespace Core.Registry
         /// </summary>
         public void AddItem(ItemEntry entry)
         {
+            if (!CanWrite) return;
             if (entry == null || string.IsNullOrEmpty(entry.uid))
             {
                 LogWarning("[ItemRegistry] Cannot add item entry: entry is null or has empty UID");
@@ -294,7 +332,7 @@ namespace Core.Registry
                 return;
             }
 
-            itemEntries.Add(entry);
+            Entries.Add(Application.isPlaying ? entry.Copy() : entry);
             isCacheValid = false;
         }
 
@@ -303,10 +341,19 @@ namespace Core.Registry
         /// </summary>
         public bool RemoveItem(string uid)
         {
+            if (!CanWrite || string.IsNullOrEmpty(uid)) return false;
             ItemEntry entry = GetItemByUID(uid.ToLower());
             if (entry != null)
             {
-                itemEntries.Remove(entry);
+                if (Application.isPlaying)
+                {
+                    int index = Entries.FindIndex(item => item != null && item.uid.ToLower() == uid.ToLower());
+                    if (index >= 0) Entries.RemoveAt(index);
+                }
+                else
+                {
+                    itemEntries.Remove(entry);
+                }
                 isCacheValid = false;
                 return true;
             }
@@ -318,7 +365,7 @@ namespace Core.Registry
         /// </summary>
         public List<ItemEntry> GetAllItems()
         {
-            return new List<ItemEntry>(itemEntries);
+            return Application.isPlaying ? Entries.ConvertAll(entry => entry?.Copy()) : new List<ItemEntry>(itemEntries);
         }
 
         /// <summary>
@@ -326,12 +373,13 @@ namespace Core.Registry
         /// </summary>
         private void BuildCache()
         {
+            var entries = Entries;
             if (isCacheValid && itemCache != null)
                 return;
 
             itemCache = new Dictionary<string, ItemEntry>();
 
-            foreach (var entry in itemEntries)
+            foreach (var entry in entries)
             {
                 if (!string.IsNullOrEmpty(entry.uid))
                 {
@@ -584,7 +632,7 @@ namespace Core.Registry
         /// <summary>
         /// Validate that an asset matches the registry's type.
         /// </summary>
-        private bool ValidateAssetType(UnityEngine.Object asset)
+        internal bool ValidateAssetType(UnityEngine.Object asset)
         {
             if (asset == null) return false;
 
@@ -598,6 +646,7 @@ namespace Core.Registry
                     if (!(asset is Texture || asset is Texture2D))
                         return false;
 #if UNITY_EDITOR
+                    if (Application.isPlaying) return true;
                     return MatchesRegistryAssetPath(UnityEditor.AssetDatabase.GetAssetPath(asset), RegistryAssetType.Texture);
 #else
                     return true;
@@ -678,6 +727,18 @@ namespace Core.Registry
     [MovedFrom(true, "Core.Registry", null, "TileEntry")]
     public class ItemEntry
     {
+        internal ItemEntry Copy()
+        {
+            var copy = new ItemEntry { uid = uid, asset = asset, description = description,
+                tags = tags == null ? null : new List<string>(tags), metadata = null };
+            if (metadata != null)
+            {
+                copy.metadata = new SerializableDictionary<string, string>();
+                foreach (var pair in metadata) copy.metadata.Add(pair.Key, pair.Value);
+            }
+            return copy;
+        }
+
         [LabelText("UID")]
         [ValidateInput("@!string.IsNullOrEmpty(uid)", "UID cannot be empty")]
         public string uid = "item_uid";
@@ -724,13 +785,14 @@ namespace Core.Registry
 
 
 
-    /// <summary>
-    /// Serializable dictionary for custom metadata storage.
-    /// </summary>
-    /// <summary>
-    /// Types of assets that a registry can be locked to.
-    /// Each registry can ONLY store one type.
-    /// </summary>
+    /// <summary>Runtime write policy. Editor authoring is always writable outside Play Mode.</summary>
+    public enum RegistryRuntimeAccess
+    {
+        ReadOnly = 0,
+        [LabelText("Cache (Read/Write)")] Cache = 1
+    }
+
+    /// <summary>Types of assets that a registry can be locked to.</summary>
     public enum RegistryAssetType
     {
         Prefab,

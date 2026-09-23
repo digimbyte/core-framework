@@ -10,7 +10,7 @@ namespace Core.Registry
     /// Provides fast lookup by UID across multiple Registries.
     /// Implements caching and pooling for performance.
     /// </summary>
-    public class RegistryManager : MonoBehaviour
+    public partial class RegistryManager : MonoBehaviour
     {
         [SerializeField]
         [LabelText("Named Registry Buckets")]
@@ -128,6 +128,8 @@ namespace Core.Registry
             // Handle duplicate registration
             if (loadedRegistries.ContainsKey(regName))
             {
+                if (!loadedRegistries[regName].CanWrite && loadedRegistries[regName] != Registry)
+                    return;
                 if (loadedRegistries[regName] == Registry)
                 {
                     Debug.LogWarning($"[RegistryManager] Registry '{regName}' is already registered (same instance)");
@@ -179,6 +181,8 @@ namespace Core.Registry
 
             loadedRegistries.Remove(name);
             registryLoadOrder.Remove(name);
+            foreach (var key in overrideItemCache.Keys.Concat(pendingTextures.Keys).Where(key => key.StartsWith(name + "/", System.StringComparison.Ordinal)).Distinct().ToList())
+                RemoveCachedOverride(key);
 
             // Clear cache entries for this Registry
             var itemsToRemove = globalItemCache
@@ -188,6 +192,7 @@ namespace Core.Registry
 
             foreach (var uid in itemsToRemove)
             {
+                entryToCompositeKey.Remove(globalItemCache[uid]);
                 globalItemCache.Remove(uid);
                 itemToRegistryMap.Remove(uid);
             }
@@ -211,7 +216,9 @@ namespace Core.Registry
                 {
                 var key = MakeCompositeKey(regName, path);
                 if (overrideItemCache.TryGetValue(key, out var ovr))
-                    return ovr;
+                    return Application.isPlaying ? ovr.Copy() : ovr;
+                if (Application.isPlaying)
+                    return loadedRegistries.TryGetValue(regName, out var runtimeRegistry) ? runtimeRegistry.GetItemByUID(path) : null;
                 if (globalItemCache.TryGetValue(key, out var e))
                     return e;
 
@@ -562,7 +569,7 @@ namespace Core.Registry
                 {
                     var key = MakeCompositeKey(regName, path);
                     if (overrideItemCache.ContainsKey(key)) return true;
-                    return globalItemCache.ContainsKey(key) || (loadedRegistries.TryGetValue(regName, out var reg) && reg.HasItem(path));
+                    return (!Application.isPlaying && globalItemCache.ContainsKey(key)) || (loadedRegistries.TryGetValue(regName, out var reg) && reg.HasItem(path));
                 }
                 return false;
             }
@@ -589,9 +596,19 @@ namespace Core.Registry
         /// </summary>
         public void AddOverride(string compositeKey, ItemEntry entry)
         {
-            if (string.IsNullOrWhiteSpace(compositeKey) || entry == null) return;
-            if (!TryParseCompositeKey(compositeKey.ToLower(), out var r, out var p)) return;
-            overrideItemCache[MakeCompositeKey(r, p)] = entry;
+            TryAddOverride(compositeKey, entry);
+        }
+
+        public bool TryAddOverride(string compositeKey, ItemEntry entry)
+        {
+            if (entry == null || !TryParseCompositeKey(compositeKey, out var r, out var p)) return false;
+            if (!loadedRegistries.TryGetValue(r, out var registry) || !registry.CanWrite || !registry.ValidateAssetType(entry.asset)) return false;
+            var key = MakeCompositeKey(r, p);
+            ReleaseOwnedTexture(key, entry.asset);
+            var stored = entry.Copy();
+            stored.uid = p;
+            overrideItemCache[key] = stored;
+            return true;
         }
 
         public void AddOverrides(Dictionary<string, ItemEntry> map)
@@ -607,10 +624,15 @@ namespace Core.Registry
         {
             if (string.IsNullOrWhiteSpace(compositeKey)) return false;
             if (!TryParseCompositeKey(compositeKey, out var r, out var p)) return false;
-            return overrideItemCache.Remove(MakeCompositeKey(r, p));
+            if (!loadedRegistries.TryGetValue(r, out var registry) || !registry.CanWrite) return false;
+            return RemoveCachedOverride(MakeCompositeKey(r, p));
         }
 
-        public void ClearOverrides() => overrideItemCache.Clear();
+        public void ClearOverrides()
+        {
+            foreach (var key in overrideItemCache.Keys.Concat(pendingTextures.Keys).Distinct().ToList())
+                RemoveOverride(key);
+        }
 
         /// <summary>
         /// Get the total number of items across all Registries.
@@ -626,7 +648,20 @@ namespace Core.Registry
         public string GetCompositeKeyForItem(ItemEntry entry)
         {
             if (entry == null) return null;
-            return entryToCompositeKey.TryGetValue(entry, out var key) ? key : null;
+            if (entryToCompositeKey.TryGetValue(entry, out var key)) return key;
+            if (!Application.isPlaying) return null;
+
+            // Runtime reads return snapshots, so resolve their identity without exposing stored entries.
+            string match = null;
+            foreach (var pair in loadedRegistries)
+            {
+                var candidateKey = MakeCompositeKey(pair.Key, entry.uid);
+                var candidate = GetItemByUID(candidateKey);
+                if (candidate == null || candidate.asset != entry.asset) continue;
+                if (match != null) return null;
+                match = candidateKey;
+            }
+            return match;
         }
 
         /// <summary>
@@ -645,6 +680,10 @@ namespace Core.Registry
                 Debug.LogError($"[RegistryManager] Cannot add null registry to bucket '{bucketName}'");
                 return;
             }
+
+            var normalizedName = NormalizeRegistryName(bucketName);
+            if (loadedRegistries.TryGetValue(normalizedName, out var existing) && existing != registry && !existing.CanWrite)
+                return;
 
             if (namedBuckets == null)
                 namedBuckets = new SerializableDictionary<string, Registry>();
@@ -666,7 +705,7 @@ namespace Core.Registry
             namedBuckets.Remove(bucketName);
 
             if (registry != null)
-                UnregisterRegistry(registry.name);
+                UnregisterRegistry(bucketName);
 
             Debug.Log($"[RegistryManager] Removed registry from bucket '{bucketName}'");
             return true;
