@@ -574,20 +574,12 @@ namespace Nova
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void CalculateSize(float3 relativeTo, bool3 axes)
                 {
-                    ApplyConstraintsToSize(ref Size, relativeTo);
+                    ApplyConstraintsToSize(ref Size, relativeTo, axes);
                     Length3.Calculated current = CalculatedSize;
                     Length3.Calculated updated = Length3.Calc(Size, SizeMinMax, relativeTo);
 
                     if (!AspectRatio.IsLocked)
                     {
-                        // Partial layout passes retain the allocation on untouched axes.
-                        // Fit against that allocation, not a fresh full-parent Expand size.
-                        updated = new Length3.Calculated()
-                        {
-                            X = axes.x ? updated.X : current.X,
-                            Y = axes.y ? updated.Y : current.Y,
-                            Z = axes.z ? updated.Z : current.Z,
-                        };
                         ApplySuggestedAspectRatio(ref updated, ref AspectRatio, relativeTo, ref axes);
                     }
 
@@ -602,7 +594,7 @@ namespace Nova
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                private void ApplyConstraintsToSize(ref Length3 size, float3 relativeTo)
+                private void ApplyConstraintsToSize(ref Length3 size, float3 relativeTo, bool3 axes)
                 {
                     ref AutoSize3 autosize = ref AutoSize;
                     ref AspectRatio aspectRatio = ref AspectRatio;
@@ -614,8 +606,18 @@ namespace Nova
                     else
                     {
 
-                        size.IsRelative = size.IsRelative | autosize.Expand;
-                        size.Raw = math.select(size.Raw, Math.float3_One - CalculatedMargin.RelativeSize, autosize.Expand);
+                        bool3 expand = autosize.Expand;
+                        bool3 ratioAxes = aspectRatio.Ratio > 0;
+                        bool relativeRatio = !aspectRatio.IsLocked &&
+                            ((ratioAxes.x && ratioAxes.y) || (ratioAxes.x && ratioAxes.z) || (ratioAxes.y && ratioAxes.z));
+                        if (relativeRatio)
+                        {
+                            // Keep untouched ratio axes' raw allocations. CalculatedSize is
+                            // the fitted result, so using it as a budget would prevent regrowth.
+                            expand &= axes | !ratioAxes;
+                        }
+                        size.IsRelative = size.IsRelative | expand;
+                        size.Raw = math.select(size.Raw, Math.float3_One - CalculatedMargin.RelativeSize, expand);
 
                         LockAspectRatio(ref size, ref aspectRatio, ref autosize, relativeTo);
 
