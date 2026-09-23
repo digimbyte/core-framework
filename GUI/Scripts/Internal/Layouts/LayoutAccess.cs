@@ -580,6 +580,14 @@ namespace Nova
 
                     if (!AspectRatio.IsLocked)
                     {
+                        // Partial layout passes retain the allocation on untouched axes.
+                        // Fit against that allocation, not a fresh full-parent Expand size.
+                        updated = new Length3.Calculated()
+                        {
+                            X = axes.x ? updated.X : current.X,
+                            Y = axes.y ? updated.Y : current.Y,
+                            Z = axes.z ? updated.Z : current.Z,
+                        };
                         ApplySuggestedAspectRatio(ref updated, ref AspectRatio, relativeTo, ref axes);
                     }
 
