@@ -580,7 +580,7 @@ namespace Nova
 
                     if (!AspectRatio.IsLocked)
                     {
-                        ApplySuggestedAspectRatio(ref updated, ref AspectRatio, relativeTo);
+                        ApplySuggestedAspectRatio(ref updated, ref AspectRatio, relativeTo, ref axes);
                     }
 
                     CalculatedSize = new Length3.Calculated()
@@ -646,12 +646,16 @@ namespace Nova
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                private void ApplySuggestedAspectRatio(ref Length3.Calculated calculated, ref AspectRatio aspectRatio, float3 relativeTo)
+                private void ApplySuggestedAspectRatio(ref Length3.Calculated calculated, ref AspectRatio aspectRatio, float3 relativeTo, ref bool3 axes)
                 {
                     float3 ratio = aspectRatio.Ratio;
                     bool3 active = ratio > 0;
                     int count = math.select(0, 1, active.x) + math.select(0, 1, active.y) + math.select(0, 1, active.z);
-                    if (count < 2) return;
+                    if (count < 2 || !math.any(active & axes)) return;
+
+                    // A relative ratio couples these dimensions even during a single-axis
+                    // expansion or contraction pass. Commit the resolved size together.
+                    axes |= active;
 
                     float scale = float.PositiveInfinity;
                     float minScale = 0;
@@ -665,7 +669,7 @@ namespace Nova
                     }
 
                     scale = maxScale < minScale ? maxScale : math.clamp(scale, minScale, maxScale);
-                    if (!Math.ValidAndFinite(scale) || scale <= 0) return;
+                    if (!Math.ValidAndFinite(scale) || scale < 0) return;
 
                     for (int axis = 0; axis < 3; ++axis)
                     {

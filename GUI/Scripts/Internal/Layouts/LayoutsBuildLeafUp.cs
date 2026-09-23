@@ -617,6 +617,7 @@ namespace Nova.Internal.Layouts
                 float3 shrinkableSize = directContentSize + paddingSize;
 
                 float3 previousSize = parentLayout.Size.Raw;
+                float3 previousCalculatedSize = parentLayout.CalculatedSize.Value;
                 parentLayout.Size.IsRelative = parentLayout.Size.IsRelative & !parentShrink;
                 parentLayout.Size.Raw = math.select(previousSize, shrinkableSize, parentShrink);
 
@@ -626,7 +627,8 @@ namespace Nova.Internal.Layouts
                 parentLayout.CalculatePadding();
 
                 // return "parent changed"
-                return math.any(parentLayout.Size.Raw != previousSize);
+                return math.any(parentLayout.Size.Raw != previousSize) ||
+                       math.any(parentLayout.CalculatedSize.Value != previousCalculatedSize);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
