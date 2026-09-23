@@ -5,7 +5,7 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
         [HDR]_FaceColor ("Face Color", Color) = (1, 1, 1, 1)
         _FaceDilate ("Face Weight", Range(-0.25, 0.25)) = 0
 
-        [HDR]_OutlineColor ("Border Color", Color) = (0, 0, 0, 1)
+        _OutlineColor ("Border Color", Color) = (0, 0, 0, 1)
         _OutlineWidth ("Outward Border Thickness", Range(0, 1)) = 0
         [HideInInspector] _OutlineSoftness ("TMP Padding", Float) = 0
 
