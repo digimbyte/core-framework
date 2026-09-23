@@ -4840,6 +4840,7 @@
 
 struct v2f
 {
+    float4 CornerRadii : COLOR3; // signed normalized radii; negative means an inward cutout
 #if NOVA_BORDER
     float3 BorderSegments : COLOR2; // normalized half size, disabled segment mask
 #endif

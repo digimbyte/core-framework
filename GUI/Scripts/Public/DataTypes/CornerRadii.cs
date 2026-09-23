@@ -7,6 +7,18 @@ using UnityEngine;
 
 namespace Nova
 {
+    /// <summary>UIBlock2D corners which curve inward instead of rounding outward.</summary>
+    [Flags]
+    public enum CornerInversion
+    {
+        None = 0,
+        TopLeft = 1,
+        TopRight = 2,
+        BottomRight = 4,
+        BottomLeft = 8,
+        All = TopLeft | TopRight | BottomRight | BottomLeft,
+    }
+
     /// <summary>
     /// Per-corner <see cref="Length"/> radii (TL, TR, BR, BL), same authoring pattern as <see cref="LengthBounds"/> / <see cref="LengthRect"/>:
     /// set <see cref="Value"/> or <see cref="Percent"/> to apply one value to all corners; assign individual corners for overrides.

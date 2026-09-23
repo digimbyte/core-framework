@@ -91,7 +91,7 @@ namespace Nova.Internal.Rendering
             {
                 toRet.Flags |= QuadDescriptorFlags.BodyRenders;
 
-                if (IsGuaranteedOpaque(ref data, hasImage, ref textureDescriptor))
+                if (data.InvertedCorners == CornerInversion.None && IsGuaranteedOpaque(ref data, hasImage, ref textureDescriptor))
                 {
                     toRet.Flags |= QuadDescriptorFlags.BodyOccludes;
                 }
@@ -110,7 +110,8 @@ namespace Nova.Internal.Rendering
 
             toRet.Flags |= QuadDescriptorFlags.HasBorder;
 
-            if (data.Border.DisabledSegments == 0 && data.Border.Color.IsOpaque() && !data.RadialFill.EnabledAndNot360)
+            // Convex coverage bounds must not cull geometry visible through an inward cutout.
+            if (data.InvertedCorners == CornerInversion.None && data.Border.DisabledSegments == 0 && data.Border.Color.IsOpaque() && !data.RadialFill.EnabledAndNot360)
             {
                 toRet.Flags |= QuadDescriptorFlags.BorderOccludes;
             }

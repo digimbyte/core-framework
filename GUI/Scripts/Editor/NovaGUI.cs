@@ -1425,10 +1425,12 @@ namespace Nova.Editor.GUIs
             CornerRadii.Calculated cornersCalc,
             float min,
             float max,
-            bool showCorners)
+            bool showCorners,
+            SerializedProperty invertedCorners = null)
         {
             MinMax minMax = new MinMax(min, max);
             bool showMixedMaster = useIndividualCornerRadiiProp.boolValue || CornerRadiiSerializedAsymmetrical(corners);
+            int previousInversions = invertedCorners == null ? 0 : invertedCorners.intValue;
 
             Layout.BeginVertical();
             Rect fieldRect = Layout.GetControlRect();
@@ -1437,7 +1439,7 @@ namespace Nova.Editor.GUIs
             EditorGUI.BeginChangeCheck();
             GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, master.SerializedProperty);
             Length masterLength = new Length(master.Raw, master.Type);
-            Length all = LengthFieldAlternate(fieldRect, propertyLabel, masterLength, minMax, masterCalc, showMixedMaster, showClampIndicators: false);
+            Length all = LengthFieldAlternate(fieldRect, propertyLabel, masterLength, minMax, masterCalc, showMixedMaster, showClampIndicators: false, invertedCorners: invertedCorners);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
             {
@@ -1471,10 +1473,10 @@ namespace Nova.Editor.GUIs
                     LabelWidth = Mathf.Max(MiniLabelWidth,
                         EditorStyles.label.CalcSize(Labels.CornerRadiiBottomRight).x + MinSpaceBetweenFields);
                     EditorGUI.BeginChangeCheck();
-                    LengthField(tl, Labels.CornerRadiiTopLeft, corners.TopLeft, cornersCalc.TopLeft, min, max, lengthTypeFieldWidth);
-                    LengthField(tr, Labels.CornerRadiiTopRight, corners.TopRight, cornersCalc.TopRight, min, max, lengthTypeFieldWidth);
-                    LengthField(bl, Labels.CornerRadiiBottomLeft, corners.BottomLeft, cornersCalc.BottomLeft, min, max, lengthTypeFieldWidth);
-                    LengthField(br, Labels.CornerRadiiBottomRight, corners.BottomRight, cornersCalc.BottomRight, min, max, lengthTypeFieldWidth);
+                    LengthField(tl, Labels.CornerRadiiTopLeft, corners.TopLeft, cornersCalc.TopLeft, min, max, lengthTypeFieldWidth, invertedCorners, 1);
+                    LengthField(tr, Labels.CornerRadiiTopRight, corners.TopRight, cornersCalc.TopRight, min, max, lengthTypeFieldWidth, invertedCorners, 2);
+                    LengthField(bl, Labels.CornerRadiiBottomLeft, corners.BottomLeft, cornersCalc.BottomLeft, min, max, lengthTypeFieldWidth, invertedCorners, 8);
+                    LengthField(br, Labels.CornerRadiiBottomRight, corners.BottomRight, cornersCalc.BottomRight, min, max, lengthTypeFieldWidth, invertedCorners, 4);
                     if (EditorGUI.EndChangeCheck())
                     {
                         useIndividualCornerRadiiProp.boolValue = !CornersSerializedUniformAndMatchMaster(corners, master);
@@ -1488,6 +1490,9 @@ namespace Nova.Editor.GUIs
             }
 
             Layout.EndVertical();
+            // Notify the inspector after the radius-only change checks have finished.
+            if (invertedCorners != null && invertedCorners.intValue != previousInversions)
+                GUI.changed = true;
             return showCorners;
         }
 
@@ -1612,7 +1617,7 @@ namespace Nova.Editor.GUIs
             Layout.EndHorizontal();
         }
 
-        public static Length LengthFieldAlternate(Rect position, GUIContent label, Length length, MinMax minMax, Length.Calculated calc, bool showMixedValue, bool showClampIndicators)
+        public static Length LengthFieldAlternate(Rect position, GUIContent label, Length length, MinMax minMax, Length.Calculated calc, bool showMixedValue, bool showClampIndicators, SerializedProperty invertedCorners = null)
         {
             bool wasShowingMixed = EditorGUI.showMixedValue;
             EditorGUI.showMixedValue = showMixedValue;
@@ -1629,8 +1634,10 @@ namespace Nova.Editor.GUIs
 
             float typeFieldWidth = ViewWidth < CompactInspectorWidth ? MinFloatFieldWidth : ToggleToolbarFieldWidth;
 
+            float inversionWidth = invertedCorners == null ? 0 : 16;
+
             Rect floatField = position;
-            floatField.width = Mathf.Max(MinFloatFieldWidth, floatField.width - typeFieldWidth) - MinSpaceBetweenFields;
+            floatField.width = Mathf.Max(MinFloatFieldWidth, floatField.width - typeFieldWidth - inversionWidth) - MinSpaceBetweenFields;
             EditorGUI.BeginChangeCheck();
             float raw = length.Raw;
             float fieldValue = float.IsNaN(raw) ? 0 : length.Type == LengthType.Value ? raw : raw * 100;
@@ -1641,9 +1648,11 @@ namespace Nova.Editor.GUIs
             EditorGUI.BeginChangeCheck();
             Rect lengthTypeField = floatField;
             lengthTypeField.width = typeFieldWidth;
-            lengthTypeField.x += floatField.width + MinSpaceBetweenFields;
+            lengthTypeField.x += floatField.width + MinSpaceBetweenFields + inversionWidth;
             LengthType newType = LengthTypeField(lengthTypeField, length.Type);
             bool typeChanged = EditorGUI.EndChangeCheck();
+
+            DrawCornerInversion(lengthTypeField, invertedCorners, 15);
 
             EditorGUI.showMixedValue = wasShowingMixed;
 
@@ -1666,7 +1675,7 @@ namespace Nova.Editor.GUIs
             return length;
         }
 
-        public static void LengthField(Rect position, GUIContent label, _Length length, Length.Calculated calculated, float min = float.NegativeInfinity, float max = float.PositiveInfinity, float typeFieldWidth = ToggleToolbarFieldWidth)
+        public static void LengthField(Rect position, GUIContent label, _Length length, Length.Calculated calculated, float min = float.NegativeInfinity, float max = float.PositiveInfinity, float typeFieldWidth = ToggleToolbarFieldWidth, SerializedProperty invertedCorners = null, int cornerMask = 15)
         {
             EditorGUI.BeginDisabledGroup(SwapLengths);
             bool clampedBoth = min == max;
@@ -1680,8 +1689,9 @@ namespace Nova.Editor.GUIs
                                        EditorStyles.numberField : EditorStyles.numberField;
 
             GUIContent propertyLabel = EditorGUI.BeginProperty(position, label, length.SerializedProperty);
+            float inversionWidth = invertedCorners == null ? 0 : 16;
             Rect floatField = position;
-            floatField.width = Mathf.Max(MinFloatFieldWidth, floatField.width - typeFieldWidth) - MinSpaceBetweenFields;
+            floatField.width = Mathf.Max(MinFloatFieldWidth, floatField.width - typeFieldWidth - inversionWidth) - MinSpaceBetweenFields;
             EditorGUI.BeginChangeCheck();
             float raw = length.Raw;
 
@@ -1705,13 +1715,15 @@ namespace Nova.Editor.GUIs
             EditorGUI.BeginChangeCheck();
             Rect lengthTypeField = floatField;
             lengthTypeField.width = typeFieldWidth;
-            lengthTypeField.x += floatField.width + MinSpaceBetweenFields;
+            lengthTypeField.x += floatField.width + MinSpaceBetweenFields + inversionWidth;
             
             // yuck
             LengthType newType = LengthTypeField(lengthTypeField, !SwapLengths ? length.TypeProp.hasMultipleDifferentValues ? (LengthType)(-1) : length.Type : (length.Type == LengthType.Value ? LengthType.Percent : LengthType.Value));
             
             bool typeChanged = EditorGUI.EndChangeCheck();
             EditorGUI.EndProperty();
+
+            DrawCornerInversion(lengthTypeField, invertedCorners, cornerMask);
 
             if (typeChanged)
             {
@@ -1724,6 +1736,28 @@ namespace Nova.Editor.GUIs
             }
 
             EditorGUI.EndDisabledGroup();
+        }
+
+        private static void DrawCornerInversion(Rect typeField, SerializedProperty invertedCorners, int mask)
+        {
+            if (invertedCorners == null) return;
+
+            Rect toggle = new Rect(typeField.x - 16, typeField.y, 16, typeField.height);
+            bool changed = GUI.changed;
+            bool mixed = EditorGUI.showMixedValue;
+            int current = invertedCorners.intValue;
+            EditorGUI.BeginProperty(toggle, GUIContent.none, invertedCorners);
+            EditorGUI.showMixedValue = invertedCorners.hasMultipleDifferentValues ||
+                ((current & mask) != 0 && (current & mask) != mask);
+            EditorGUI.BeginChangeCheck();
+            bool inverted = GUI.Toggle(toggle, (current & mask) == mask,
+                new GUIContent("I", "Invert corner: hollow inward using this radius."), EditorStyles.miniButton);
+            if (EditorGUI.EndChangeCheck())
+                invertedCorners.intValue = inverted ? current | mask : current & ~mask;
+            EditorGUI.EndProperty();
+            EditorGUI.showMixedValue = mixed;
+            // Bias is independent of radius: toggling it must not copy the master radius over overrides.
+            GUI.changed = changed;
         }
 
         public static void SetLengthType(_Length length, LengthType type)

@@ -196,6 +196,12 @@ namespace Nova
             get => ref RenderingDataStore.Instance.Access(this).CornerRadii;
         }
 
+        /// <summary>Corners hollowed inward using their existing corner radius.</summary>
+        public ref CornerInversion InvertedCorners
+        {
+            get => ref RenderingDataStore.Instance.Access(this).InvertedCorners;
+        }
+
         /// <summary>
         /// Configure how to store (and attempt to batch) the attached image's (i.e. <see cref="Sprite">Sprite</see>, <see cref="Texture">Texture</see>, or <see cref="RenderTexture">RenderTexture</see>) underlying texture.
         /// </summary>

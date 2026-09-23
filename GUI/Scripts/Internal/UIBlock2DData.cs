@@ -24,6 +24,9 @@ namespace Nova
         public bool UseIndividualCornerRadii;
 
         [SerializeField]
+        public CornerInversion InvertedCorners;
+
+        [SerializeField]
         public RadialFill RadialFill;
         [SerializeField]
         public RadialGradient Gradient;

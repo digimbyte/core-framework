@@ -80,7 +80,8 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     float2 nPos = blockPos * nFactor;
     SetNPos(o, nPos);
 
-    half rSel = NovaPickCornerRadius(blockPos.xy, (half4)shaderData.CornerRadii);
+    o.CornerRadii = shaderData.CornerRadii * nFactor;
+    half rSel = NovaPickCornerRadius(blockPos.xy, (half4)abs(shaderData.CornerRadii));
     float nCornerRadius = (float)rSel * nFactor;
     SetNCornerRadius(o, nCornerRadius);
     float2 nCornerOrigin = nHalfSize - nCornerRadius;
@@ -149,7 +150,7 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
         float2 nShadowSpacePos = nPos - nShadowOffset;
         SetNShadowSpacePos(o, nShadowSpacePos);
 
-        half maxCorner = NovaMaxCornerRadius((half4)shaderData.CornerRadii);
+        half maxCorner = NovaMaxCornerRadius((half4)abs(shaderData.CornerRadii));
         float shadowRadius = max(shaderData.ShadowBlur, maxCorner - shaderData.ShadowWidth);
         float nShadowRadius = shadowRadius * nFactor;
         SetNShadowRadius(o, nShadowRadius);
@@ -189,7 +190,8 @@ float NovaBorderSegmentEnabled(v2f i)
 #if defined(NOVA_INNER_BORDER) || defined(NOVA_CENTER_BORDER)
     inwardWidth = GetBorderNWidth(i);
 #endif
-    float extent = max(GetNCornerRadius(i), inwardWidth);
+    float radius = NovaPickCornerRadius(p, i.CornerRadii);
+    float extent = max(radius < 0 ? -radius : GetNCornerRadius(i), inwardWidth);
     float2 cornerStart = max(halfSize - extent, 0);
     bool right = p.x >= 0;
     bool top = p.y >= 0;
@@ -205,6 +207,56 @@ float NovaBorderSegmentEnabled(v2f i)
     return 1;
 #endif
 }
+
+#if NOVA_BORDER
+// Distance to a finite quarter-circle includes its endpoints. Its stroke can
+// therefore cross a quadrant boundary without extending the circle itself.
+float NovaNeighbourCornerCoverage(float2 p, float2 halfSize, float radius,
+    float2 cornerSign, float bit, float disabledSegments, float width, float softenInverse)
+{
+    if (radius == 0)
+        return 0;
+
+    bool2 positive = p >= 0;
+    if (all(positive == (cornerSign > 0)))
+        return 0; // The existing border calculation owns this quadrant.
+
+    if (fmod(floor((disabledSegments + 0.5) / bit), 2) > 0.5)
+        return 0;
+
+    float r = abs(radius);
+    float2 localPos = p * cornerSign;
+    float2 fromCenter = radius < 0 ? halfSize - localPos : localPos - (halfSize - r);
+    float2 direction;
+    if (all(fromCenter <= 0))
+        direction = fromCenter.x > fromCenter.y ? float2(1, 0) : float2(0, 1);
+    else
+        direction = normalize(max(fromCenter, 0));
+
+    float distanceToArc = length(fromCenter - r * direction);
+    return 1 - saturate((distanceToArc - width) * softenInverse);
+}
+
+float NovaNeighbourBorderCoverage(v2f i, float softenInverse, float distanceOutsideBounds)
+{
+    float2 p = GetNPos(i);
+    float2 halfSize = i.BorderSegments.xy;
+    float mask = i.BorderSegments.z;
+    float width = GetBorderNWidth(i);
+    if (width <= 0) return 0;
+    // Match the existing inner/outer edge antialiasing on either side of the body.
+    if (distanceOutsideBounds < 0)
+        width -= 1.0 / softenInverse;
+    float coverage = NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.x,
+        float2(-1, 1), 1, mask, width, softenInverse);
+    coverage = max(coverage, NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.y,
+        float2(1, 1), 4, mask, width, softenInverse));
+    coverage = max(coverage, NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.z,
+        float2(1, -1), 128, mask, width, softenInverse));
+    return max(coverage, NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.w,
+        float2(-1, -1), 32, mask, width, softenInverse));
+}
+#endif
 
 fixed4 NovaFrag(v2f i) : SV_Target
 {
@@ -235,6 +287,16 @@ fixed4 NovaFrag(v2f i) : SV_Target
 
     half2 clampedCornerSpace;
     half distanceOutsideBounds = DistanceFromCircleEdge(GetNPos(i), GetNCornerOrigin(i), GetNCornerRadius(i), clampedCornerSpace);
+    // Select in the fragment, so a quad can span both inward and outward corners.
+    float cornerRadius = NovaPickCornerRadius(GetNPos(i), i.CornerRadii);
+    if (cornerRadius < 0)
+    {
+        float2 halfSize = GetNCornerOrigin(i) + GetNCornerRadius(i);
+        float2 cornerSpace = abs(GetNPos(i)) - halfSize;
+        // Rectangle intersected with the outside of a circle centered on its corner.
+        distanceOutsideBounds = max(max(cornerSpace.x, cornerSpace.y),
+            -cornerRadius - length(cornerSpace));
+    }
     half softenWidth = GetSoftenWidth(GetNPos(i));
     half softenInverse = 1.0 / softenWidth;
     half clipWeight = GetClipWeight10(distanceOutsideBounds, softenInverse);
@@ -255,7 +317,9 @@ fixed4 NovaFrag(v2f i) : SV_Target
     #endif
 
     #if NOVA_BORDER
-    if (NovaBorderSegmentEnabled(i) > 0.5)
+        float segmentEnabled = NovaBorderSegmentEnabled(i);
+        float neighbourCoverage = NovaNeighbourBorderCoverage(i, softenInverse, distanceOutsideBounds);
+    if (segmentEnabled > 0.5 || neighbourCoverage > 0)
     {
         // Need to correct the weight for when the border is very thin or has zero width
         // Use 90% alpha clip for border mask
@@ -273,9 +337,12 @@ fixed4 NovaFrag(v2f i) : SV_Target
         half2 borderWeights = GetClipWeight10(half2(distanceOutsideBorder, distanceOutsideBounds.x), softenInverse.xx);
 
         // Transition to border color
-        color = lerp(borderColor, color, borderWeights.y);
+        float outerCoverage = max(clipWeight, max(segmentEnabled * borderWeights.x, neighbourCoverage));
+        float borderCoverage = max(segmentEnabled,
+            neighbourCoverage / max(outerCoverage, NOVA_EPSILON)) * (1 - borderWeights.y);
+        color = lerp(color, borderColor, borderCoverage);
         // Replace clipweight with outer edge clip
-        clipWeight = borderWeights.x;
+        clipWeight = outerCoverage;
 
     #elif defined(NOVA_CENTER_BORDER)
         // Apply the clip weight to the body, since the border may be transparent
@@ -290,13 +357,18 @@ fixed4 NovaFrag(v2f i) : SV_Target
         half2 borderWeights = GetClipWeight01(distancesOutsideBorderEdges, softenInverse.x);
         borderWeights.y = 1.0 - borderWeights.y;
 
+        float outerCoverage = max(clipWeight, max(segmentEnabled * borderWeights.y, neighbourCoverage));
+        // Union coverage before blending; overlapping arcs must not accumulate alpha.
+        borderWeights.x = max(segmentEnabled * borderWeights.x,
+            neighbourCoverage / max(outerCoverage, NOVA_EPSILON));
         borderColor *= borderWeights.x;
         color = BlendPremul(color, borderColor);
-        clipWeight = borderWeights.y;
+        clipWeight = outerCoverage;
 
     #elif defined(NOVA_INNER_BORDER)
         half distanceOutsideInnerBorderEdge = distanceOutsideBounds.x + GetBorderNWidth(i);
         half borderWeight = GetClipWeight01(distanceOutsideInnerBorderEdge, softenInverse.x);
+        borderWeight = max(segmentEnabled * borderWeight, neighbourCoverage);
         fixed4 blended = BlendPremul(color, borderColor);
         color = lerp(color, blended, borderWeight);
     #endif

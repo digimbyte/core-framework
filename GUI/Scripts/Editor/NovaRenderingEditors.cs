@@ -46,7 +46,8 @@ namespace Nova.Editor.GUIs
                         calc.CornerRadii,
                         min: 0,
                         max: minHalfSize,
-                        NovaEditorPrefs.DisplaySidesCornerRadius);
+                        NovaEditorPrefs.DisplaySidesCornerRadius,
+                        uiNode2DData.SerializedProperty.FindPropertyRelative("InvertedCorners"));
                     DrawRadialFillUI(uiNode2DData.RadialFill, calc.RadialFill);
                     DrawBaseInfoUI(baseInfo);
                     NovaGUI.ToggleField(Labels.UIBlock2D.SoftenEdges, uiNode2DData.SoftenEdgesProp);

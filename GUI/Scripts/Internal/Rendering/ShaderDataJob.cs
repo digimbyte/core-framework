@@ -249,7 +249,10 @@ namespace Nova.Internal.Rendering
             }
 
             // This needs to happen before the border size adjustment
-            shaderData.CornerRadii = bodyCornerRadii;
+            // Keep magnitudes for CPU bounds/shadows; the 2D shader uses the sign for inward corners.
+            int invertedCorners = (int)data.InvertedCorners;
+            shaderData.CornerRadii = math.select(bodyCornerRadii, -bodyCornerRadii,
+                (new int4(1, 2, 4, 8) & invertedCorners) != 0);
 
             if (data.FillEnabled)
             {
