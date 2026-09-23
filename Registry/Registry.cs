@@ -784,7 +784,7 @@ namespace Core.Registry
     public enum RegistryRuntimeAccess
     {
         ReadOnly = 0,
-        [LabelText("Cache (Read/Write)")] Cache = 1
+        [LabelText("Cache (Read & Write)")] Cache = 1
     }
 
     /// <summary>Types of assets that a registry can be locked to.</summary>
