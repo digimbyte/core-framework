@@ -3,17 +3,17 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
     Properties
     {
         [HDR]_FaceColor ("Face Color", Color) = (1, 1, 1, 1)
-        _FaceDilate ("Face Dilate", Range(-1, 1)) = 0
+        _FaceDilate ("Face Weight", Range(-0.25, 0.25)) = 0
 
-        [HDR]_OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
-        _OutlineWidth ("Outline Thickness", Range(0, 1)) = 0
-        _OutlineSoftness ("Outline Softness", Range(0, 1)) = 0
+        [HDR]_OutlineColor ("Border Color", Color) = (0, 0, 0, 1)
+        _OutlineWidth ("Outward Border Thickness", Range(0, 1)) = 0
+        [HideInInspector] _OutlineSoftness ("TMP Padding", Float) = 0
 
-        [HDR]_UnderlayColor ("Border Color", Color) = (0, 0, 0, .5)
-        _UnderlayOffsetX ("Border OffsetX", Range(-1, 1)) = 0
-        _UnderlayOffsetY ("Border OffsetY", Range(-1, 1)) = 0
-        _UnderlayDilate ("Border Dilate", Range(-1, 1)) = 0
-        _UnderlaySoftness ("Border Softness", Range(0, 1)) = 0
+        [HDR]_UnderlayColor ("Shadow Color", Color) = (0, 0, 0, .5)
+        _UnderlayOffsetX ("Shadow Offset X", Range(-0.2, 0.2)) = 0
+        _UnderlayOffsetY ("Shadow Offset Y", Range(-0.2, 0.2)) = 0
+        [HideInInspector] _UnderlayDilate ("TMP Shadow Padding", Float) = 0
+        _UnderlaySoftness ("Shadow Softness", Range(0, 0.2)) = 0
 
         _WeightNormal ("Weight Normal", float) = 0
         _WeightBold ("Weight Bold", float) = .5
@@ -100,7 +100,7 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
             #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
-            #include "../TextBlock.cginc"
+            #include "../TextBlockCrisp.cginc"
 
             NOVA_DUMMY_INSTANCE_SETUP
             ENDCG
