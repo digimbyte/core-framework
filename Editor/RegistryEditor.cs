@@ -68,9 +68,7 @@ namespace Core.Registry.Editor
                 
                 EditorGUILayout.Space(5);
                 EditorGUILayout.HelpBox(
-                    $"Import all {registry.AssetType} assets from a folder.\n" +
-                    "UIDs will be generated from file names.\n" +
-                    (importRecursive ? "Subfolder paths will be prefixed to UIDs (e.g., 'Subfolder/AssetName')." : "Only assets in the root folder will be imported."),
+                    importRecursive ? "UIDs use relative paths: Subfolder/AssetName." : "UIDs use file names.",
                     MessageType.Info
                 );
             }

@@ -17,7 +17,6 @@ namespace Core.Registry
     public class Registry : ScriptableObject
     {
         [SerializeField, LabelText("Runtime Access"), DisableInPlayMode]
-        [InfoBox("Read Only prevents runtime writes. Cache (Read/Write) allows session-only entries. Editor authoring remains writable.")]
         private RegistryRuntimeAccess runtimeAccess = RegistryRuntimeAccess.ReadOnly;
 
         public RegistryRuntimeAccess RuntimeAccess => runtimeAccess;
@@ -55,14 +54,12 @@ namespace Core.Registry
 
         [SerializeField]
         [LabelText("Asset Type")]
-        [InfoBox("Type of assets this registry will store - CANNOT BE CHANGED after adding items")]
         [DisableIf("@itemEntries.Count > 0")]
         [OnValueChanged("OnAssetTypeChanged")]
         private RegistryAssetType assetType = RegistryAssetType.Prefab;
 
         [SerializeField]
         [LabelText("Default/Fallback Asset")]
-        [InfoBox("REQUIRED: Asset to return when requested UID is not found. Must match the registry's asset type.")]
         [ValidateInput("@defaultAsset != null", "Default asset must be assigned")]
         [AssetsOnly]
         [PreviewField(55)]
@@ -88,12 +85,10 @@ namespace Core.Registry
 
         [SerializeField]
         [LabelText("Enable Logging")]
-        [InfoBox("Enable verbose logging for this Registry (default: false)")]
         private bool enableLogging = false;
 
         [SerializeField]
-        [LabelText("Debug Query Results")]
-        [InfoBox("When enabled, logs only UID lookups that miss (no match logs).")]
+        [LabelText("Log Missing UIDs")]
         private bool debugQueryResults = false;
 
         public string Description => description;
