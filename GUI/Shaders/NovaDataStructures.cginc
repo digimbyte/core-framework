@@ -12,8 +12,9 @@ fixed4 UnpackColor(NovaColor color)
 }
 
 #if defined(NOVA_FALLBACK_RENDERING)
+    // These textures hold float geometry data, not colors. Preserve its precision on GLES/WebGL.
     #define NOVA_DECLARE_BUFFER(type, name) \
-        sampler2D name; \
+        sampler2D_float name; \
         float4 name##_TexelSize;
 #else
     #define NOVA_DECLARE_BUFFER(type, name) StructuredBuffer<type> name;
