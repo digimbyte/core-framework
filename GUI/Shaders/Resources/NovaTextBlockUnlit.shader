@@ -100,7 +100,104 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
             #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
-            #include "../TextBlockCrisp.cginc"
+            #define NOVA_PREMUL_COLORS
+            #include "../Nova.cginc"
+            #include "../NovaTMPProperties.cginc"
+
+            NOVA_DECLARE_BUFFER(PerVertTextData, _NovaData);
+
+            struct v2f
+            {
+                float4 pos : SV_POSITION;
+                float2 atlas : TEXCOORD0;
+                float weight : TEXCOORD1;
+                float4 color : COLOR;
+                #if defined(NOVA_CLIPPING)
+                    float3 rootPos : TEXCOORD2;
+                #endif
+                UNITY_VERTEX_OUTPUT_STEREO
+            };
+
+            v2f NovaVert(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
+            {
+                NovaVertInit(instanceID, v2f, o);
+                uint index = InstanceIDToDataIndex(instanceID);
+                NOVA_GET_BUFFER_ITEM_uint(offsetInstanceID, index, _NovaDataIndices);
+                uint vertIndex = 4u * offsetInstanceID + vertexID;
+                NOVA_GET_BUFFER_ITEM_PerVertTextData(textData, vertIndex, _NovaData);
+                NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, textData.TransformIndex, _NovaTransformsAndLighting);
+                float3 blockPos = textData.Position;
+                blockPos.xy += float2(_VertexOffsetX, _VertexOffsetY);
+                float3 rootSpace = mul(transformAndLighting.RootFromBlock, float4(blockPos, 1)).xyz;
+                o.pos = UnityWorldToClipPos(NovaRootToWorldPos(rootSpace));
+                o.atlas = textData.Texcoord0.xy;
+                float bold = step(textData.Texcoord1.y * textData.ScaleMultiplier, 0);
+                // Face weight is independent of outline-dependent TMP ratios.
+                o.weight = (lerp(_WeightNormal, _WeightBold, bold) * 0.25 + clamp(_FaceDilate, -0.25, 0.25)) * 0.5;
+                o.color = UnpackColor(textData.Color);
+                #if defined(NOVA_CLIPPING)
+                    o.rootPos = rootSpace;
+                #endif
+                return o;
+            }
+
+            float4 CrispLayers(float2 atlas, float weight, float4 vertexColor, float aa)
+            {
+                float distance = tex2D(_MainTex, atlas).a - 0.5 + weight;
+                float face = saturate(distance / aa + 0.5);
+                // Reserve one atlas texel for filtering; 1 uses the full safe
+                // outward range without changing the letter face.
+                float available = max(0, 0.5 - rcp(max(_GradientScale, 1)) - max(weight, 0));
+                float width = saturate(_OutlineWidth) * available;
+                float expanded = saturate((distance + width) / aa + 0.5);
+                float border = max(0, expanded - face);
+                float4 c = float4(vertexColor.rgb * _FaceColor.rgb * _FaceColor.a, _FaceColor.a) * face;
+                c += float4(_OutlineColor.rgb * _OutlineColor.a, _OutlineColor.a) * border;
+
+                #if defined(UNDERLAY_ON) || defined(UNDERLAY_INNER)
+                    float2 offset = clamp(float2(_UnderlayOffsetX, _UnderlayOffsetY), -0.2, 0.2);
+                    float blur = clamp(_UnderlaySoftness, 0, 0.2) * 0.5;
+                    float extent = max(abs(offset.x), abs(offset.y)) + blur;
+                    float fit = min(1, available / max(extent, 0.0001));
+                    offset *= fit;
+                    blur *= fit;
+                    float2 shadowAtlas = atlas - offset * _GradientScale / float2(_TextureWidth, _TextureHeight);
+                    float shadowDistance = tex2D(_MainTex, shadowAtlas).a - 0.5 + weight;
+                    float shadow = smoothstep(-aa * 0.5 - blur, aa * 0.5 + blur, shadowDistance);
+                    c += float4(_UnderlayColor.rgb * _UnderlayColor.a, _UnderlayColor.a) * shadow * (1 - expanded);
+                #endif
+                return c * vertexColor.a;
+            }
+
+            float4 NovaFrag(v2f i) : SV_Target
+            {
+                NovaFragInit(i);
+                float sampleValue = tex2D(_MainTex, i.atlas).a;
+                float aa = max(length(float2(ddx(sampleValue), ddy(sampleValue))), 0.0001);
+                #if defined(NOVA_SUPER_SAMPLE)
+                    float2 dx = ddx(i.atlas) * 0.25;
+                    float2 dy = ddy(i.atlas) * 0.25;
+                    // Average coverage, not distance, for fine contours.
+                    float4 c = (CrispLayers(i.atlas + dx + dy, i.weight, i.color, aa)
+                              + CrispLayers(i.atlas - dx + dy, i.weight, i.color, aa)
+                              + CrispLayers(i.atlas + dx - dy, i.weight, i.color, aa)
+                              + CrispLayers(i.atlas - dx - dy, i.weight, i.color, aa)) * 0.25;
+                #else
+                    float4 c = CrispLayers(i.atlas, i.weight, i.color, aa);
+                #endif
+                #if defined(NOVA_CLIP_RECT)
+                    c = ApplyGlobalColorModification(c);
+                #elif defined(NOVA_CLIP_MASK)
+                    c = ApplyClipMaskAndColorModifiers(c, i.rootPos);
+                #endif
+                #if defined(NOVA_CLIPPING)
+                    c = ApplyVisualModiferClipping(c, i.rootPos);
+                #endif
+                #if UNITY_UI_ALPHACLIP
+                    clip(c.a - 0.001);
+                #endif
+                return c;
+            }
 
             NOVA_DUMMY_INSTANCE_SETUP
             ENDCG
