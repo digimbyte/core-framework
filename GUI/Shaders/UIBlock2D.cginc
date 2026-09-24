@@ -317,8 +317,20 @@ fixed4 NovaFrag(v2f i) : SV_Target
     #endif
 
     #if NOVA_BORDER
+        // Keep thin border distances in full precision on GLES/WebGL. The body
+        // clipping above retains its existing rounded/inward-corner calculation.
+        float2 borderCornerSpace = abs((float2)GetNPos(i)) - (float2)GetNCornerOrigin(i);
+        float borderDistance = length(max(borderCornerSpace, 0.0)) - (float)GetNCornerRadius(i)
+            + min(max(borderCornerSpace.x, borderCornerSpace.y), 0.0);
+        if (cornerRadius < 0)
+        {
+            float2 borderHalfSize = (float2)GetNCornerOrigin(i) + (float)GetNCornerRadius(i);
+            float2 inwardCornerSpace = abs((float2)GetNPos(i)) - borderHalfSize;
+            borderDistance = max(max(inwardCornerSpace.x, inwardCornerSpace.y),
+                -cornerRadius - length(inwardCornerSpace));
+        }
         float segmentEnabled = NovaBorderSegmentEnabled(i);
-        float neighbourCoverage = NovaNeighbourBorderCoverage(i, softenInverse, distanceOutsideBounds);
+        float neighbourCoverage = NovaNeighbourBorderCoverage(i, softenInverse, borderDistance);
     if (segmentEnabled > 0.5 || neighbourCoverage > 0)
     {
         // Need to correct the weight for when the border is very thin or has zero width
@@ -329,12 +341,12 @@ fixed4 NovaFrag(v2f i) : SV_Target
 
     #if defined(NOVA_OUTER_BORDER)
         // We want the border to have a sharp corner when the body does
-        half distanceOutsideBorder = GetNCornerRadius(i) < NOVA_EPSILON ? CMax2(clampedCornerSpace) : distanceOutsideBounds.x;
+        float distanceOutsideBorder = GetNCornerRadius(i) < NOVA_EPSILON ? CMax2(clampedCornerSpace) : borderDistance;
         distanceOutsideBorder -= GetBorderNWidth(i);
 
         // x => borderSoften
         // y => body to border transition weight
-        half2 borderWeights = GetClipWeight10(half2(distanceOutsideBorder, distanceOutsideBounds.x), softenInverse.xx);
+        float2 borderWeights = GetClipWeight10(float2(distanceOutsideBorder, borderDistance), softenInverse.xx);
 
         // Transition to border color
         float outerCoverage = max(clipWeight, max(segmentEnabled * borderWeights.x, neighbourCoverage));
@@ -351,10 +363,10 @@ fixed4 NovaFrag(v2f i) : SV_Target
         // We want the border to have a sharp corner when the body does
         // x => inner edge
         // y => outer edge
-        half2 dists = half2(distanceOutsideBounds.x, GetNCornerRadius(i) < NOVA_EPSILON ? CMax2(clampedCornerSpace) : distanceOutsideBounds.x);
+        float2 dists = float2(borderDistance, GetNCornerRadius(i) < NOVA_EPSILON ? CMax2(clampedCornerSpace) : borderDistance);
         // For center borders, we actually store half width
-        half2 distancesOutsideBorderEdges = dists + half2(GetBorderNWidth(i), -GetBorderNWidth(i));
-        half2 borderWeights = GetClipWeight01(distancesOutsideBorderEdges, softenInverse.x);
+        float2 distancesOutsideBorderEdges = dists + float2(GetBorderNWidth(i), -GetBorderNWidth(i));
+        float2 borderWeights = GetClipWeight01(distancesOutsideBorderEdges, softenInverse.x);
         borderWeights.y = 1.0 - borderWeights.y;
 
         float outerCoverage = max(clipWeight, max(segmentEnabled * borderWeights.y, neighbourCoverage));
@@ -366,8 +378,8 @@ fixed4 NovaFrag(v2f i) : SV_Target
         clipWeight = outerCoverage;
 
     #elif defined(NOVA_INNER_BORDER)
-        half distanceOutsideInnerBorderEdge = distanceOutsideBounds.x + GetBorderNWidth(i);
-        half borderWeight = GetClipWeight01(distanceOutsideInnerBorderEdge, softenInverse.x);
+        float distanceOutsideInnerBorderEdge = borderDistance + (float)GetBorderNWidth(i);
+        float borderWeight = GetClipWeight01(distanceOutsideInnerBorderEdge, softenInverse.x);
         borderWeight = max(segmentEnabled * borderWeight, neighbourCoverage);
         fixed4 blended = BlendPremul(color, borderColor);
         color = lerp(color, blended, borderWeight);
