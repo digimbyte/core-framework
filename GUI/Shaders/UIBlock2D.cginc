@@ -196,15 +196,16 @@ float NovaBorderSegmentEnabled(v2f i)
     bool right = p.x >= 0;
     bool top = p.y >= 0;
     float bit;
+    // Float literals avoid GLES emitting integer bit patterns as flushable subnormal floats.
     if (all(abs(p) >= cornerStart))
-        bit = top ? (right ? 4 : 1) : (right ? 128 : 32);
+        bit = top ? (right ? 4.0 : 1.0) : (right ? 128.0 : 32.0);
     else if (halfSize.x - abs(p.x) < halfSize.y - abs(p.y))
-        bit = right ? 16 : 8;
+        bit = right ? 16.0 : 8.0;
     else
-        bit = top ? 2 : 64;
-    return 1 - fmod(floor((i.BorderSegments.z + 0.5) / bit), 2);
+        bit = top ? 2.0 : 64.0;
+    return 1.0 - fmod(floor((i.BorderSegments.z + 0.5) / bit), 2.0);
 #else
-    return 1;
+    return 1.0;
 #endif
 }
 
