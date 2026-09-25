@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 namespace Nova.Internal.Rendering
 {
     internal interface IRenderBlock<T> : IRenderBlock

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using System.Runtime.InteropServices;
 
 namespace Nova.Internal.Rendering

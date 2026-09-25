@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using Unity.Collections;
 using static Unity.Collections.AllocatorManager;
 

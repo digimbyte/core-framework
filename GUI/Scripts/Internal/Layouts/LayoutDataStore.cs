@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define AGGRESSIVE_INDEX_GETTERS
 
 using Nova.Compat;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define USE_FALLBACK
 using Nova.Compat;
 using System.Runtime.CompilerServices;

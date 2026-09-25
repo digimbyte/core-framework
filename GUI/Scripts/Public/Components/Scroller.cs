@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define DEBUG_SCROLL
 using Nova.Events;
 using Nova.Internal;

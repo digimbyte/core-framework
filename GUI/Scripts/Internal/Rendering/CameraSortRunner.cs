@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define LOG_COMPARISON_COUNT
 using AOT;
 using Nova.Compat;

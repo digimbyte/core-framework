@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using UnityEngine;
 
 namespace Nova.Internal

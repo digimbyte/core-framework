@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define DEBUG_GESTURES
 
 using Nova.Internal.Collections;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define LOG_REGISTRATIONS
 //#define VALIDATED_REGISTRATIONS
 using Nova.Internal.Utilities;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define PROFILE_EVENTS
 using Nova.Internal.Collections;
 using System;

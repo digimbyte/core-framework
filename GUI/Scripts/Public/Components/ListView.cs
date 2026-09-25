@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define DEBUG_LOADING
 using Nova.Compat;
 using Nova.Internal;

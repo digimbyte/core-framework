@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 #define CACHE_NAME
 
 using Nova.Internal;

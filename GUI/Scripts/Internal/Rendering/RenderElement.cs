@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 namespace Nova.Internal.Rendering
 {
     internal struct RenderElement<T> where T : struct

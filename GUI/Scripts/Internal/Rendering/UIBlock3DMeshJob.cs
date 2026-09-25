@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using Nova.Compat;
 using System.Runtime.CompilerServices;
 using Unity.Burst;

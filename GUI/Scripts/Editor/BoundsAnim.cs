@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using UnityEditor.AnimatedValues;
 using UnityEngine;
 using UnityEngine.Events;

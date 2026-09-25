@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using Unity.Mathematics;
 
 namespace Nova.Internal.Input.Scrolling

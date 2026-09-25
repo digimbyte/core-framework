@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define VERBOSE
 using Nova.Compat;
 using Nova.Internal.Utilities;

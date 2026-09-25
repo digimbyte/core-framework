@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using Nova.Internal;
 using Nova.Internal.Layouts;
 using Nova.Internal.Utilities;

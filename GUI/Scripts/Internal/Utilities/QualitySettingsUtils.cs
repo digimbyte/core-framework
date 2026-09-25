@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 namespace Nova.Internal.Utilities
 {
     internal class QualitySettingsUtils

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+
 //#define LOG_EVERYTHING
 using Nova.Compat;
 using Nova.Extensions;
@@ -47,6 +47,209 @@ namespace Nova
 
         [SerializeField]
         private long numberMax = 999999999;
+
+        private UIBlock textScrollInstance;
+        private Scroller textScroller;
+        private UIBlock verticalTextScroll;
+        private UIBlock verticalTextScrollTrack;
+        private TextBlock scrollText;
+        private bool scrollTextDirty = true;
+        private bool visibleBeforeScroll;
+
+        private void LateUpdate()
+        {
+            if (!Application.isPlaying) return;
+            if (TMP.overflowMode != TextOverflowModes.ScrollRect)
+            {
+                RemoveTextScroll();
+                return;
+            }
+            if (textScrollInstance == null)
+            {
+                var prefab = NovaSettings.Instance.ScrollViewPrefab;
+                if (prefab == null || prefab.GetComponentInChildren<Scroller>(true) == null) return;
+                textScrollInstance = Instantiate(prefab, transform, false);
+                textScroller = textScrollInstance.GetComponentInChildren<Scroller>(true);
+                // The package ScrollView contains a Scroller viewport, not a
+                // ScrollBlock content root or a pre-existing text field.
+                var textObject = new GameObject("Text", typeof(RectTransform));
+                textObject.layer = gameObject.layer;
+                textObject.transform.SetParent(textScroller.transform, false);
+                scrollText = textObject.AddComponent<TextBlock>();
+                scrollText.TMP.overflowMode = TextOverflowModes.Overflow;
+                var root = textScrollInstance;
+                root.AutoSize.X = Nova.AutoSize.Expand;
+                root.AutoSize.Y = Nova.AutoSize.Expand;
+                root.Position.X.Value = 0;
+                root.Position.Y.Value = 0;
+                root.Alignment.X = HorizontalAlignment.Center;
+                root.Alignment.Y = VerticalAlignment.Center;
+                var viewport = textScroller.GetComponent<UIBlock>();
+                viewport.AutoSize.X = Nova.AutoSize.Expand;
+                viewport.AutoSize.Y = Nova.AutoSize.Expand;
+                scrollText.Alignment.X = HorizontalAlignment.Left;
+                scrollText.Alignment.Y = VerticalAlignment.Top;
+                visibleBeforeScroll = Visible;
+                Visible = false;
+                scrollTextDirty = true;
+            }
+            if (scrollTextDirty)
+            {
+                scrollTextDirty = false;
+                MirrorScrollText();
+            }
+            var scrollViewport = textScroller.GetComponent<UIBlock>();
+            bool wrap = TMP.textWrappingMode != TextWrappingModes.NoWrap &&
+                TMP.textWrappingMode != TextWrappingModes.PreserveWhitespaceNoWrap;
+            // Nova measures the mirrored text. No separate TMP size calculation.
+            AutoSize horizontalSize = wrap ? Nova.AutoSize.Expand : Nova.AutoSize.Shrink;
+            if (scrollText.AutoSize.X != horizontalSize) scrollText.AutoSize.X = horizontalSize;
+            if (scrollText.AutoSize.Y != Nova.AutoSize.Shrink) scrollText.AutoSize.Y = Nova.AutoSize.Shrink;
+            if (scrollText.LayoutIsDirty || scrollViewport.LayoutIsDirty) return;
+            Vector3 extent = scrollText.LayoutSize;
+            Vector3 available = scrollViewport.PaddedSize;
+            bool horizontal = !wrap && extent.x > available.x + 0.01f;
+            bool vertical = extent.y > available.y + 0.01f;
+            bool overflowing = horizontal || vertical;
+            if (horizontal && vertical)
+            {
+                if (verticalTextScroll == null)
+                {
+                    // The outer prefab scrolls X; this nested instance scrolls Y.
+                    // Both use the existing Scroller implementation and styling.
+                    verticalTextScroll = Instantiate(NovaSettings.Instance.ScrollViewPrefab, scrollViewport.transform, false);
+                    verticalTextScroll.AutoSize.X = Nova.AutoSize.None;
+                    verticalTextScroll.Size.X.Value = extent.x;
+                    verticalTextScroll.AutoSize.Y = Nova.AutoSize.Expand;
+                    verticalTextScroll.Position.X.Value = 0;
+                    verticalTextScroll.Position.Y.Value = 0;
+                    var verticalScroller = verticalTextScroll.GetComponentInChildren<Scroller>(true);
+                    var verticalViewport = verticalScroller.GetComponent<UIBlock>();
+                    verticalViewport.AutoSize.X = Nova.AutoSize.Expand;
+                    verticalViewport.AutoSize.Y = Nova.AutoSize.Expand;
+                    verticalViewport.AutoLayout.Axis = Axis.Y;
+                    verticalViewport.AutoLayout.Alignment = 1;
+                    verticalViewport.AutoLayout.Offset = 0;
+                    scrollText.transform.SetParent(verticalViewport.transform, false);
+                    // Keep the vertical control visible while its content moves on X.
+                    var thumb = verticalScroller.ScrollbarVisual;
+                    if (thumb != null && thumb.Parent != null && thumb.Parent != verticalTextScroll && thumb.Parent != verticalViewport)
+                    {
+                        verticalTextScrollTrack = thumb.Parent;
+                        verticalTextScrollTrack.transform.SetParent(textScrollInstance.transform, false);
+                    }
+                }
+                else if (!Mathf.Approximately(verticalTextScroll.Size.X.Raw, extent.x))
+                    verticalTextScroll.Size.X.Value = extent.x;
+            }
+            else if (verticalTextScroll != null)
+            {
+                scrollText.transform.SetParent(scrollViewport.transform, false);
+                verticalTextScroll.gameObject.SetActive(false);
+                Destroy(verticalTextScroll.gameObject);
+                if (verticalTextScrollTrack != null)
+                {
+                    verticalTextScrollTrack.gameObject.SetActive(false);
+                    Destroy(verticalTextScrollTrack.gameObject);
+                }
+                verticalTextScroll = null;
+                verticalTextScrollTrack = null;
+            }
+            Axis axis = horizontal ? Axis.X : Axis.Y;
+            if (scrollViewport.AutoLayout.Axis != axis)
+            {
+                textScroller.CancelScroll();
+                scrollViewport.AutoLayout.Offset = 0;
+                scrollViewport.AutoLayout.Axis = axis;
+                scrollViewport.AutoLayout.Alignment = horizontal ? -1 : 1;
+                // Reorient the existing scrollbar; keep its authored appearance.
+                var thumb = textScroller.ScrollbarVisual;
+                if (thumb != null)
+                {
+                    SwapScrollAxes(thumb);
+                    if (thumb.Parent != null && thumb.Parent != scrollViewport && thumb.Parent != textScrollInstance)
+                        SwapScrollAxes(thumb.Parent);
+                    var interactable = thumb.GetComponent<Interactable>();
+                    if (interactable != null)
+                    {
+                        var draggable = interactable.Draggable;
+                        draggable.X = horizontal;
+                        draggable.Y = !horizontal;
+                        interactable.Draggable = draggable;
+                    }
+                }
+            }
+            if (!overflowing && scrollViewport.AutoLayout.Offset != 0)
+                scrollViewport.AutoLayout.Offset = 0;
+            if (textScroller.enabled != overflowing) textScroller.enabled = overflowing;
+            var scrollbar = textScroller.ScrollbarVisual;
+            if (scrollbar != null && scrollbar.gameObject.activeSelf != overflowing)
+                scrollbar.gameObject.SetActive(overflowing);
+        }
+
+        private static void SwapScrollAxes(UIBlock block)
+        {
+            var size = block.Size.X;
+            block.Size.X = block.Size.Y;
+            block.Size.Y = size;
+            var position = block.Position.X;
+            block.Position.X = block.Position.Y;
+            block.Position.Y = position;
+            var autoSize = block.AutoSize.X;
+            block.AutoSize.X = block.AutoSize.Y;
+            block.AutoSize.Y = autoSize;
+            var alignment = block.Alignment.X;
+            block.Alignment.X = (HorizontalAlignment)block.Alignment.Y;
+            block.Alignment.Y = (VerticalAlignment)alignment;
+        }
+
+        private void RemoveTextScroll()
+        {
+            if (textScrollInstance == null) return;
+            textScrollInstance.gameObject.SetActive(false);
+            Destroy(textScrollInstance.gameObject);
+            textScrollInstance = null;
+            textScroller = null;
+            verticalTextScroll = null;
+            verticalTextScrollTrack = null;
+            scrollText = null;
+            Visible = visibleBeforeScroll;
+        }
+
+        private void MirrorScrollText()
+        {
+            var from = TMP;
+            var to = scrollText.TMP;
+            to.font = from.font;
+            to.fontSharedMaterial = from.fontSharedMaterial;
+            to.spriteAsset = from.spriteAsset;
+            to.styleSheet = from.styleSheet;
+            to.textStyle = from.textStyle;
+            to.fontSize = from.fontSize;
+            to.fontSizeMin = from.fontSizeMin;
+            to.fontSizeMax = from.fontSizeMax;
+            to.enableAutoSizing = from.enableAutoSizing;
+            to.fontStyle = from.fontStyle;
+            to.fontWeight = from.fontWeight;
+            to.color = from.color;
+            to.enableVertexGradient = from.enableVertexGradient;
+            to.colorGradient = from.colorGradient;
+            to.colorGradientPreset = from.colorGradientPreset;
+            to.overrideColorTags = from.overrideColorTags;
+            to.characterSpacing = from.characterSpacing;
+            to.wordSpacing = from.wordSpacing;
+            to.lineSpacing = from.lineSpacing;
+            to.paragraphSpacing = from.paragraphSpacing;
+            to.alignment = from.alignment;
+            to.textWrappingMode = from.textWrappingMode;
+            to.richText = from.richText;
+            to.isRightToLeftText = from.isRightToLeftText;
+            to.parseCtrlCharacters = from.parseCtrlCharacters;
+            to.tintAllSprites = from.tintAllSprites;
+            to.overflowMode = TextOverflowModes.Overflow;
+            to.text = from.text;
+            // The scroll prefab and Nova retain ownership of margins and layout.
+        }
 
         /// <summary>
         /// When <see cref="TextContentType"/> is <see cref="ContentType.Numbers"/>, clamps parsed values to
@@ -234,7 +437,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The offset that is applied whenever text is being hugged (i.e. <see cref="UIBlock.AutoSize">AutoSize</see> is set to <see cref="AutoSize.Shrink">Shrink</see> on <c>x</c> or <c>y</c>).
+        /// The offset that is applied whenever text is being hugged (i.e. <see cref="UIBlock.AutoSize">AutoSize</see> is set to <see cref="Nova.AutoSize.Shrink">Shrink</see> on <c>x</c> or <c>y</c>).
         /// If text is not being hugged, this will be <see cref="Vector2.zero"/>.
         /// </summary>
         public Vector2 VisualOffset
@@ -449,6 +652,7 @@ namespace Nova
 
         private protected override void Unregister()
         {
+            RemoveTextScroll();
             TMP.OnPreRenderText -= UpdateTextMeshHandler;
             TMP.UnregisterDirtyVerticesCallback(TMPVertsDirtiedHandler);
             UnsubscribeFromTextChanged(this);
@@ -645,6 +849,7 @@ namespace Nova
         /// </summary>
         private void HandleTMPVertsDirtied()
         {
+            scrollTextDirty = true;
 
             if (!HaveReceivedLayoutUpdate)
             {

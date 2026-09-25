@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 #define USE_HIERARCHY_JOBS
 
 using Nova.Compat;

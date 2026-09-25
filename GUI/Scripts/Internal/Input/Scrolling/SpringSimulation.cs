@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using Nova.Internal.Utilities;
 
 namespace Nova.Internal.Input.Scrolling

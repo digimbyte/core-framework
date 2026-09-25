@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 

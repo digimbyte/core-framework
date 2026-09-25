@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define LOG_ACTIVATIONS
 using Nova.Compat;
 using Nova.Editor.GUIs;

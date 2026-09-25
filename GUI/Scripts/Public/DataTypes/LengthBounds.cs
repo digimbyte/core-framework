@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;

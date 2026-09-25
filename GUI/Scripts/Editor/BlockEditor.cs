@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 using Nova.Compat;
 using Nova.Editor.Serialization;
 using Nova.Editor.Tools;

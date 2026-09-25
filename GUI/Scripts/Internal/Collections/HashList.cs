@@ -1,4 +1,4 @@
-﻿// Copyright (c) Supernova Technologies LLC
+﻿
 //#define DEBUG_LOG
 
 using Nova.Internal.Utilities.Extensions;
