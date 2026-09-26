@@ -19,7 +19,11 @@ namespace Aura.Editor.GUIs
 
         public static void DrawBodyVisualsUI(float minHalfSize, _UIBlock2DData uiNode2DData, _Surface surface, _BaseRenderInfo baseInfo, ref ImageSelectionType imageMode, ref UIBlock2DData.Calculated calc)
         {
-            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body, uiNode2DData.FillEnabledProp))
+            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body, uiNode2DData.FillEnabledProp,
+                uiNode2DData.FillEnabledProp, uiNode2DData.ColorProp, uiNode2DData.Gradient.SerializedProperty,
+                uiNode2DData.Image.Adjustment.SerializedProperty, uiNode2DData.Image.ModeProp,
+                uiNode2DData.SerializedProperty.serializedObject.FindProperty(Names.UIBlock2D.texture),
+                uiNode2DData.SerializedProperty.serializedObject.FindProperty(Names.UIBlock2D.sprite)))
             {
                 if (bodyFoldout)
                 {
@@ -30,7 +34,13 @@ namespace Aura.Editor.GUIs
                 }
             }
 
-            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals))
+            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals, copyProperties: new[]
+            {
+                baseInfo.VisibleProp, baseInfo.ZIndexProp, uiNode2DData.CornerRadius.SerializedProperty,
+                uiNode2DData.CornerRadii.SerializedProperty, uiNode2DData.UseIndividualCornerRadiiProp,
+                uiNode2DData.SerializedProperty.FindPropertyRelative("InvertedCorners"), uiNode2DData.RadialFill.SerializedProperty,
+                uiNode2DData.SoftenEdgesProp, surface.SerializedProperty
+            }))
             {
                 if (visualsFoldout)
                 {
@@ -87,7 +97,7 @@ namespace Aura.Editor.GUIs
 
         public static void DrawBodyVisualsUI(Vector3 size, _UIBlock3DData uiNode3DData, _Surface surface, _BaseRenderInfo baseInfo, ref UIBlock3DData.Calculated calc)
         {
-            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body))
+            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body, copyProperties: new[] { uiNode3DData.ColorProp }))
             {
                 if (bodyFoldout)
                 {
@@ -96,7 +106,11 @@ namespace Aura.Editor.GUIs
                 }
             }
 
-            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals))
+            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals, copyProperties: new[]
+            {
+                baseInfo.VisibleProp, uiNode3DData.CornerRadius.SerializedProperty, uiNode3DData.CornerRadii.SerializedProperty,
+                uiNode3DData.UseIndividualCornerRadiiProp, uiNode3DData.EdgeRadius.SerializedProperty, surface.SerializedProperty
+            }))
             {
                 if (visualsFoldout)
                 {
@@ -133,6 +147,9 @@ namespace Aura.Editor.GUIs
 
             Rect toggleRect = AuraGUI.Layout.GetControlRect();
             toggleRect.x -= Foldout.ArrowIconSize + AuraGUI.MinSpaceBetweenFields;
+            Rect radialHeader = toggleRect;
+            radialHeader.width = AuraGUI.LabelWidth;
+            UIBlockPropertyDrop.Group(radialHeader, radialFill.SerializedProperty);
             AuraGUI.ToggleField(toggleRect, Labels.RadialFill.Enabled, radialFill.EnabledProp);
 
             AuraGUI.Layout.EndHorizontal();
@@ -147,7 +164,7 @@ namespace Aura.Editor.GUIs
             AuraGUI.Space(4f / 3f);
             AuraGUI.Layout.BeginVertical();
 
-            EditorGUI.BeginDisabledGroup(!radialFill.Enabled);
+            EditorGUI.BeginDisabledGroup(!radialFill.Enabled && !UIBlockPropertyDrop.IsObjectDrag);
 
             AuraGUI.Length2Field(Labels.RadialFill.Center, radialFill.Center, calc.Center, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
             AuraGUI.SliderField(Labels.RadialFill.Rotation, radialFill.RotationProp, min: -360f, max: 360f);
@@ -161,7 +178,7 @@ namespace Aura.Editor.GUIs
 
         public static void DrawBorderUI(_Border borderData, Border.Calculated calc)
         {
-            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Border", borderData.EnabledProp))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Border", borderData.EnabledProp, borderData.SerializedProperty))
             {
                 using (new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel))
                 {
@@ -174,7 +191,7 @@ namespace Aura.Editor.GUIs
 
                         // Direction
                         Rect directionPosition = AuraGUI.Layout.GetControlRect();
-                        GUIContent label = EditorGUI.BeginProperty(directionPosition, Labels.Border.Direction, borderData.DirectionProp);
+                        GUIContent label = UIBlockPropertyDrop.BeginProperty(directionPosition, Labels.Border.Direction, borderData.DirectionProp);
                         EditorGUI.BeginChangeCheck();
                         BorderDirection strokeDirection = (BorderDirection)EditorGUI.EnumPopup(directionPosition, label, borderData.Direction);
                         if (EditorGUI.EndChangeCheck())
@@ -200,7 +217,7 @@ namespace Aura.Editor.GUIs
                 SerializedProperty disabled = border.FindPropertyRelative("disable" + names[i]);
                 Rect cell = new Rect(grid.x + (i % 3) * 24, grid.y + (i / 3) * EditorGUIUtility.singleLineHeight, 20, EditorGUIUtility.singleLineHeight);
                 GUIContent label = new GUIContent("", ObjectNames.NicifyVariableName(names[i]));
-                EditorGUI.BeginProperty(cell, label, disabled);
+                UIBlockPropertyDrop.BeginProperty(cell, label, disabled);
                 using (new EditorGUI.MixedValueScope(disabled.hasMultipleDifferentValues))
                 {
                     EditorGUI.BeginChangeCheck();
@@ -213,7 +230,7 @@ namespace Aura.Editor.GUIs
 
         public static void DrawShadowUI(_UIBlock2DData renderData, Shadow.Calculated calc)
         {
-            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Shadow", renderData.Shadow.EnabledProp))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Shadow", renderData.Shadow.EnabledProp, renderData.Shadow.SerializedProperty))
             {
                 if (!foldout)
                 {
@@ -226,7 +243,7 @@ namespace Aura.Editor.GUIs
                 _Shadow shadowData = renderData.Shadow;
                 Rect fieldRect = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
-                GUIContent label = EditorGUI.BeginProperty(fieldRect, Labels.Shadow.Direction, shadowData.DirectionProp);
+                GUIContent label = UIBlockPropertyDrop.BeginProperty(fieldRect, Labels.Shadow.Direction, shadowData.DirectionProp);
                 ShadowDirection newDirection = (ShadowDirection)EditorGUI.EnumPopup(fieldRect, label, shadowData.Direction);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
@@ -247,7 +264,7 @@ namespace Aura.Editor.GUIs
 
             Rect baseInfoField = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
-            GUIContent propertyLabel = EditorGUI.BeginProperty(baseInfoField, Labels.Rendering.ZIndex, baseInfo.ZIndexProp);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(baseInfoField, Labels.Rendering.ZIndex, baseInfo.ZIndexProp);
             short newRenderLayer = (short)EditorGUI.IntField(baseInfoField, propertyLabel, baseInfo.ZIndexProp.intValue);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -318,7 +335,7 @@ namespace Aura.Editor.GUIs
                             }
 
                             EditorGUI.BeginChangeCheck();
-                            GUIContent label = EditorGUI.BeginProperty(imageFieldRect, Labels.Image.Label, textureProp);
+                            GUIContent label = UIBlockPropertyDrop.BeginProperty(imageFieldRect, Labels.Image.Label, textureProp);
                             Texture newVal = EditorGUI.ObjectField(imageFieldRect, label, textureProp.objectReferenceValue, typeof(Texture), false) as Texture;
                             EditorGUI.EndProperty();
                             bool changed = EditorGUI.EndChangeCheck();
@@ -346,7 +363,7 @@ namespace Aura.Editor.GUIs
                     case ImageSelectionType.Sprite:
                         {
                             EditorGUI.BeginChangeCheck();
-                            GUIContent label = EditorGUI.BeginProperty(imageFieldRect, Labels.Image.Label, spriteProp);
+                            GUIContent label = UIBlockPropertyDrop.BeginProperty(imageFieldRect, Labels.Image.Label, spriteProp);
                             Sprite newVal = EditorGUI.ObjectField(imageFieldRect, label, spriteProp.objectReferenceValue, typeof(Sprite), false) as Sprite;
                             EditorGUI.EndProperty();
                             bool changed = EditorGUI.EndChangeCheck();
@@ -398,7 +415,7 @@ namespace Aura.Editor.GUIs
                     // Scale Mode
                     Rect scaleModeRect = AuraGUI.Layout.GetControlRect();
                     EditorGUI.BeginChangeCheck();
-                    GUIContent scaleModeLabel = EditorGUI.BeginProperty(scaleModeRect, Labels.Image.ImageScaleMode, uiNode2DData.Image.Adjustment.scaleModeProp);
+                    GUIContent scaleModeLabel = UIBlockPropertyDrop.BeginProperty(scaleModeRect, Labels.Image.ImageScaleMode, uiNode2DData.Image.Adjustment.scaleModeProp);
                     ImageScaleMode newScaleMode = (ImageScaleMode)EditorGUI.EnumPopup(scaleModeRect, scaleModeLabel, uiNode2DData.Image.Adjustment.scaleMode);
                     EditorGUI.EndProperty();
                     if (EditorGUI.EndChangeCheck())
@@ -424,7 +441,7 @@ namespace Aura.Editor.GUIs
                         // Show Fill axis selector and pixels-per-unit for Fill mode
                         Rect fillAxisField = AuraGUI.Layout.GetControlRect();
                         EditorGUI.BeginChangeCheck();
-                        GUIContent fillAxisLabel = EditorGUI.BeginProperty(fillAxisField, Labels.Image.FillAxis, uiNode2DData.Image.Adjustment.fillAxisProp);
+                        GUIContent fillAxisLabel = UIBlockPropertyDrop.BeginProperty(fillAxisField, Labels.Image.FillAxis, uiNode2DData.Image.Adjustment.fillAxisProp);
                         Aura.ImageFillAxis startFillAxis = uiNode2DData.Image.Adjustment.fillAxis;
                         Aura.ImageFillAxis newFillAxis = (Aura.ImageFillAxis)EditorGUI.EnumPopup(fillAxisField, fillAxisLabel, startFillAxis);
                         EditorGUI.EndProperty();
@@ -440,7 +457,7 @@ namespace Aura.Editor.GUIs
                     {
                         Rect renderModeField = AuraGUI.Layout.GetControlRect();
                         EditorGUI.BeginChangeCheck();
-                        GUIContent renderModeLabel = EditorGUI.BeginProperty(renderModeField, Labels.Image.ImageMode, uiNode2DData.Image.ModeProp);
+                        GUIContent renderModeLabel = UIBlockPropertyDrop.BeginProperty(renderModeField, Labels.Image.ImageMode, uiNode2DData.Image.ModeProp);
                         ImagePackMode startRenderingMode = uiNode2DData.Image.Mode;
                         ImagePackMode newRenderMode = (ImagePackMode)EditorGUI.EnumPopup(renderModeField, renderModeLabel, startRenderingMode);
                         EditorGUI.EndProperty();
@@ -502,6 +519,7 @@ namespace Aura.Editor.GUIs
             EditorGUI.BeginChangeCheck();
             bool showMixed = EditorGUI.showMixedValue;
             EditorGUI.showMixedValue = surface.SerializedProperty.hasMultipleDifferentValues;
+            UIBlockPropertyDrop.Group(presetRect, surface.SerializedProperty);
             preset = (SurfacePreset)EditorGUI.EnumPopup(presetRect, Labels.Surface.SurfaceEffect, preset);
             EditorGUI.showMixedValue = showMixed;
             if (EditorGUI.EndChangeCheck())
@@ -522,7 +540,7 @@ namespace Aura.Editor.GUIs
 
             Rect fieldRect = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
-            GUIContent lightingModelLabel = EditorGUI.BeginProperty(fieldRect, Labels.Surface.LightingModel, surface.LightingModelProp);
+            GUIContent lightingModelLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, Labels.Surface.LightingModel, surface.LightingModelProp);
             LightingModel newLightingModel = (LightingModel)EditorGUI.EnumPopup(fieldRect, lightingModelLabel, surface.LightingModel);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -532,7 +550,7 @@ namespace Aura.Editor.GUIs
 
             Rect shadowCastRect = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
-            GUIContent shadowCastingLabel = EditorGUI.BeginProperty(shadowCastRect, Labels.Surface.ShadowCasting, surface.ShadowCastingModeProp);
+            GUIContent shadowCastingLabel = UIBlockPropertyDrop.BeginProperty(shadowCastRect, Labels.Surface.ShadowCasting, surface.ShadowCastingModeProp);
             ShadowCastingMode newShadowCasting = (ShadowCastingMode)EditorGUI.EnumPopup(shadowCastRect, shadowCastingLabel, surface.ShadowCastingMode);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -544,7 +562,7 @@ namespace Aura.Editor.GUIs
             {
                 Rect receiveShadowsRect = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
-                GUIContent receiveShadowsLabel = EditorGUI.BeginProperty(receiveShadowsRect, Labels.Surface.ReceiveShadows, surface.ReceiveShadowsProp);
+                GUIContent receiveShadowsLabel = UIBlockPropertyDrop.BeginProperty(receiveShadowsRect, Labels.Surface.ReceiveShadows, surface.ReceiveShadowsProp);
                 bool recvShadows = EditorGUI.Toggle(receiveShadowsRect, receiveShadowsLabel, surface.ReceiveShadows);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
@@ -605,11 +623,14 @@ namespace Aura.Editor.GUIs
             Rect colorFieldRect = controlRect;
             colorFieldRect.xMin = toggleRect.xMax;
 
-            GUIContent gradientLabel = EditorGUI.BeginProperty(toggleRect, Labels.Gradient.Label, gradientData.EnabledProp);
+            Rect gradientHeader = toggleRect;
+            gradientHeader.width -= AuraGUI.ToggleBoxSize;
+            UIBlockPropertyDrop.Group(gradientHeader, gradientData.SerializedProperty);
+            GUIContent gradientLabel = UIBlockPropertyDrop.BeginProperty(toggleRect, Labels.Gradient.Label, gradientData.EnabledProp);
             gradientData.Enabled = EditorGUI.Toggle(toggleRect, gradientLabel, gradientData.Enabled);
             EditorGUI.EndProperty();
 
-            EditorGUI.BeginDisabledGroup(!gradientData.Enabled);
+            EditorGUI.BeginDisabledGroup(!gradientData.Enabled && !UIBlockPropertyDrop.IsObjectDrag);
 
             AuraGUI.ColorField(colorFieldRect, Labels.Gradient.Color, gradientData.ColorProp);
             EditorGUI.EndDisabledGroup();
@@ -631,7 +652,7 @@ namespace Aura.Editor.GUIs
                 AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
                 AuraGUI.Space(2.5f);
                 AuraGUI.Layout.BeginVertical();
-                EditorGUI.BeginDisabledGroup(!gradientData.Enabled);
+                EditorGUI.BeginDisabledGroup(!gradientData.Enabled && !UIBlockPropertyDrop.IsObjectDrag);
 
                 AuraGUI.Length2Field(Labels.Gradient.Center, gradientData.Center, calc.Center, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
                 AuraGUI.Length2Field(Labels.Gradient.Radius, gradientData.Radius, calc.Radius, MinMax2.Positive.Min, MinMax2.Positive.Max);

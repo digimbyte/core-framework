@@ -31,6 +31,14 @@ namespace Aura.Editor.GUIs
             }
         }
 
+        protected override void OnPropertiesCopied()
+        {
+            if (serializedObject.FindProperty(Names.UIBlock2D.sprite).objectReferenceValue != null)
+                imageMode = ImageSelectionType.Sprite;
+            else if (serializedObject.FindProperty(Names.UIBlock2D.texture).objectReferenceValue != null)
+                imageMode = ImageSelectionType.Texture;
+        }
+
         protected override void DoGui(UIBlock2D uiBlock)
         {
             Vector3 size = uiBlock.CalculatedSize.Value;

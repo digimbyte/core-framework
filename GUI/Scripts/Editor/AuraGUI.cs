@@ -847,19 +847,21 @@ namespace Aura.Editor.GUIs
             EditorGUI.LabelField(fieldRect, label);
         }
 
-        public static void PrefixLabel(GUIContent label, SerializedProperty property)
+        public static void PrefixLabel(GUIContent label, SerializedProperty property, bool copyEnabled = true)
         {
             Rect fieldRect = Layout.GetControlRect(Layout.PrefixLabelWidthOption);
+            if (copyEnabled) UIBlockPropertyDrop.Field(fieldRect, property);
             GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, property);
             EditorGUI.LabelField(fieldRect, propertyLabel);
             EditorGUI.EndProperty();
         }
 
-        public static bool PrefixFoldoutLabel(GUIContent label, bool foldout, SerializedProperty property)
+        public static bool PrefixFoldoutLabel(GUIContent label, bool foldout, SerializedProperty property, bool copyEnabled = true)
         {
             Rect fieldRect = Layout.GetControlRect(Layout.PrefixLabelWidthOption);
             EditorGUI.BeginDisabledGroup(false);
             foldout = Foldout.FoldoutToggle(fieldRect, foldout);
+            if (copyEnabled) UIBlockPropertyDrop.Field(fieldRect, property);
             GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, property);
             EditorGUI.LabelField(fieldRect, propertyLabel);
             EditorGUI.EndDisabledGroup();
@@ -880,11 +882,11 @@ namespace Aura.Editor.GUIs
             return foldout;
         }
 
-        public static Foldout EditorPrefFoldoutHeader(string labelKey, System.Action<Rect> dropdownMenu = null, string displayName = null)
+        public static Foldout EditorPrefFoldoutHeader(string labelKey, System.Action<Rect> dropdownMenu = null, string displayName = null, SerializedProperty[] copyProperties = null)
         {
             string prefKey = AuraEditorPrefs.GetFullEditorPrefPath(labelKey);
             bool currentVal = EditorPrefs.GetBool(prefKey, false);
-            Foldout foldout = Foldout.DoHeaderGroup(currentVal, string.IsNullOrEmpty(displayName) ? labelKey : displayName, dropdownMenu);
+            Foldout foldout = Foldout.DoHeaderGroup(currentVal, string.IsNullOrEmpty(displayName) ? labelKey : displayName, dropdownMenu, copyProperties);
 
             if (foldout != currentVal)
             {
@@ -893,11 +895,11 @@ namespace Aura.Editor.GUIs
             return foldout;
         }
 
-        public static Foldout EditorPrefFoldoutHeader(string label, SerializedProperty enabledProperty)
+        public static Foldout EditorPrefFoldoutHeader(string label, SerializedProperty enabledProperty, params SerializedProperty[] copyProperties)
         {
             string prefKey = AuraEditorPrefs.GetFullEditorPrefPath(label);
             bool currentVal = EditorPrefs.GetBool(prefKey, false);
-            Foldout foldout = Foldout.DoHeaderGroup(currentVal, label, enabledProperty);
+            Foldout foldout = Foldout.DoHeaderGroup(currentVal, label, enabledProperty, copyProperties: copyProperties);
 
             if (foldout != currentVal)
             {
@@ -913,7 +915,7 @@ namespace Aura.Editor.GUIs
 
         public static void ColorField(Rect fieldRect, GUIContent label, SerializedProperty prop, bool showAlpha = true)
         {
-            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, prop);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, prop);
 
             EditorGUI.BeginChangeCheck();
             Color color = ColorField(fieldRect, propertyLabel, prop.colorValue, prop.hasMultipleDifferentValues, showAlpha);
@@ -982,7 +984,7 @@ namespace Aura.Editor.GUIs
         {
             Rect sliderField = Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
-            GUIContent sliderLabel = EditorGUI.BeginProperty(sliderField, label, property);
+            GUIContent sliderLabel = UIBlockPropertyDrop.BeginProperty(sliderField, label, property);
             float sliderValue = EditorGUI.Slider(sliderField, sliderLabel, property.floatValue, min, max);
             EditorGUI.EndProperty();
 
@@ -997,7 +999,16 @@ namespace Aura.Editor.GUIs
             bool wideMode = EditorGUIUtility.wideMode;
             EditorGUIUtility.wideMode = true;
             Rect fieldRect = Layout.GetControlRect();
-            GUIContent fieldLabel = EditorGUI.BeginProperty(fieldRect, label, threeDBoolProp);
+            Rect axes = EditorGUI.IndentedRect(fieldRect);
+            axes.xMin += EditorGUIUtility.labelWidth;
+            float axisWidth = (axes.width - 4) / 3;
+            foreach (string axis in new[] { "X", "Y", "Z" })
+            {
+                Rect axisRect = new Rect(axes.x, axes.y, axisWidth, axes.height);
+                UIBlockPropertyDrop.Field(axisRect, threeDBoolProp.FindPropertyRelative(axis));
+                axes.x += axisWidth + 2;
+            }
+            GUIContent fieldLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, threeDBoolProp);
             EditorGUI.MultiPropertyField(fieldRect, Labels.XYZ, threeDBoolProp.FindPropertyRelative("X"), fieldLabel);
             EditorGUI.EndProperty();
             EditorGUIUtility.wideMode = wideMode;
@@ -1011,7 +1022,7 @@ namespace Aura.Editor.GUIs
         public static void ToggleField(Rect rect, GUIContent label, SerializedProperty boolField)
         {
             EditorGUI.BeginChangeCheck();
-            GUIContent labelContent = EditorGUI.BeginProperty(rect, label, boolField);
+            GUIContent labelContent = UIBlockPropertyDrop.BeginProperty(rect, label, boolField);
             bool newValue = EditorGUI.Toggle(rect, labelContent, boolField.boolValue);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -1028,7 +1039,7 @@ namespace Aura.Editor.GUIs
         public static void FloatField(GUIContent label, SerializedProperty property)
         {
             Rect fieldRect = Layout.GetControlRect(Layout.MinFloatFieldWidthOption);
-            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, property);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, property);
             EditorGUI.BeginChangeCheck();
             float value = EditorGUI.FloatField(fieldRect, propertyLabel, property.floatValue);
             if (EditorGUI.EndChangeCheck())
@@ -1041,7 +1052,7 @@ namespace Aura.Editor.GUIs
         public static void FloatFieldClamped(GUIContent label, SerializedProperty property, float min, float max)
         {
             Rect fieldRect = Layout.GetControlRect(Layout.MinFloatFieldWidthOption);
-            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, property);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, property);
             EditorGUI.BeginChangeCheck();
             float value = EditorGUI.FloatField(fieldRect, propertyLabel, property.floatValue);
             if (EditorGUI.EndChangeCheck())
@@ -1054,7 +1065,7 @@ namespace Aura.Editor.GUIs
         public static void IntFieldClamped(GUIContent label, SerializedProperty property, int min, int max)
         {
             Rect fieldRect = Layout.GetControlRect(Layout.MinFloatFieldWidthOption);
-            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, property);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, property);
             EditorGUI.BeginChangeCheck();
             int value = EditorGUI.IntField(fieldRect, propertyLabel, property.intValue);
             if (EditorGUI.EndChangeCheck())
@@ -1068,7 +1079,7 @@ namespace Aura.Editor.GUIs
         {
             EditorGUI.BeginChangeCheck();
             Rect rect = AuraGUI.Layout.GetControlRect();
-            GUIContent labelContent = EditorGUI.BeginProperty(rect, label, serializedProperty);
+            GUIContent labelContent = UIBlockPropertyDrop.BeginProperty(rect, label, serializedProperty);
             int newVal = EditorGUI.IntSlider(rect, labelContent, serializedProperty.intValue, min, max);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -1082,7 +1093,7 @@ namespace Aura.Editor.GUIs
             float labelWidth = LabelWidth;
 
             Layout.BeginHorizontal();
-            PrefixLabel(label, property);
+            PrefixLabel(label, property, !disabled.X && !disabled.Y && !disabled.Z);
 
             LabelWidth = SingleCharacterGUIWidth;
 
@@ -1108,7 +1119,7 @@ namespace Aura.Editor.GUIs
             float labelWidth = LabelWidth;
 
             Layout.BeginHorizontal();
-            PrefixLabel(label, property);
+            PrefixLabel(label, property, !disabled.X && !disabled.Y);
 
             LabelWidth = SingleCharacterGUIWidth;
 
@@ -1128,7 +1139,7 @@ namespace Aura.Editor.GUIs
         public static void Length2Field(GUIContent label, _Length2 length, Length2.Calculated calc, Vector2 min, Vector2 max)
         {
             AuraGUI.Layout.BeginHorizontal();
-            PrefixLabel(label);
+            PrefixLabel(label, length.SerializedProperty);
 
             AuraGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect _);
             float labelWidth = LabelWidth;
@@ -1145,7 +1156,7 @@ namespace Aura.Editor.GUIs
 
             Layout.BeginHorizontal();
 
-            showRange = PrefixFoldoutLabel(label, showRange, lengths.SerializedProperty);
+            showRange = PrefixFoldoutLabel(label, showRange, lengths.SerializedProperty, !disabled.X && !disabled.Y && !disabled.Z);
 
             Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
 
@@ -1207,7 +1218,7 @@ namespace Aura.Editor.GUIs
         {
             EditorGUI.BeginChangeCheck();
             Rect rect = AuraGUI.Layout.GetControlRect();
-            GUIContent labelContent = EditorGUI.BeginProperty(rect, label, serializedProperty);
+            GUIContent labelContent = UIBlockPropertyDrop.BeginProperty(rect, label, serializedProperty);
             System.Enum newVal = EditorGUI.EnumFlagsField(rect, labelContent, current);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -1220,7 +1231,7 @@ namespace Aura.Editor.GUIs
         {
             EditorGUI.BeginChangeCheck();
             Rect rect = AuraGUI.Layout.GetControlRect();
-            GUIContent labelContent = EditorGUI.BeginProperty(rect, label, serializedProperty);
+            GUIContent labelContent = UIBlockPropertyDrop.BeginProperty(rect, label, serializedProperty);
             System.Enum newVal = EditorGUI.EnumPopup(rect, labelContent, current);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -1258,7 +1269,7 @@ namespace Aura.Editor.GUIs
             showSides = Foldout.FoldoutToggle(fieldRect, showSides);
 
             EditorGUI.BeginChangeCheck();
-            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, lengths.SerializedProperty);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, lengths.SerializedProperty);
             Length all = LengthFieldAlternate(fieldRect, propertyLabel, bounds.Left, range.Left, calc.Left, showMixed, showClampIndicators: false);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -1342,7 +1353,7 @@ namespace Aura.Editor.GUIs
                 fieldRect = Layout.GetControlRect(GUILayout.Width(PrefixLabelWidth + 2 * ToggleBoxSize));
 
                 EditorGUI.BeginChangeCheck();
-                GUIContent minMaxLabel = EditorGUI.BeginProperty(fieldRect, Labels.MinMax, minMax.SerializedProperty);
+                GUIContent minMaxLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, Labels.MinMax, minMax.SerializedProperty);
                 showRange = Foldout.FoldoutToggle(fieldRect, showRange);
                 EditorGUI.LabelField(fieldRect, minMaxLabel);
 
@@ -1358,7 +1369,7 @@ namespace Aura.Editor.GUIs
                 bool mixedMax = zField ? range.HasAsymmetricalMax() : range.XY.HasAsymmetricalMax();
                 bool4 mixed = new bool4(mixedClampMin, mixedMin, mixedClampMax, mixedMax);
 
-                MinMax rangeAll = LengthRangeField(GUIContent.none, bounds.Left, range.Left, calc.Left, false, horizontal: true, mixed);
+                MinMax rangeAll = LengthRangeField(GUIContent.none, bounds.Left, range.Left, calc.Left, false, horizontal: true, mixed, minMax.SerializedProperty);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -1437,6 +1448,8 @@ namespace Aura.Editor.GUIs
             showCorners = Foldout.FoldoutToggle(fieldRect, showCorners);
 
             EditorGUI.BeginChangeCheck();
+            UIBlockPropertyDrop.LengthField(fieldRect, master.SerializedProperty,
+                ViewWidth < CompactInspectorWidth ? MinFloatFieldWidth : ToggleToolbarFieldWidth, invertedCorners, 15);
             GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, master.SerializedProperty);
             Length masterLength = new Length(master.Raw, master.Type);
             Length all = LengthFieldAlternate(fieldRect, propertyLabel, masterLength, minMax, masterCalc, showMixedMaster, showClampIndicators: false, invertedCorners: invertedCorners);
@@ -1580,7 +1593,7 @@ namespace Aura.Editor.GUIs
             propertyRect.x = 0;
             propertyRect.width = fieldWidth;
 
-            EditorGUI.BeginProperty(propertyRect, GUIContent.none, layout.AspectRatioAxisProp);
+            UIBlockPropertyDrop.BeginProperty(propertyRect, GUIContent.none, layout.AspectRatioAxisProp);
             EditorGUI.BeginChangeCheck();
             Rect lockToggle = lockAspectRect;
             lockToggle.width = ToggleBoxSize + MinSpaceBetweenFields;
@@ -1688,6 +1701,7 @@ namespace Aura.Editor.GUIs
                                        clampedMax ? Styles.BlueTextNumberField :
                                        EditorStyles.numberField : EditorStyles.numberField;
 
+            UIBlockPropertyDrop.LengthField(position, length.SerializedProperty, typeFieldWidth, invertedCorners, cornerMask);
             GUIContent propertyLabel = EditorGUI.BeginProperty(position, label, length.SerializedProperty);
             float inversionWidth = invertedCorners == null ? 0 : 16;
             Rect floatField = position;
@@ -1746,6 +1760,7 @@ namespace Aura.Editor.GUIs
             bool changed = GUI.changed;
             bool mixed = EditorGUI.showMixedValue;
             int current = invertedCorners.intValue;
+            UIBlockPropertyDrop.Field(toggle, invertedCorners, mask);
             EditorGUI.BeginProperty(toggle, GUIContent.none, invertedCorners);
             EditorGUI.showMixedValue = invertedCorners.hasMultipleDifferentValues ||
                 ((current & mask) != 0 && (current & mask) != mask);
@@ -1879,7 +1894,7 @@ namespace Aura.Editor.GUIs
             return (LengthType)Toolbar(position, (int)type, Labels.LengthType, position.width * 0.5f);
         }
 
-        public static MinMax LengthRangeField(GUIContent label, Length length, MinMax minMax, Length.Calculated calc, bool showClampIndicators, bool horizontal = false, bool4 mixedProperties = default)
+        public static MinMax LengthRangeField(GUIContent label, Length length, MinMax minMax, Length.Calculated calc, bool showClampIndicators, bool horizontal = false, bool4 mixedProperties = default, SerializedProperty boundsProperty = null)
         {
             float labelWidth = LabelWidth;
 
@@ -1910,8 +1925,8 @@ namespace Aura.Editor.GUIs
 
             LabelWidth = 3f * SingleCharacterGUIWidth;
             EditorGUI.BeginChangeCheck();
-            minMax.Min = ToggleEnabledFloatField(Labels.Min, minMax.Min, calc.Value, float.NegativeInfinity, minStyle, mixedProperties.xy);
-            minMax.Max = ToggleEnabledFloatField(Labels.Max, minMax.Max, calc.Value, float.PositiveInfinity, maxStyle, mixedProperties.zw);
+            minMax.Min = ToggleEnabledFloatField(Labels.Min, minMax.Min, calc.Value, float.NegativeInfinity, minStyle, mixedProperties.xy, boundsProperty, "Min");
+            minMax.Max = ToggleEnabledFloatField(Labels.Max, minMax.Max, calc.Value, float.PositiveInfinity, maxStyle, mixedProperties.zw, boundsProperty, "Max");
             bool rangeChanged = EditorGUI.EndChangeCheck();
 
             if (horizontal)
@@ -1949,7 +1964,7 @@ namespace Aura.Editor.GUIs
             {
                 Layout.BeginVertical(Styles.HelpBox);
                 Rect fieldRect = Layout.GetControlRect(GUILayout.Width(LabelWidth));
-                GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, minMax.SerializedProperty);
+                GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, minMax.SerializedProperty);
                 EditorGUI.LabelField(fieldRect, propertyLabel);
             }
             else
@@ -1995,7 +2010,7 @@ namespace Aura.Editor.GUIs
             }
         }
 
-        public static float ToggleEnabledFloatField(GUIContent label, float value, float defaultValue, float invalidValue, GUIStyle floatFieldStyle, bool2 mixedProperties = default)
+        public static float ToggleEnabledFloatField(GUIContent label, float value, float defaultValue, float invalidValue, GUIStyle floatFieldStyle, bool2 mixedProperties = default, SerializedProperty boundsProperty = null, string bound = null)
         {
             bool showMixed = EditorGUI.showMixedValue;
             Layout.BeginHorizontal();
@@ -2003,8 +2018,9 @@ namespace Aura.Editor.GUIs
 
             EditorGUI.showMixedValue = mixedProperties.x; // mixed here means the mixed properties are mixed between valid/invalid
             Rect toggleRect = Layout.GetControlRect(GUILayout.Width(ToggleBoxSize));
+            RegisterBoundsDrop(toggleRect, boundsProperty, bound);
             bool isValid = EditorGUI.Toggle(toggleRect, wasValid);
-            EditorGUI.BeginDisabledGroup(!isValid);
+            EditorGUI.BeginDisabledGroup(!isValid && !(boundsProperty != null && UIBlockPropertyDrop.IsObjectDrag));
 
             int fontSize = floatFieldStyle.fontSize;
             TextAnchor alignment = floatFieldStyle.alignment;
@@ -2013,6 +2029,7 @@ namespace Aura.Editor.GUIs
 
             EditorGUI.showMixedValue = mixedProperties.y; // mixed here means the property values are mixed
             Rect fieldRect = Layout.GetControlRect(Layout.MinFloatFieldWidthOption);
+            RegisterBoundsDrop(fieldRect, boundsProperty, bound);
             value = EditorGUI.FloatField(fieldRect, label, value, floatFieldStyle);
 
             floatFieldStyle.fontSize = fontSize;
@@ -2037,6 +2054,15 @@ namespace Aura.Editor.GUIs
             return value;
         }
 
+        private static void RegisterBoundsDrop(Rect rect, SerializedProperty bounds, string bound)
+        {
+            if (bounds == null || !UIBlockPropertyDrop.IsObjectDrag) return;
+            UIBlockPropertyDrop.Fields(rect,
+                bounds.FindPropertyRelative("Left." + bound), bounds.FindPropertyRelative("Right." + bound),
+                bounds.FindPropertyRelative("Top." + bound), bounds.FindPropertyRelative("Bottom." + bound),
+                bounds.FindPropertyRelative("Front." + bound), bounds.FindPropertyRelative("Back." + bound));
+        }
+
         public static void ToggleEnabledFloatField(GUIContent label, SerializedProperty property, float defaultValue, float invalidValue, GUIStyle floatFieldStyle, float? minValue = null)
         {
             Layout.BeginHorizontal();
@@ -2050,7 +2076,7 @@ namespace Aura.Editor.GUIs
             floatFieldRect.x += ToggleBoxSize + MinSpaceBetweenFields;
 
             EditorGUI.BeginChangeCheck();
-            GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, label, property);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(fieldRect, label, property);
             bool wasValid = property.floatValue != invalidValue;
             bool isValid = EditorGUI.Toggle(toggleRect, wasValid);
             EditorGUI.BeginDisabledGroup(!isValid);

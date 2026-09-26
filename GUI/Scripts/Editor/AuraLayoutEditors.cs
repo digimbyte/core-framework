@@ -42,6 +42,8 @@ namespace Aura.Editor.GUIs
             AuraGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect z);
             AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
             EditorGUI.BeginChangeCheck();
+            UIBlockPropertyDrop.Field(x, expandWeightProperty.FindPropertyRelative("x"));
+            UIBlockPropertyDrop.Field(y, expandWeightProperty.FindPropertyRelative("y"));
             expandWeightProperty.vector2IntValue = new Vector2Int(EditorGUI.IntField(x, Labels.X, expandWeightProperty.vector2IntValue.x), expandWeightProperty.vector2IntValue.y);
             expandWeightProperty.vector2IntValue = new Vector2Int(expandWeightProperty.vector2IntValue.x, EditorGUI.IntField(y, Labels.Y, expandWeightProperty.vector2IntValue.y));
             AuraGUI.Layout.EndHorizontal();
@@ -65,6 +67,9 @@ namespace Aura.Editor.GUIs
             AuraGUI.PrefixLabel(new GUIContent("Aspect Ratio"), property);
             AuraGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
             AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
+            UIBlockPropertyDrop.Field(x, property.FindPropertyRelative("x"));
+            UIBlockPropertyDrop.Field(y, property.FindPropertyRelative("y"));
+            if (zField) UIBlockPropertyDrop.Field(z, property.FindPropertyRelative("z"));
             Vector3 value = property.vector3Value;
             value.x = EditorGUI.FloatField(x, Labels.X, value.x);
             value.y = EditorGUI.FloatField(y, Labels.Y, value.y);
@@ -106,7 +111,11 @@ namespace Aura.Editor.GUIs
 
         public static void DrawSizeUI(_Layout layout, UIBlock uiBlock, SerializedProperty previewSize)
         {
-            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Size"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Size", copyProperties: ScreenSpaceControlsSize(uiBlock) ? null : new[]
+            {
+                layout.SizeProp, layout.SizeMinMaxProp, layout.AutoSizeProp, layout.AspectRatioProp,
+                layout.AspectRatioAxisProp, layout.ExpandWeightProp, layout.RotateSizeProp
+            }))
             {
                 if (!foldout)
                 {
@@ -195,7 +204,7 @@ namespace Aura.Editor.GUIs
             }
         }
 
-        private static void ApplyAutosizeTypeChanges(_Length length, AutoSize autoSize)
+        internal static void ApplyAutosizeTypeChanges(_Length length, AutoSize autoSize)
         {
             if (autoSize == AutoSize.None)
             {
@@ -218,7 +227,11 @@ namespace Aura.Editor.GUIs
 
         public static void DrawPositionUI(_Layout layout, UIBlock uiBlock)
         {
-            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Position"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Position", copyProperties: ScreenSpaceControlsPosition(uiBlock) ? null : new[]
+            {
+                layout.PositionProp, layout.PositionMinMaxProp, layout.AlignmentProp,
+                layout.SerializedProperty.FindPropertyRelative("OffsetBySize")
+            }))
             {
                 if (!foldout)
                 {
@@ -269,7 +282,7 @@ namespace Aura.Editor.GUIs
             AuraGUI.Layout.BeginHorizontal();
 
             EditorGUI.BeginDisabledGroup(false);
-            AuraGUI.PrefixLabel(Labels.Position.Alignment, alignment.SerializedProperty);
+            AuraGUI.PrefixLabel(Labels.Position.Alignment, alignment.SerializedProperty, !disabled.X && !disabled.Y && !disabled.Z);
             EditorGUI.EndDisabledGroup();
 
             AuraGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
@@ -318,7 +331,7 @@ namespace Aura.Editor.GUIs
 
         public static void AlignmentField(Rect position, GUIContent label, SerializedProperty property, GUIContent[] axisIcons)
         {
-            GUIContent propertyLabel = EditorGUI.BeginProperty(position, label, property);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(position, label, property);
             if (label != null)
             {
                 EditorGUI.PrefixLabel(position, propertyLabel);
@@ -360,7 +373,7 @@ namespace Aura.Editor.GUIs
 
             AuraGUI.Layout.BeginHorizontal();
 
-            AuraGUI.PrefixLabel(Labels.Size.AutoSize, autosize.SerializedProperty);
+            AuraGUI.PrefixLabel(Labels.Size.AutoSize, autosize.SerializedProperty, !aspectLocked.X && !aspectLocked.Y && !aspectLocked.Z);
 
             AuraGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
 
@@ -393,7 +406,7 @@ namespace Aura.Editor.GUIs
         public static void AutoSizeField(Rect position, int axis, GUIContent label, SerializedProperty property)
         {
             EditorGUI.BeginChangeCheck();
-            GUIContent propertyLabel = EditorGUI.BeginProperty(position, label, property);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(position, label, property);
             EditorGUI.PrefixLabel(position, label);
 
             float labeWidth = EditorStyles.label.CalcSize(propertyLabel).x + AuraGUI.MinSpaceBetweenFields;
@@ -412,7 +425,10 @@ namespace Aura.Editor.GUIs
 
         public static void DrawPaddingMarginUI(_Layout layout, UIBlock uiBlock)
         {
-            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Padding & Margin"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Padding & Margin", copyProperties: new[]
+            {
+                layout.PaddingProp, layout.PaddingMinMaxProp, layout.MarginProp, layout.MarginMinMaxProp
+            }))
             {
                 if (!foldout)
                 {
@@ -455,7 +471,7 @@ namespace Aura.Editor.GUIs
             EditorGUI.BeginChangeCheck();
 
             bool wasEnabled = autoLayout.AxisProp.hasMultipleDifferentValues ? false : autoLayout.AxisProp.boolValue;
-            using Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Auto Layout", autoLayout.AxisProp);
+            using Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Auto Layout", autoLayout.AxisProp, autoLayout.SerializedProperty);
 
             if (EditorGUI.EndChangeCheck() && wasEnabled != autoLayout.AxisProp.boolValue)
             {
@@ -509,6 +525,8 @@ namespace Aura.Editor.GUIs
                 GUIContent primaryAxisLabel = Labels.AutoLayout.PrimaryAxis;
                 Rect labelRect = AuraGUI.Layout.GetControlRect();
                 labelRect = labelRect.Center(EditorStyles.boldLabel.CalcSize(primaryAxisLabel).x);
+                UIBlockPropertyDrop.Group(labelRect, autoLayout.AxisProp, autoLayout.alignmentProp, autoLayout.ReverseOrderProp,
+                    autoLayout.Spacing.SerializedProperty, autoLayout.SpacingMinMax.SerializedProperty, autoLayout.AutoSpaceProp, autoLayout.OffsetProp);
                 EditorGUI.LabelField(labelRect, primaryAxisLabel, EditorStyles.boldLabel);
 
                 AutoLayoutToolbar(autoLayout.AxisProp, autoLayout.alignmentProp, autoLayout.ReverseOrderProp, out bool axisChanged);
@@ -545,6 +563,7 @@ namespace Aura.Editor.GUIs
             crossAxisLabel = EditorGUI.BeginProperty(labelRect, crossAxisLabel, crossLayout.SerializedProperty);
             
             labelRect = labelRect.Center(EditorStyles.boldLabel.CalcSize(crossAxisLabel).x);
+            UIBlockPropertyDrop.Group(labelRect, crossLayout.SerializedProperty);
             EditorGUI.LabelField(labelRect, crossAxisLabel, EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
@@ -554,7 +573,7 @@ namespace Aura.Editor.GUIs
             controlRect.x = controlRect.xMax + AuraGUI.MinSpaceBetweenFields;
             controlRect.width = AuraGUI.ToggleBoxSize;
 
-            GUIContent toggleLabel = EditorGUI.BeginProperty(controlRect, GUIContent.none, crossLayout.AxisProp);
+            GUIContent toggleLabel = UIBlockPropertyDrop.BeginProperty(controlRect, GUIContent.none, crossLayout.AxisProp);
             bool isEnabled = EditorGUI.Toggle(controlRect, toggleLabel, wasEnabled);
             EditorGUI.EndProperty();
 
@@ -581,7 +600,7 @@ namespace Aura.Editor.GUIs
 
                 Rect expandToGridPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
-                GUIContent expandToGridLabel = EditorGUI.BeginProperty(expandToGridPosition, Labels.AutoLayout.ExpandToGrid, crossLayout.ExpandToGridProp);
+                GUIContent expandToGridLabel = UIBlockPropertyDrop.BeginProperty(expandToGridPosition, Labels.AutoLayout.ExpandToGrid, crossLayout.ExpandToGridProp);
                 bool expandToGrid = EditorGUI.Toggle(expandToGridPosition, expandToGridLabel, crossLayout.ExpandToGrid);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
@@ -591,7 +610,7 @@ namespace Aura.Editor.GUIs
 
                 Rect columnsPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
-                GUIContent columnsLabel = EditorGUI.BeginProperty(columnsPosition, new GUIContent("Columns", "Items per row. 0 = unlimited (size-based wrapping)."), crossLayout.ColumnsProp);
+                GUIContent columnsLabel = UIBlockPropertyDrop.BeginProperty(columnsPosition, new GUIContent("Columns", "Items per row. 0 = unlimited (size-based wrapping)."), crossLayout.ColumnsProp);
                 int columns = Mathf.Max(0, EditorGUI.IntField(columnsPosition, columnsLabel, crossLayout.Columns));
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
@@ -601,7 +620,7 @@ namespace Aura.Editor.GUIs
 
                 Rect rowsPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
-                GUIContent rowsLabel = EditorGUI.BeginProperty(rowsPosition, new GUIContent("Rows", "Max number of rows. 0 = unlimited. Total items = Rows × Columns."), crossLayout.RowsProp);
+                GUIContent rowsLabel = UIBlockPropertyDrop.BeginProperty(rowsPosition, new GUIContent("Rows", "Max number of rows. 0 = unlimited. Total items = Rows × Columns."), crossLayout.RowsProp);
                 int rows = Mathf.Max(0, EditorGUI.IntField(rowsPosition, rowsLabel, crossLayout.Rows));
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
@@ -611,7 +630,7 @@ namespace Aura.Editor.GUIs
 
                 Rect resizeChildrenPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
-                GUIContent resizeChildrenLabel = EditorGUI.BeginProperty(resizeChildrenPosition, new GUIContent("Resize Children", "Resize children to fill available space evenly. When Rows or Columns are set, space is divided uniformly."), crossLayout.ResizeChildrenProp);
+                GUIContent resizeChildrenLabel = UIBlockPropertyDrop.BeginProperty(resizeChildrenPosition, new GUIContent("Resize Children", "Resize children to fill available space evenly. When Rows or Columns are set, space is divided uniformly."), crossLayout.ResizeChildrenProp);
                 bool resizeChildren = EditorGUI.Toggle(resizeChildrenPosition, resizeChildrenLabel, crossLayout.ResizeChildren);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
@@ -676,7 +695,7 @@ namespace Aura.Editor.GUIs
 
             Rect axisPropertyRect = axisPosition;
             axisPropertyRect.xMin = 0;
-            EditorGUI.BeginProperty(axisPropertyRect, GUIContent.none, axisProp);
+            UIBlockPropertyDrop.BeginProperty(axisPropertyRect, GUIContent.none, axisProp);
             int axisIndex = axisProp.intValue - 1;
             axisIndex = axisIndex >= 0 ? axisIndex : 0;
             int layoutAxis = AuraGUI.Toolbar(axisPosition, axisIndex, Labels.AxisToolbarLabels, toolbarButtonWidth, disabledIndex: disabledAxis.Index());
@@ -692,13 +711,13 @@ namespace Aura.Editor.GUIs
             Rect alignPropertyRect = alignPosition;
             alignPropertyRect.y -= AuraGUI.MinSpaceBetweenFields;
             alignPropertyRect.height += 2 * AuraGUI.MinSpaceBetweenFields;
-            EditorGUI.BeginProperty(alignPropertyRect, GUIContent.none, alignmentProp);
+            UIBlockPropertyDrop.BeginProperty(alignPropertyRect, GUIContent.none, alignmentProp);
             AlignmentField(alignPosition, null, alignmentProp, Labels.Alignment[axisIndex]);
             EditorGUI.EndProperty();
 
             Rect orderPropertyRect = orderPosition;
             orderPropertyRect.xMax = AuraGUI.ViewWidth;
-            EditorGUI.BeginProperty(orderPropertyRect, GUIContent.none, orderProp);
+            UIBlockPropertyDrop.BeginProperty(orderPropertyRect, GUIContent.none, orderProp);
             EditorGUI.BeginChangeCheck();
             int order = AuraGUI.Toolbar(orderPosition, orderProp.boolValue ? 1 : 0, Labels.Order[axisIndex], toolbarButtonWidth);
             EditorGUI.EndProperty();
@@ -754,7 +773,7 @@ namespace Aura.Editor.GUIs
             EditorGUI.BeginDisabledGroup(hasListView);
 
             EditorGUI.BeginChangeCheck();
-            GUIContent autospaceLabel = EditorGUI.BeginProperty(autospacePosition, hasListView ? Labels.AutoLayout.AutoSpaceDisabled : Labels.AutoLayout.AutoSpace, autospaceProp);
+            GUIContent autospaceLabel = UIBlockPropertyDrop.BeginProperty(autospacePosition, hasListView ? Labels.AutoLayout.AutoSpaceDisabled : Labels.AutoLayout.AutoSpace, autospaceProp);
             bool autoFill = EditorGUI.Toggle(autospacePosition, autospaceLabel, autospaceProp.boolValue);
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
@@ -789,6 +808,25 @@ namespace Aura.Editor.GUIs
         /// to a stale-but-serialized position.
         /// </summary>
         /// <param name="serializedObject">The serialized parent object</param>
+        internal static void ApplyCopiedAutoLayoutChanges(SerializedObject serializedObject, Axis oldPrimary, Axis oldCross, bool primaryField)
+        {
+            var autoLayout = new _AutoLayout { SerializedProperty = serializedObject.FindProperty(Names.UIBlock.autoLayout) };
+            var cross = autoLayout.Cross;
+            if (primaryField && autoLayout.Axis != Axis.None && cross.Axis != Axis.None && oldPrimary != autoLayout.Axis)
+            {
+                autoLayout.alignment = RemapAlignment(oldPrimary, autoLayout.Axis, autoLayout.alignment);
+                Axis nextCross = OppositeAxis(autoLayout.Axis);
+                cross.alignment = RemapAlignment(oldCross, nextCross, cross.alignment);
+                cross.Axis = nextCross;
+            }
+            if ((oldPrimary != Axis.None && autoLayout.Axis == Axis.None) || (oldCross != Axis.None && cross.Axis == Axis.None))
+                ApplyAutoLayoutChildPositions(serializedObject);
+            if (autoLayout.Axis != Axis.None && oldPrimary != autoLayout.Axis)
+                ApplyKnownAutoLayoutPropsToChildren(autoLayout.AxisProp, oldPrimary.Index(), autoLayout.alignment);
+            if (autoLayout.Axis != Axis.None && cross.Axis != Axis.None && oldCross != cross.Axis)
+                ApplyKnownAutoLayoutPropsToChildren(cross.AxisProp, oldCross.Index(), cross.alignment);
+        }
+
         private static void ApplyAutoLayoutChildPositions(SerializedObject serializedObject)
         {
             UIBlock[] targets = serializedObject.targetObjects.Cast<UIBlock>().ToArray();

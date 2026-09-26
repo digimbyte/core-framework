@@ -44,9 +44,10 @@ namespace Aura.Editor.GUIs
             }
         }
 
-        public static Foldout DoHeaderGroup(bool foldout, string label, Action<Rect> dropdownMenu = null)
+        public static Foldout DoHeaderGroup(bool foldout, string label, Action<Rect> dropdownMenu = null, SerializedProperty[] copyProperties = null)
         {
             Rect headerRect = AuraGUI.Layout.GetControlRect();
+            UIBlockPropertyDrop.Group(headerRect, copyProperties);
 
             foldout = FoldoutHeaderField(headerRect, 0, foldout, label, dropdownMenu);
 
@@ -55,9 +56,12 @@ namespace Aura.Editor.GUIs
             return new Foldout(foldout, isHeaderGroup: true);
         }
 
-        public static Foldout DoHeaderGroup(bool foldout, string label, SerializedProperty toggleProperty, Action<Rect> dropdownMenu = null)
+        public static Foldout DoHeaderGroup(bool foldout, string label, SerializedProperty toggleProperty, Action<Rect> dropdownMenu = null, SerializedProperty[] copyProperties = null)
         {
             Rect headerRect = AuraGUI.Layout.GetControlRect();
+            Rect dropRect = headerRect;
+            dropRect.xMax -= HeaderExtraControlWidth;
+            UIBlockPropertyDrop.Group(dropRect, copyProperties);
 
             foldout = FoldoutHeaderField(headerRect, HeaderExtraControlWidth, foldout, label, dropdownMenu);
 
@@ -65,7 +69,7 @@ namespace Aura.Editor.GUIs
             togglePosition.width = AuraGUI.ToggleBoxSize;
             togglePosition.x = headerRect.xMax - HeaderExtraControlWidth;
 
-            GUIContent propertyLabel = EditorGUI.BeginProperty(togglePosition, GUIContent.none, toggleProperty);
+            GUIContent propertyLabel = UIBlockPropertyDrop.BeginProperty(togglePosition, GUIContent.none, toggleProperty);
             EditorGUI.BeginChangeCheck();
 
             bool isOn = EditorGUI.Toggle(togglePosition, propertyLabel, toggleProperty.boolValue);
@@ -77,7 +81,7 @@ namespace Aura.Editor.GUIs
             EditorGUI.EndProperty();
 
             AuraGUI.Layout.BeginVertical(foldout ? AuraGUI.Styles.InnerContent : GUIStyle.none);
-            EditorGUI.BeginDisabledGroup(!isOn);
+            EditorGUI.BeginDisabledGroup(!isOn && !(copyProperties != null && copyProperties.Length > 0 && UIBlockPropertyDrop.IsObjectDrag));
 
             return new Foldout(foldout, isHeaderGroup: true, disableableGroup: true);
         }

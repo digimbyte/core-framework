@@ -22,6 +22,7 @@ namespace Aura.Editor.GUIs
         where TBlock : UIBlock
     {
         protected abstract void DoGui(TBlock uiBlock);
+        protected virtual void OnPropertiesCopied() { }
 
         protected SerializedProperty previewSizeProperty = null;
         protected _Layout layout = new _Layout();
@@ -105,11 +106,14 @@ namespace Aura.Editor.GUIs
 
             EditorGUI.BeginChangeCheck();
 
+            UIBlockPropertyDrop.Begin();
             DrawToolbarUI(uiBlock, previewSizeProperty);
-
             DoGui(uiBlock);
 
-            if (EditorGUI.EndChangeCheck())
+            bool changed = EditorGUI.EndChangeCheck();
+            bool copied = UIBlockPropertyDrop.Apply(serializedObject);
+            if (copied) OnPropertiesCopied();
+            if (changed || copied)
             {
                 UpdateUnityObjects();
                 EditModeUtils.QueueEditorUpdateNextFrame();
