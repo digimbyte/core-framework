@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
     internal static class HandleCompat
     {

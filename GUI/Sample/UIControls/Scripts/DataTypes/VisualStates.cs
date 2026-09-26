@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// The set of available visual states for a UIControl

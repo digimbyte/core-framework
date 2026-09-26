@@ -815,7 +815,7 @@ namespace Core.Animator
         {
             string path = entry.FindPropertyRelative("propertyName")?.stringValue;
             var component = entry.FindPropertyRelative("targetComponent")?.objectReferenceValue;
-            if (Animate.NormalizeNovaPositionAxisPath(component, path) != path) return typeof(float).Name;
+            if (Animate.NormalizeAuraPositionAxisPath(component, path) != path) return typeof(float).Name;
             return entry.FindPropertyRelative("detectedPropertyType")?.stringValue ?? string.Empty;
         }
 

@@ -1,34 +1,34 @@
 #ifndef NOVA_DROPSHADOW_INCLUDED
 #define NOVA_DROPSHADOW_INCLUDED
 
-#include "Nova.cginc"
+#include "Aura.cginc"
 #include "Generated/DropShadow.g.cginc"
 
-NOVA_DECLARE_BUFFER(PerQuadDropShadowShaderData, _NovaData);
-NOVA_DECLARE_BUFFER(PerInstanceDropShadowShaderData, _NovaPerBlockData);
+NOVA_DECLARE_BUFFER(PerQuadDropShadowShaderData, _AuraData);
+NOVA_DECLARE_BUFFER(PerInstanceDropShadowShaderData, _AuraPerBlockData);
 
-v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID)
+v2f AuraVert(AuraQuadVert v, uint instanceID : SV_InstanceID)
 {
-    NovaVertInit(instanceID, v2f, o);
+    AuraVertInit(instanceID, v2f, o);
 
     uint indexIntoIndexBuffer = InstanceIDToDataIndex(instanceID);
-    NOVA_GET_BUFFER_ITEM_uint(perQuadDataIndex, indexIntoIndexBuffer, _NovaDataIndices);
-    NOVA_GET_BUFFER_ITEM_PerQuadDropShadowShaderData(perQuadData, perQuadDataIndex, _NovaData);
+    NOVA_GET_BUFFER_ITEM_uint(perQuadDataIndex, indexIntoIndexBuffer, _AuraDataIndices);
+    NOVA_GET_BUFFER_ITEM_PerQuadDropShadowShaderData(perQuadData, perQuadDataIndex, _AuraData);
     
     uint perBlockDataIndex = perQuadDataIndex / 8;
-    NOVA_GET_BUFFER_ITEM_PerInstanceDropShadowShaderData(perBlockData, perBlockDataIndex, _NovaPerBlockData);
-    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, perBlockData.TransformIndex, _NovaTransformsAndLighting);
+    NOVA_GET_BUFFER_ITEM_PerInstanceDropShadowShaderData(perBlockData, perBlockDataIndex, _AuraPerBlockData);
+    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, perBlockData.TransformIndex, _AuraTransformsAndLighting);
 
     float2 blockPos = perQuadData.PositionInNode + perQuadData.QuadSize * v.Pos;
     float3 rootSpace = mul(transformAndLighting.RootFromBlock, float4(blockPos, 0, 1)).xyz;
-    float3 worldPos = NovaRootToWorldPos(rootSpace);
+    float3 worldPos = AuraRootToWorldPos(rootSpace);
     o.pos = UnityWorldToClipPos(worldPos);
 
     #if defined(NOVA_CLIPPING)
         SetRootPos(o, rootSpace);
     #endif
     
-    NovaColorToV2F(Color, o, perBlockData.Color);
+    AuraColorToV2F(Color, o, perBlockData.Color);
 
     float2 bodyCircleCenter = perBlockData.HalfBlockQuadSize - perBlockData.BlockClipRadius;
     half clipRadiusSign = sign(perBlockData.BlockClipRadius);
@@ -72,24 +72,24 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID)
     #endif
 
     #if defined(NOVA_LIT)
-        NovaSetLitV2FParams(o, transformAndLighting);
+        AuraSetLitV2FParams(o, transformAndLighting);
         SetWorldPos(o, worldPos);
-        float3 rootNormal = NovaRootFromBlockNormal(transformAndLighting.RootFromBlock, v.Normal);
+        float3 rootNormal = AuraRootFromBlockNormal(transformAndLighting.RootFromBlock, v.Normal);
         float3 worldNormal = UnityObjectToWorldNormal(rootNormal);
         SetWorldNormal(o, worldNormal);
 
-        NovaInitInstance(appdata_full, appdata);
+        AuraInitInstance(appdata_full, appdata);
         appdata.vertex = float4(rootSpace, 1);
         appdata.normal = rootNormal;
-        NovaDoLitVert(o, worldPos, worldNormal, appdata);
+        AuraDoLitVert(o, worldPos, worldNormal, appdata);
     #endif
 
     return o;
 }
 
-fixed4 NovaFrag(v2f i) : SV_Target
+fixed4 AuraFrag(v2f i) : SV_Target
 {
-    NovaFragInit(i);
+    AuraFragInit(i);
 
     half4 positions = half4(GetNBlockPos(i), GetNShadowPos(i));
     half4 origins = half4(GetNBlockOrigin(i), GetNShadowOrigin(i));
@@ -115,9 +115,9 @@ fixed4 NovaFrag(v2f i) : SV_Target
         #if defined(NOVA_SHADOW_CAST_PASS)
             // Don't assign back to color because the shadow caster pass just returns 0,
             // but we want to clip
-            NovaDoLightingCalculations(i, color);
+            AuraDoLightingCalculations(i, color);
         #else
-            color = NovaDoLightingCalculations(i, color);
+            color = AuraDoLightingCalculations(i, color);
         #endif
     #endif
 

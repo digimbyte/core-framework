@@ -1,12 +1,12 @@
 ﻿
 
-using Nova.Compat;
+using Aura.Compat;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A hidden component which synchronizes listeners with their hierarchies based on
@@ -80,13 +80,13 @@ namespace Nova
             {
                 Destroy(this);
             }
-            else if (NovaApplication.IsEditor)
+            else if (AuraApplication.IsEditor)
             {
                 GameObject go = gameObject;
 
                 // Delay in case the entire GameObject is being
                 // destroyed to avoid calling destroy twice
-                NovaApplication.EditorDelayCall += () =>
+                AuraApplication.EditorDelayCall += () =>
                 {
                     if (go != null)
                     {
@@ -98,7 +98,7 @@ namespace Nova
 
         private void OnEnable()
         {
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 OnValidate();
             }
@@ -140,7 +140,7 @@ namespace Nova
         /// </summary>
         private void OnValidate()
         {
-            if (!NovaApplication.IsEditor)
+            if (!AuraApplication.IsEditor)
             {
                 return;
             }

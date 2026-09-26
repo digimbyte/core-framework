@@ -3,15 +3,15 @@
 
 #define CACHE_NAME
 
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
 using Unity.Collections;
 using UnityEngine;
-using static Nova.Internal.Hierarchy.Hierarchy;
+using static Aura.Internal.Hierarchy.Hierarchy;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal class HierarchyDataStore : DataStore<HierarchyDataStore, IHierarchyBlock>
     {
@@ -23,7 +23,7 @@ namespace Nova.Internal.Hierarchy
         public ref NativeHierarchy.ReadOnly ReadOnlyHierarchy => ref hierarchy.ReadOnlyHierarchy;
         public ref NativeHierarchy HierarchyFastButUnsafe => ref hierarchy.HierarchyFastButUnsafe;
         public ref NativeList<HierarchyElement> Hierarchy => ref hierarchy.Elements;
-        public ref NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup => ref hierarchy.Lookup;
+        public ref AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup => ref hierarchy.Lookup;
         public ref BatchGroupTracker BatchGroupTracker => ref hierarchy.BatchGroupTracker;
 
         protected override bool TryGetIndex(DataStoreID id, out DataStoreIndex index) => IDToIndexMap.TryGetIndex(id, out index);
@@ -272,7 +272,7 @@ namespace Nova.Internal.Hierarchy
             return true;
         }
 
-        public NovaList<DataStoreIndex> GetChildIndices(DataStoreIndex parentIndex)
+        public AuraList<DataStoreIndex> GetChildIndices(DataStoreIndex parentIndex)
         {
             return hierarchy.Elements[parentIndex].Children;
         }

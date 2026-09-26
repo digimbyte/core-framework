@@ -1,15 +1,15 @@
 ﻿
-using Nova.Editor.Serialization;
-using Nova.Internal.Utilities;
+using Aura.Editor.Serialization;
+using Aura.Internal.Utilities;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(ClipMask))]
     [CanEditMultipleObjects]
-    internal class ClipRectEditor : NovaEditor<ClipMask>
+    internal class ClipRectEditor : AuraEditor<ClipMask>
     {
         private _ClipMaskInfo wrapper = new _ClipMaskInfo();
 
@@ -34,8 +34,8 @@ namespace Nova.Editor.GUIs
         {
             EditorGUI.BeginChangeCheck();
 
-            NovaGUI.ColorField(Labels.ClipMask.Tint, wrapper.ColorProp, true);
-            NovaGUI.ToggleField(Labels.ClipMask.Clip, wrapper.ClipProp);
+            AuraGUI.ColorField(Labels.ClipMask.Tint, wrapper.ColorProp, true);
+            AuraGUI.ToggleField(Labels.ClipMask.Clip, wrapper.ClipProp);
             SerializedProperty textureProp = serializedObject.FindProperty(Names.ClipMask.maskTexture);
             EditorGUILayout.ObjectField(textureProp, Labels.ClipMask.Mask);
             SerializedProperty isAlphaProp = serializedObject.FindProperty(Names.ClipMask.isAlpha);

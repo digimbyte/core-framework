@@ -1,10 +1,10 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
 #if UNITY_2021_2_OR_NEWER
     [EditorTool(displayName: "UI Block Tool", componentToolTarget: typeof(UIBlock))]

@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
+using Aura.Internal;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     internal struct Scrollbar
     {

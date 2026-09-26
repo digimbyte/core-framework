@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal interface IDependencyDiffable<T> where T : IDependencyDiffable<T>
     {

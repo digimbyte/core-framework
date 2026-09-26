@@ -1,147 +1,147 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     internal static class AddObjectMenus
     {
-        [MenuItem("GameObject/Nova/UIBlock 2D", false, 8)]
+        [MenuItem("GameObject/Aura/UIBlock 2D", false, 8)]
         private static void AddUIBlock2D(MenuCommand menuCommand)
         {
             Add<UIBlock2D, Tools.UIBlockTool>(menuCommand, "UIBlock2D").CopyToDataStore();
         }
 
-        [MenuItem("GameObject/Nova/TextBlock", false, 9)]
+        [MenuItem("GameObject/Aura/TextBlock", false, 9)]
         private static void AddTextBlock(MenuCommand menuCommand)
         {
             Add<TextBlock, Tools.UIBlockTool>(menuCommand, "TextBlock").CopyToDataStore();
         }
 
-        [MenuItem("GameObject/Nova/UIBlock 3D", false, 10)]
+        [MenuItem("GameObject/Aura/UIBlock 3D", false, 10)]
         private static void AddUIBlock3D(MenuCommand menuCommand)
         {
             Add<UIBlock3D, Tools.UIBlockTool>(menuCommand, "UIBlock3D").CopyToDataStore();
         }
 
-        [MenuItem("GameObject/Nova/UIBlock", false, 11)]
+        [MenuItem("GameObject/Aura/UIBlock", false, 11)]
         private static void AddUIBlock(MenuCommand menuCommand)
         {
             Add<UIBlock, Tools.UIBlockTool>(menuCommand, "UIBlock").CopyToDataStore();
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/Button", false, 112)]
+        [MenuItem("GameObject/Aura/Button", false, 112)]
 #else
-        [MenuItem("GameObject/Nova/Controls/Button", false, 12)]
+        [MenuItem("GameObject/Aura/Controls/Button", false, 12)]
 #endif
         private static void AddButton(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.ButtonPrefab == null)
+            if (AuraSettings.Instance.ButtonPrefab == null)
             {
-                Debug.LogError("Button prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("Button prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.ButtonPrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.ButtonPrefab, menuCommand);
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/Toggle", false, 113)]
+        [MenuItem("GameObject/Aura/Toggle", false, 113)]
 #else
-        [MenuItem("GameObject/Nova/Controls/Toggle", false, 13)]
+        [MenuItem("GameObject/Aura/Controls/Toggle", false, 13)]
 #endif
         private static void AddToggle(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.TogglePrefab == null)
+            if (AuraSettings.Instance.TogglePrefab == null)
             {
-                Debug.LogError("Toggle prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("Toggle prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.TogglePrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.TogglePrefab, menuCommand);
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/Slider", false, 114)]
+        [MenuItem("GameObject/Aura/Slider", false, 114)]
 #else
-        [MenuItem("GameObject/Nova/Controls/Slider", false, 14)]
+        [MenuItem("GameObject/Aura/Controls/Slider", false, 14)]
 #endif
         private static void AddSlider(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.SliderPrefab == null)
+            if (AuraSettings.Instance.SliderPrefab == null)
             {
-                Debug.LogError("Slider prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("Slider prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.SliderPrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.SliderPrefab, menuCommand);
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/Dropdown", false, 115)]
+        [MenuItem("GameObject/Aura/Dropdown", false, 115)]
 #else
-        [MenuItem("GameObject/Nova/Controls/Dropdown", false, 15)]
+        [MenuItem("GameObject/Aura/Controls/Dropdown", false, 15)]
 #endif
         private static void AddDropdown(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.DropdownPrefab == null)
+            if (AuraSettings.Instance.DropdownPrefab == null)
             {
-                Debug.LogError("Dropdown prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("Dropdown prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.DropdownPrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.DropdownPrefab, menuCommand);
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/Text Field", false, 116)]
+        [MenuItem("GameObject/Aura/Text Field", false, 116)]
 #else
-        [MenuItem("GameObject/Nova/Controls/Text Field", false, 16)]
+        [MenuItem("GameObject/Aura/Controls/Text Field", false, 16)]
 #endif
         private static void AddTextField(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.TextFieldPrefab == null)
+            if (AuraSettings.Instance.TextFieldPrefab == null)
             {
-                Debug.LogError("Text Field prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("Text Field prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.TextFieldPrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.TextFieldPrefab, menuCommand);
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/Scroll View", false, 117)]
+        [MenuItem("GameObject/Aura/Scroll View", false, 117)]
 #else
-        [MenuItem("GameObject/Nova/Controls/Scroll View", false, 17)]
+        [MenuItem("GameObject/Aura/Controls/Scroll View", false, 17)]
 #endif
         private static void AddScrollView(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.ScrollViewPrefab == null)
+            if (AuraSettings.Instance.ScrollViewPrefab == null)
             {
-                Debug.LogError("Scroll View prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("Scroll View prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.ScrollViewPrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.ScrollViewPrefab, menuCommand);
         }
 
 #if UNITY_2021_1_OR_NEWER
-        [MenuItem("GameObject/Nova/UI Root", false, 118)]
+        [MenuItem("GameObject/Aura/UI Root", false, 118)]
 #else
-        [MenuItem("GameObject/Nova/Controls/UI Root", false, 18)]
+        [MenuItem("GameObject/Aura/Controls/UI Root", false, 18)]
 #endif
         private static void AddUIRoot(MenuCommand menuCommand)
         {
-            if (NovaSettings.Instance.UIRootPrefab == null)
+            if (AuraSettings.Instance.UIRootPrefab == null)
             {
-                Debug.LogError("UI Root prefab source unassigned. A prefab can be assigned under Project Settings > Nova.");
+                Debug.LogError("UI Root prefab source unassigned. A prefab can be assigned under Project Settings > Aura.");
                 return;
             }
 
-            InstantiatePrefab(NovaSettings.Instance.UIRootPrefab, menuCommand);
+            InstantiatePrefab(AuraSettings.Instance.UIRootPrefab, menuCommand);
         }
 
         private static void InstantiatePrefab(UIBlock uiBlock, MenuCommand menuCommand)

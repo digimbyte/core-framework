@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// An index used by the <see cref="RenderingDataStore"/> to index by specific type of render node

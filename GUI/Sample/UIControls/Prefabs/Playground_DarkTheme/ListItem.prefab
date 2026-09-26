@@ -313,7 +313,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ImageButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ImageButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 1682639074409663085}

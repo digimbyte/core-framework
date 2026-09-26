@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     internal static class VisibilityManager
     {

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Specifies how a parent element renders an image based on the aspect ratio of the image and the parent element itself.
@@ -107,7 +107,7 @@ namespace Nova
         /// </summary>
         [SerializeField]
         public float PixelsPerUnitMultiplier;
-        // Field order must match Nova.Internal.ImageAdjustment (ScaleMode then FillAxis); UIBlock2D
+        // Field order must match Aura.Internal.ImageAdjustment (ScaleMode then FillAxis); UIBlock2D
         // reinterprets this struct to Internal for rendering. Swapping these breaks 9-slice and other modes.
         [SerializeField]
         private ImageScaleMode scaleMode;

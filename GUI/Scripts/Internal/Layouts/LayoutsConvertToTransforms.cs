@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {
@@ -16,7 +16,7 @@ namespace Nova.Internal.Layouts
         /// A Job for calculating the local position (one axis at a time) of a Transform attached to a LayoutNode, based on the node's layout properties
         /// </summary>
         [BurstCompile]
-        internal struct ConvertToTransforms : INovaJobParallelFor
+        internal struct ConvertToTransforms : IAuraJobParallelFor
         {
             [ReadOnly]
             public NativeList<Length3.Calculated> CalculatedLengths;
@@ -36,7 +36,7 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
             [ReadOnly]
             public NativeList<DataStoreIndex> DirtyElementIndices;
 
@@ -45,7 +45,7 @@ namespace Nova.Internal.Layouts
 
             public bool PreviewSizesAvailable;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, PreviewSize> PreviewSizes;
+            public AuraHashMap<DataStoreID, PreviewSize> PreviewSizes;
 
             [NativeDisableParallelForRestriction]
             public NativeList<float3> TransformPositions;

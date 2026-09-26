@@ -1,22 +1,22 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
     internal struct RenderEngineRunner : IInitializable
     {
         public NativeList<DataStoreID> DirtyRoots;
-        public NovaHashMap<DataStoreID, int> TrackedRootIDs;
+        public AuraHashMap<DataStoreID, int> TrackedRootIDs;
 
         public BatchGroupDataStore BatchGroupData;
         public CameraSorting.Runner CameraSorter;

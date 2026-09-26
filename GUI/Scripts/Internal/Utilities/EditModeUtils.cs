@@ -1,8 +1,8 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using System;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal static class EditModeUtils
     {
@@ -17,20 +17,20 @@ namespace Nova.Internal.Utilities
         /// </summary>
         public static void QueueEditorUpdateNextFrame()
         {
-            if (!NovaApplication.IsEditor)
+            if (!AuraApplication.IsEditor)
             {
                 return;
             }
 
-            if (queued || NovaApplication.IsPlaying)
+            if (queued || AuraApplication.IsPlaying)
             {
                 return;
             }
 
             queued = true;
-            NovaApplication.EditorDelayCall += () =>
+            AuraApplication.EditorDelayCall += () =>
             {
-                NovaApplication.QueueEditorPlayerLoop();
+                AuraApplication.QueueEditorPlayerLoop();
                 queued = false;
             };
 

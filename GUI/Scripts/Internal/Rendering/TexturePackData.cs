@@ -1,12 +1,12 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct TexturePackData : IInitializable, IClearable
     {
@@ -30,10 +30,10 @@ namespace Nova.Internal.Rendering
         public TextureDescriptor TextureDescriptor;
         public GraphicsFormatDescriptor FormatDescriptor;
 
-        public NovaList<TextureID> Textures;
-        public NovaList<TexturePackSlice, TextureID> SliceOccupation;
+        public AuraList<TextureID> Textures;
+        public AuraList<TexturePackSlice, TextureID> SliceOccupation;
 
-        public NovaList<Assignment> NeedsCopied;
+        public AuraList<Assignment> NeedsCopied;
         private bool copyAll;
 
         public int Count

@@ -1,9 +1,9 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Alignment along the X axis.

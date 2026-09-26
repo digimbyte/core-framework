@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal interface IScreenSpace
     {

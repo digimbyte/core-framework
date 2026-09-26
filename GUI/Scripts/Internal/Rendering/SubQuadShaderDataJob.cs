@@ -1,21 +1,21 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct SubQuadData : IInitializable, IClearable
     {
-        public NovaList<int> RendersUnder;
-        public NovaList<SubQuadVert> Verts;
+        public AuraList<int> RendersUnder;
+        public AuraList<SubQuadVert> Verts;
         public int SortedIndex;
 
         public void Clear()
@@ -48,9 +48,9 @@ namespace Nova.Internal.Rendering
 
     internal struct SubQuadProcessingData : IInitializable, IClearable
     {
-        public NovaList<InProgressQuad> SubQuads;
-        public NovaList<float> XSplits;
-        public NovaList<float> YSplits;
+        public AuraList<InProgressQuad> SubQuads;
+        public AuraList<float> XSplits;
+        public AuraList<float> YSplits;
 
         public void Clear()
         {
@@ -75,14 +75,14 @@ namespace Nova.Internal.Rendering
     }
 
     [BurstCompile]
-    internal partial struct SubQuadShaderDataJob : INovaJobParallelFor
+    internal partial struct SubQuadShaderDataJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, RotationSetSummary> RotationSets;
+        public AuraHashMap<DataStoreID, RotationSetSummary> RotationSets;
         [ReadOnly]
         public NativeList<RenderIndex, ComputeBufferIndex> ComputeBufferIndices;
         [NativeDisableContainerSafetyRestriction]
@@ -149,7 +149,7 @@ namespace Nova.Internal.Rendering
 
             if (ImageDataProvider.TryGetImageData(blockData.Image.ImageID, out ImageDescriptor imageDescriptor, out TextureDescriptor textureDescriptor))
             {
-                // Nova UVs go from (-1, -1) to (1, 1), with (0, 0) in the center.
+                // Aura UVs go from (-1, -1) to (1, 1), with (0, 0) in the center.
                 if (blockData.Image.Adjustment.ScaleMode == ImageScaleMode.Sliced ||
                     blockData.Image.Adjustment.ScaleMode == ImageScaleMode.Tiled)
                 {
@@ -513,7 +513,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetClosest(ref NovaList<float> list, float val)
+        private int GetClosest(ref AuraList<float> list, float val)
         {
             float closestDelta = Math.Abs(list[0] - val);
             float lastDelta = closestDelta;
@@ -539,7 +539,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Dedupe(ref NovaList<float> list)
+        private void Dedupe(ref AuraList<float> list)
         {
             float lastValue = list[0];
             int writeIndex = 1;

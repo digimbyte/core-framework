@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova
+namespace Aura
 {
     internal static class LengthExtensions
     {

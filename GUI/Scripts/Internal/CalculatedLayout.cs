@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     [Obfuscation]
     [StructLayout(LayoutKind.Sequential)]

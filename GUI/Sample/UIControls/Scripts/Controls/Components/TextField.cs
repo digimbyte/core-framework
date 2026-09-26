@@ -1,12 +1,12 @@
 //#define VERBOSE
-using Nova;
+using Aura;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     public class TextField : MonoBehaviour
     {

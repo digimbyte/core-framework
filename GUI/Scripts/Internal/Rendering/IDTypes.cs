@@ -1,5 +1,5 @@
 ﻿
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -8,7 +8,7 @@ using UnityEngine;
 #pragma warning disable CS0660
 #pragma warning disable CS0661
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// The ID of a specific DrawCall type. Elements that have the same <see cref="DrawCallDescriptorID"/>

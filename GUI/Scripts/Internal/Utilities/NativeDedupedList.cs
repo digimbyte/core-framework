@@ -1,18 +1,18 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal struct NativeDedupedList<T> : ICapacityInitializable where T : unmanaged, IEquatable<T>
     {
         public NativeList<T> List;
-        private NovaHashMap<T, int> StoredValues;
+        private AuraHashMap<T, int> StoredValues;
 
         public int Length
         {
@@ -44,7 +44,7 @@ namespace Nova.Internal.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRange(NovaList<T> toAdd)
+        public void AddRange(AuraList<T> toAdd)
         {
             for (int i = 0; i < toAdd.Length; ++i)
             {
@@ -93,7 +93,7 @@ namespace Nova.Internal.Utilities
         public static NativeDedupedList<T> Create(int capacity = 16) => new NativeDedupedList<T>()
         {
             List = new NativeList<T>(capacity, Allocator.Persistent),
-            StoredValues = new NovaHashMap<T, int>(capacity, Allocator.Persistent),
+            StoredValues = new AuraHashMap<T, int>(capacity, Allocator.Persistent),
         };
 
         public void Init(int capacity = 0)
@@ -105,7 +105,7 @@ namespace Nova.Internal.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator NativeList<T>(NativeDedupedList<T> list) => list.List;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator NovaHashMap<T, int>(NativeDedupedList<T> list) => list.StoredValues;
+        public static implicit operator AuraHashMap<T, int>(NativeDedupedList<T> list) => list.StoredValues;
     }
 }
 

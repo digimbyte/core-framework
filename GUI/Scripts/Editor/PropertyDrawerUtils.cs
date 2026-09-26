@@ -1,14 +1,14 @@
 ﻿
-using Nova.Editor.GUIs;
-using Nova.Internal.Utilities;
+using Aura.Editor.GUIs;
+using Aura.Internal.Utilities;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     internal static class PropertyDrawerUtils
     {
-        public static readonly float SingleLineHeight = EditorGUIUtility.singleLineHeight + NovaGUI.MinSpaceBetweenFields;
+        public static readonly float SingleLineHeight = EditorGUIUtility.singleLineHeight + AuraGUI.MinSpaceBetweenFields;
 
         public static Rect Center(this ref Rect rect, float width)
         {
@@ -32,25 +32,25 @@ namespace Nova.Editor.Utilities
 
         public static void Split(this ref Rect rect, out Rect a, out Rect b)
         {
-            float individualSize = (rect.width - NovaGUI.MinSpaceBetweenFields) * .5f;
+            float individualSize = (rect.width - AuraGUI.MinSpaceBetweenFields) * .5f;
             a = new Rect(rect.x, rect.y, individualSize, rect.height);
-            b = new Rect(rect.x + a.width + NovaGUI.MinSpaceBetweenFields, rect.y, individualSize, rect.height);
+            b = new Rect(rect.x + a.width + AuraGUI.MinSpaceBetweenFields, rect.y, individualSize, rect.height);
         }
 
         public static void Split(this ref Rect rect, out Rect a, out Rect b, out Rect c)
         {
-            float individualSize = (rect.width - 2f * NovaGUI.MinSpaceBetweenFields) / 3f;
+            float individualSize = (rect.width - 2f * AuraGUI.MinSpaceBetweenFields) / 3f;
             a = rect;
             a.width = individualSize;
             b = c = a;
-            b.x += a.width + NovaGUI.MinSpaceBetweenFields;
-            c.x = b.x + a.width + NovaGUI.MinSpaceBetweenFields;
+            b.x += a.width + AuraGUI.MinSpaceBetweenFields;
+            c.x = b.x + a.width + AuraGUI.MinSpaceBetweenFields;
         }
 
         public static void Split(this ref Rect rect, float aWidth, out Rect a, out Rect b)
         {
             a = new Rect(rect.x, rect.y, aWidth, rect.height);
-            b = new Rect(a.xMax + NovaGUI.MinSpaceBetweenFields, rect.y, rect.width - aWidth - NovaGUI.MinSpaceBetweenFields, rect.height);
+            b = new Rect(a.xMax + AuraGUI.MinSpaceBetweenFields, rect.y, rect.width - aWidth - AuraGUI.MinSpaceBetweenFields, rect.height);
         }
 
         public static void BumpLine(this ref Rect rect)

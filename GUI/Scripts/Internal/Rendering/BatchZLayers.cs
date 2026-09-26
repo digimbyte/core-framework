@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct ZLayerAssignment
     {
@@ -15,8 +15,8 @@ namespace Nova.Internal.Rendering
 
     internal struct BatchZLayers : IInitializable, IClearable
     {
-        private NovaList<ZLayer> pool;
-        private NovaList<ZLayer> layers;
+        private AuraList<ZLayer> pool;
+        private AuraList<ZLayer> layers;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
@@ -191,7 +191,7 @@ namespace Nova.Internal.Rendering
 
         public struct ZLayer : IInitializable, IEquatable<short>, IComparable<ZLayer>
         {
-            public NovaList<ZLayerIndex, VisualElementIndex> Elements;
+            public AuraList<ZLayerIndex, VisualElementIndex> Elements;
             public short Layer;
 
             public int Length

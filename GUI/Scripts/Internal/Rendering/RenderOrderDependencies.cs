@@ -1,26 +1,26 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct RenderOrderDependencies : IInitializable
     {
-        public NativeList<NovaList<CoplanarSetIdentifier>> lists;
+        public NativeList<AuraList<CoplanarSetIdentifier>> lists;
         private int nextList;
-        public NovaHashMap<CoplanarSetIdentifier, int> setToDependencies;
+        public AuraHashMap<CoplanarSetIdentifier, int> setToDependencies;
 
-        public NovaList<CoplanarSetIdentifier> this[CoplanarSetIdentifier index] => lists[setToDependencies[index]];
+        public AuraList<CoplanarSetIdentifier> this[CoplanarSetIdentifier index] => lists[setToDependencies[index]];
 
         public NativeArray<CoplanarSetIdentifier> GetKeyArray(Allocator allocator)
         {
             return setToDependencies.GetKeyArray(allocator);
         }
 
-        public bool TryGetDependencies(CoplanarSetIdentifier set, out NovaList<CoplanarSetIdentifier> dependencies)
+        public bool TryGetDependencies(CoplanarSetIdentifier set, out AuraList<CoplanarSetIdentifier> dependencies)
         {
             if (!setToDependencies.TryGetValue(set, out int index))
             {
@@ -43,7 +43,7 @@ namespace Nova.Internal.Rendering
                 setToDependencies.Add(val, nextList);
                 if (nextList >= lists.Length)
                 {
-                    NovaList<CoplanarSetIdentifier> newList = new NovaList<CoplanarSetIdentifier>(0, Allocator.Persistent);
+                    AuraList<CoplanarSetIdentifier> newList = new AuraList<CoplanarSetIdentifier>(0, Allocator.Persistent);
                     newList.Add(mustRenderOver);
                     lists.Add(newList);
                 }

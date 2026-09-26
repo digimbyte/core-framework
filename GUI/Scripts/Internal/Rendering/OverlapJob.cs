@@ -1,22 +1,22 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct OverlapJob : INovaJobParallelFor
+    internal struct OverlapJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, BatchZLayers> ZLayers;
+        public AuraHashMap<DataStoreID, BatchZLayers> ZLayers;
         [ReadOnly]
         public NativeList<DataStoreIndex, CoplanarSetID> CoplanarSetIDs;
         [ReadOnly]
@@ -24,11 +24,11 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public BlockBounds Bounds;
         [ReadOnly]
-        public NovaHashMap<RenderIndex, ComputeBufferIndex> ShadowIndices;
+        public AuraHashMap<RenderIndex, ComputeBufferIndex> ShadowIndices;
 
         public OverlapElements OverlapElements;
 
-        private NovaList<VisualElementIndex, VisualElement> visualElements;
+        private AuraList<VisualElementIndex, VisualElement> visualElements;
 
         public void Execute(int index)
         {
@@ -68,7 +68,7 @@ namespace Nova.Internal.Rendering
         private void DoAccent(ref VisualElement visualElement, ref BatchZLayers zLayers, BatchZLayers.ReverseIterator iterator, ref AccentBounds accentBounds)
         {
             CoplanarSetID coplanarSetID = CoplanarSetIDs[visualElement.DataStoreIndex];
-            ref NovaList<VisualElementIndex> overlapping = ref OverlapElements.Get(ref visualElement, ref ComputeBufferIndices);
+            ref AuraList<VisualElementIndex> overlapping = ref OverlapElements.Get(ref visualElement, ref ComputeBufferIndices);
             overlapping.Clear();
 
             while (zLayers.TryGet(out VisualElementIndex indexToCheck, ref iterator))
@@ -113,7 +113,7 @@ namespace Nova.Internal.Rendering
         {
             CoplanarSetID coplanarSetID = CoplanarSetIDs[visualElement.DataStoreIndex];
             ref AABB elementBounds = ref Bounds.Block.ElementAt(visualElement.DataStoreIndex).CoplanarSpaceBounds;
-            ref NovaList<VisualElementIndex> overlapping = ref OverlapElements.Get(ref visualElement, ref ComputeBufferIndices);
+            ref AuraList<VisualElementIndex> overlapping = ref OverlapElements.Get(ref visualElement, ref ComputeBufferIndices);
             overlapping.Clear();
 
             while (zLayers.TryGet(out VisualElementIndex indexToCheck, ref iterator))

@@ -4,13 +4,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
-    /// Specifies how the Nova Engine should store and attempt to batch a given texture.
+    /// Specifies how the Aura Engine should store and attempt to batch a given texture.
     /// </summary>
     /// <seealso cref="UIBlock2D.ImagePackMode"/>
-    /// <seealso cref="NovaSettings.PackedImagesEnabled"/>
+    /// <seealso cref="AuraSettings.PackedImagesEnabled"/>
     public enum ImagePackMode
     {
         /// <summary>

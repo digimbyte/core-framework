@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Organize the <see cref="ItemVisuals"/> dropdown by categories and subcategories.

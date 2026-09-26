@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal class DrawInstancedData : ITexturePackSubscriber
     {

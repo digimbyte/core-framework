@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.TMP;
+using Aura.Compat;
+using Aura.TMP;
 using TMPro;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     /// <summary>
     /// Specifies if the TMPs have differing values when multiselecting
@@ -218,11 +218,11 @@ namespace Nova.Editor.GUIs
 
             tmp.SerializedObject.UpdateIfRequiredOrScript();
             tmp.UpdateDifferState();
-            NovaLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
-            NovaLayoutEditors.DrawPositionUI(layout, uiBlock);
-            NovaLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
-            NovaRenderingEditors.DrawBodyVisualsUI(baseRenderInfo, surfaceInfo, tmp);
-            NovaLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
+            AuraLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
+            AuraLayoutEditors.DrawPositionUI(layout, uiBlock);
+            AuraLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
+            AuraRenderingEditors.DrawBodyVisualsUI(baseRenderInfo, surfaceInfo, tmp);
+            AuraLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
 
             bool isHuggingX = autoSize.X == Internal.AutoSize.Shrink;
 

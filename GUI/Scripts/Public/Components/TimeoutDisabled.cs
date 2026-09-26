@@ -1,10 +1,10 @@
 
 using System.Collections;
-using Nova;
+using Aura;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Shrinks a `UIBlock`'s reference width from 100% to 0% over `Duration` seconds,
@@ -13,7 +13,7 @@ namespace Nova
     /// Usage: add to the same GameObject as a `UIBlock` (or assign a target),
     /// then call `StartTimeout()` or enable `Play On Enable`.
     /// </summary>
-    [AddComponentMenu("Nova/Timeout Disabled")]
+    [AddComponentMenu("Aura/Timeout Disabled")]
     [RequireComponent(typeof(UIBlock))]
     public class TimeoutDisabled : MonoBehaviour
     {

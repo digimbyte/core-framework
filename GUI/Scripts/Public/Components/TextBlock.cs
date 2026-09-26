@@ -1,10 +1,10 @@
 
 //#define LOG_EVERYTHING
-using Nova.Compat;
-using Nova.Extensions;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Extensions;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,13 +13,13 @@ using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A <see cref="UIBlock"/> for rendering text
     /// </summary>
     [ExecuteAlways, RequireComponent(typeof(TMP.TextMeshProTextBlock))]
-    [AddComponentMenu("Nova/TextBlock")]
+    [AddComponentMenu("Aura/TextBlock")]
     [HelpURL("https://novaui.io/manual/TextBlock.html")]
     public sealed class TextBlock : UIBlock, ITextBlock
     {
@@ -49,9 +49,8 @@ namespace Nova
         private long numberMax = 999999999;
 
         private UIBlock textScrollInstance;
-        private Scroller textScroller;
-        private UIBlock verticalTextScroll;
-        private UIBlock verticalTextScrollTrack;
+        private ScrollBlock textScroll;
+        private UIBlock textScrollCorner;
         private TextBlock scrollText;
         private bool scrollTextDirty = true;
         private bool visibleBeforeScroll;
@@ -66,29 +65,23 @@ namespace Nova
             }
             if (textScrollInstance == null)
             {
-                var prefab = NovaSettings.Instance.ScrollViewPrefab;
-                if (prefab == null || prefab.GetComponentInChildren<Scroller>(true) == null) return;
+                var prefab = AuraSettings.Instance.ScrollViewPrefab;
+                var prefabScroll = prefab == null ? null : prefab.GetComponentInChildren<ScrollBlock>(true);
+                if (prefabScroll == null || !(prefabScroll.Content is TextBlock)) return;
+
                 textScrollInstance = Instantiate(prefab, transform, false);
-                textScroller = textScrollInstance.GetComponentInChildren<Scroller>(true);
-                // The package ScrollView contains a Scroller viewport, not a
-                // ScrollBlock content root or a pre-existing text field.
-                var textObject = new GameObject("Text", typeof(RectTransform));
-                textObject.layer = gameObject.layer;
-                textObject.transform.SetParent(textScroller.transform, false);
-                scrollText = textObject.AddComponent<TextBlock>();
+                textScroll = textScrollInstance.GetComponentInChildren<ScrollBlock>(true);
+                scrollText = (TextBlock)textScroll.Content;
+                textScrollCorner = textScrollInstance.transform.Find("Scrollbar_X")?.GetComponent<UIBlock>();
                 scrollText.TMP.overflowMode = TextOverflowModes.Overflow;
-                var root = textScrollInstance;
-                root.AutoSize.X = Nova.AutoSize.Expand;
-                root.AutoSize.Y = Nova.AutoSize.Expand;
-                root.Position.X.Value = 0;
-                root.Position.Y.Value = 0;
-                root.Alignment.X = HorizontalAlignment.Center;
-                root.Alignment.Y = VerticalAlignment.Center;
-                var viewport = textScroller.GetComponent<UIBlock>();
-                viewport.AutoSize.X = Nova.AutoSize.Expand;
-                viewport.AutoSize.Y = Nova.AutoSize.Expand;
-                scrollText.Alignment.X = HorizontalAlignment.Left;
-                scrollText.Alignment.Y = VerticalAlignment.Top;
+                textScrollInstance.AutoSize.X = Aura.AutoSize.Expand;
+                textScrollInstance.AutoSize.Y = Aura.AutoSize.Expand;
+                textScrollInstance.SizeMinMax.X.Min = 0;
+                textScrollInstance.SizeMinMax.Y.Min = 0;
+                textScrollInstance.Position.X.Value = 0;
+                textScrollInstance.Position.Y.Value = 0;
+                textScrollInstance.Alignment.X = HorizontalAlignment.Center;
+                textScrollInstance.Alignment.Y = VerticalAlignment.Center;
                 visibleBeforeScroll = Visible;
                 Visible = false;
                 scrollTextDirty = true;
@@ -98,109 +91,52 @@ namespace Nova
                 scrollTextDirty = false;
                 MirrorScrollText();
             }
-            var scrollViewport = textScroller.GetComponent<UIBlock>();
             bool wrap = TMP.textWrappingMode != TextWrappingModes.NoWrap &&
                 TMP.textWrappingMode != TextWrappingModes.PreserveWhitespaceNoWrap;
-            // Nova measures the mirrored text. No separate TMP size calculation.
-            AutoSize horizontalSize = wrap ? Nova.AutoSize.Expand : Nova.AutoSize.Shrink;
+            var horizontalSize = wrap ? Aura.AutoSize.Expand : Aura.AutoSize.Shrink;
             if (scrollText.AutoSize.X != horizontalSize) scrollText.AutoSize.X = horizontalSize;
-            if (scrollText.AutoSize.Y != Nova.AutoSize.Shrink) scrollText.AutoSize.Y = Nova.AutoSize.Shrink;
-            if (scrollText.LayoutIsDirty || scrollViewport.LayoutIsDirty) return;
+            if (scrollText.AutoSize.Y != Aura.AutoSize.Shrink) scrollText.AutoSize.Y = Aura.AutoSize.Shrink;
+
+            var viewport = textScroll.ScrollViewportBlock;
+            // Use the latest completed layout. Mutable layout access above and
+            // scrollbar updates can mark it dirty again before every LateUpdate.
+            if (!LayoutDataStore.Instance.HasReceivedFullEngineUpdate(scrollText) ||
+                !LayoutDataStore.Instance.HasReceivedFullEngineUpdate(viewport)) return;
             Vector3 extent = scrollText.LayoutSize;
-            Vector3 available = scrollViewport.PaddedSize;
+            Vector3 available = viewport.PaddedSize;
             bool horizontal = !wrap && extent.x > available.x + 0.01f;
             bool vertical = extent.y > available.y + 0.01f;
-            bool overflowing = horizontal || vertical;
-            if (horizontal && vertical)
+            UpdateTextScrollAxis(textScroll.HorizontalScrollbarVisual, horizontal, true);
+            UpdateTextScrollAxis(textScroll.VerticalScrollbarVisual, vertical, false);
+            int columns = vertical ? 2 : 1;
+            int rows = horizontal ? 2 : 1;
+            if (textScrollInstance.AutoLayout.Cross.Columns != columns)
+                textScrollInstance.AutoLayout.Cross.Columns = columns;
+            if (textScrollInstance.AutoLayout.Cross.Rows != rows)
+                textScrollInstance.AutoLayout.Cross.Rows = rows;
+            if (textScrollCorner != null)
             {
-                if (verticalTextScroll == null)
-                {
-                    // The outer prefab scrolls X; this nested instance scrolls Y.
-                    // Both use the existing Scroller implementation and styling.
-                    verticalTextScroll = Instantiate(NovaSettings.Instance.ScrollViewPrefab, scrollViewport.transform, false);
-                    verticalTextScroll.AutoSize.X = Nova.AutoSize.None;
-                    verticalTextScroll.Size.X.Value = extent.x;
-                    verticalTextScroll.AutoSize.Y = Nova.AutoSize.Expand;
-                    verticalTextScroll.Position.X.Value = 0;
-                    verticalTextScroll.Position.Y.Value = 0;
-                    var verticalScroller = verticalTextScroll.GetComponentInChildren<Scroller>(true);
-                    var verticalViewport = verticalScroller.GetComponent<UIBlock>();
-                    verticalViewport.AutoSize.X = Nova.AutoSize.Expand;
-                    verticalViewport.AutoSize.Y = Nova.AutoSize.Expand;
-                    verticalViewport.AutoLayout.Axis = Axis.Y;
-                    verticalViewport.AutoLayout.Alignment = 1;
-                    verticalViewport.AutoLayout.Offset = 0;
-                    scrollText.transform.SetParent(verticalViewport.transform, false);
-                    // Keep the vertical control visible while its content moves on X.
-                    var thumb = verticalScroller.ScrollbarVisual;
-                    if (thumb != null && thumb.Parent != null && thumb.Parent != verticalTextScroll && thumb.Parent != verticalViewport)
-                    {
-                        verticalTextScrollTrack = thumb.Parent;
-                        verticalTextScrollTrack.transform.SetParent(textScrollInstance.transform, false);
-                    }
-                }
-                else if (!Mathf.Approximately(verticalTextScroll.Size.X.Raw, extent.x))
-                    verticalTextScroll.Size.X.Value = extent.x;
+                bool showCorner = textScroll.ScrollHorizontal && textScroll.ScrollVertical;
+                if (textScrollCorner.gameObject.activeSelf != showCorner)
+                    textScrollCorner.gameObject.SetActive(showCorner);
             }
-            else if (verticalTextScroll != null)
-            {
-                scrollText.transform.SetParent(scrollViewport.transform, false);
-                verticalTextScroll.gameObject.SetActive(false);
-                Destroy(verticalTextScroll.gameObject);
-                if (verticalTextScrollTrack != null)
-                {
-                    verticalTextScrollTrack.gameObject.SetActive(false);
-                    Destroy(verticalTextScrollTrack.gameObject);
-                }
-                verticalTextScroll = null;
-                verticalTextScrollTrack = null;
-            }
-            Axis axis = horizontal ? Axis.X : Axis.Y;
-            if (scrollViewport.AutoLayout.Axis != axis)
-            {
-                textScroller.CancelScroll();
-                scrollViewport.AutoLayout.Offset = 0;
-                scrollViewport.AutoLayout.Axis = axis;
-                scrollViewport.AutoLayout.Alignment = horizontal ? -1 : 1;
-                // Reorient the existing scrollbar; keep its authored appearance.
-                var thumb = textScroller.ScrollbarVisual;
-                if (thumb != null)
-                {
-                    SwapScrollAxes(thumb);
-                    if (thumb.Parent != null && thumb.Parent != scrollViewport && thumb.Parent != textScrollInstance)
-                        SwapScrollAxes(thumb.Parent);
-                    var interactable = thumb.GetComponent<Interactable>();
-                    if (interactable != null)
-                    {
-                        var draggable = interactable.Draggable;
-                        draggable.X = horizontal;
-                        draggable.Y = !horizontal;
-                        interactable.Draggable = draggable;
-                    }
-                }
-            }
-            if (!overflowing && scrollViewport.AutoLayout.Offset != 0)
-                scrollViewport.AutoLayout.Offset = 0;
-            if (textScroller.enabled != overflowing) textScroller.enabled = overflowing;
-            var scrollbar = textScroller.ScrollbarVisual;
-            if (scrollbar != null && scrollbar.gameObject.activeSelf != overflowing)
-                scrollbar.gameObject.SetActive(overflowing);
         }
 
-        private static void SwapScrollAxes(UIBlock block)
+        private void UpdateTextScrollAxis(UIBlock thumb, bool overflowing, bool horizontal)
         {
-            var size = block.Size.X;
-            block.Size.X = block.Size.Y;
-            block.Size.Y = size;
-            var position = block.Position.X;
-            block.Position.X = block.Position.Y;
-            block.Position.Y = position;
-            var autoSize = block.AutoSize.X;
-            block.AutoSize.X = block.AutoSize.Y;
-            block.AutoSize.Y = autoSize;
-            var alignment = block.Alignment.X;
-            block.Alignment.X = (HorizontalAlignment)block.Alignment.Y;
-            block.Alignment.Y = (VerticalAlignment)alignment;
+            if (thumb == null) return;
+            // Remove the entire track from rendering and layout, including its thumb.
+            // Aura's registered Parent is unavailable while the track is inactive.
+            // The Transform hierarchy remains intact so the same track can be restored.
+            var track = thumb.transform.parent != null ? thumb.transform.parent.gameObject : thumb.gameObject;
+            if (track.activeSelf == overflowing) return;
+            textScroll.CancelScroll();
+            track.SetActive(overflowing);
+            if (!overflowing)
+            {
+                if (horizontal) scrollText.Position.X.Value = 0;
+                else scrollText.Position.Y.Value = 0;
+            }
         }
 
         private void RemoveTextScroll()
@@ -209,9 +145,8 @@ namespace Nova
             textScrollInstance.gameObject.SetActive(false);
             Destroy(textScrollInstance.gameObject);
             textScrollInstance = null;
-            textScroller = null;
-            verticalTextScroll = null;
-            verticalTextScrollTrack = null;
+            textScroll = null;
+            textScrollCorner = null;
             scrollText = null;
             Visible = visibleBeforeScroll;
         }
@@ -248,7 +183,7 @@ namespace Nova
             to.tintAllSprites = from.tintAllSprites;
             to.overflowMode = TextOverflowModes.Overflow;
             to.text = from.text;
-            // The scroll prefab and Nova retain ownership of margins and layout.
+            // The scroll prefab and Aura retain ownership of margins and layout.
         }
 
         /// <summary>
@@ -437,7 +372,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The offset that is applied whenever text is being hugged (i.e. <see cref="UIBlock.AutoSize">AutoSize</see> is set to <see cref="Nova.AutoSize.Shrink">Shrink</see> on <c>x</c> or <c>y</c>).
+        /// The offset that is applied whenever text is being hugged (i.e. <see cref="UIBlock.AutoSize">AutoSize</see> is set to <see cref="Aura.AutoSize.Shrink">Shrink</see> on <c>x</c> or <c>y</c>).
         /// If text is not being hugged, this will be <see cref="Vector2.zero"/>.
         /// </summary>
         public Vector2 VisualOffset
@@ -451,7 +386,7 @@ namespace Nova
 
                 ref Internal.TextBlockData data = ref RenderingDataStore.Instance.Access(this, -1);
                 var shrinkConfig = AutoSize.XY;
-                bool2 shrink = new bool2(shrinkConfig.X == Nova.AutoSize.Shrink, shrinkConfig.Y == Nova.AutoSize.Shrink);
+                bool2 shrink = new bool2(shrinkConfig.X == Aura.AutoSize.Shrink, shrinkConfig.Y == Aura.AutoSize.Shrink);
                 return data.GetPositionalOffset(shrink);
             }
         }
@@ -473,7 +408,7 @@ namespace Nova
         internal bool2 RawTextShrinkMask
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => (AutoSize.XY == Nova.AutoSize.Shrink).ToBool2();
+            get => (AutoSize.XY == Aura.AutoSize.Shrink).ToBool2();
         }
 
         private bool ShrinkingAnyAxis
@@ -553,7 +488,7 @@ namespace Nova
 
 
 #pragma warning disable CS0162 // Unreachable code detected
-            if (NovaApplication.ConstIsEditor && TMP.textInfo.characterCount == 0 && !string.IsNullOrWhiteSpace(TMP.text))
+            if (AuraApplication.ConstIsEditor && TMP.textInfo.characterCount == 0 && !string.IsNullOrWhiteSpace(TMP.text))
             {
                 // Check for the text mesh being empty when the string is not
                 this.LogHelpfulWarnings();
@@ -639,6 +574,7 @@ namespace Nova
             ZeroOutRectTransform();
             TMP.OnPreRenderText += UpdateTextMeshHandler;
             TMP.RegisterDirtyVerticesCallback(TMPVertsDirtiedHandler);
+            TMP.RegisterDirtyMaterialCallback(MarkScrollTextDirty);
 
             SubscribeToTextChanged(this);
 
@@ -655,6 +591,7 @@ namespace Nova
             RemoveTextScroll();
             TMP.OnPreRenderText -= UpdateTextMeshHandler;
             TMP.UnregisterDirtyVerticesCallback(TMPVertsDirtiedHandler);
+            TMP.UnregisterDirtyMaterialCallback(MarkScrollTextDirty);
             UnsubscribeFromTextChanged(this);
             base.Unregister();
         }
@@ -847,6 +784,11 @@ namespace Nova
         /// <summary>
         /// Internal event handler for when TMP calls SetVerticesDirty()
         /// </summary>
+        private void MarkScrollTextDirty()
+        {
+            scrollTextDirty = true;
+        }
+
         private void HandleTMPVertsDirtied()
         {
             scrollTextDirty = true;
@@ -1006,6 +948,8 @@ namespace Nova
             {
                 return;
             }
+
+            textBlock.scrollTextDirty = true;
 
             if (textBlock.contentType == ContentType.Numbers)
             {

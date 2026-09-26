@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
@@ -13,7 +13,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct RenderHierarchyElement
     {
@@ -32,7 +32,7 @@ namespace Nova.Internal.Rendering
     /// </summary>
     [BurstCompile]
     [StructLayout(LayoutKind.Sequential)]
-    internal struct RenderOrderJob : INovaJobParallelFor
+    internal struct RenderOrderJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> BatchesToProcess;
@@ -43,7 +43,7 @@ namespace Nova.Internal.Rendering
         [NativeDisableContainerSafetyRestriction]
         public NativeList<BatchGroupElement> BatchGroupElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [NativeDisableParallelForRestriction]
         public NativeList<RenderIndex, UIBlock2DData> UIBlock2DData;
         [ReadOnly]
@@ -59,49 +59,49 @@ namespace Nova.Internal.Rendering
         [NativeDisableParallelForRestriction]
         public NativeList<DataStoreIndex, VisualModifierID> VisualModifierIDs;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, CoplanarSetID> CoplanarSetRoots;
+        public AuraHashMap<DataStoreID, CoplanarSetID> CoplanarSetRoots;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, RotationSetID> RotationSetRoots;
+        public AuraHashMap<DataStoreID, RotationSetID> RotationSetRoots;
         [ReadOnly]
         public ImageDataProvider ImageDataProvider;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, byte> HiddenElements;
+        public AuraHashMap<DataStoreID, byte> HiddenElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, VisualModifierID> BlockToVisualModifierID;
+        public AuraHashMap<DataStoreID, VisualModifierID> BlockToVisualModifierID;
 
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<VisualModifierID, AABB> VisualModifierClipBounds;
+        public AuraHashMap<VisualModifierID, AABB> VisualModifierClipBounds;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, BatchZLayers> ZLayers;
+        public AuraHashMap<DataStoreID, BatchZLayers> ZLayers;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, ZLayerCounts> ZLayerCounts;
+        public AuraHashMap<DataStoreID, ZLayerCounts> ZLayerCounts;
         [NativeDisableParallelForRestriction]
         public NativeList<DataStoreIndex, int> OrderInZLayer;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, NovaList<RenderHierarchyElement>> SortingProcessQueues;
+        public AuraHashMap<DataStoreID, AuraList<RenderHierarchyElement>> SortingProcessQueues;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
+        public AuraHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [NativeDisableParallelForRestriction]
         public NativeList<DataStoreIndex, CoplanarSetID> CoplanarSetIDs;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, RotationSetSummary> RotationSets;
+        public AuraHashMap<DataStoreID, RotationSetSummary> RotationSets;
         [NativeDisableParallelForRestriction]
         public NativeList<DataStoreIndex, RotationSetID> RotationSetIDs;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, NovaList<DataStoreID>> ContainedSortGroups;
+        public AuraHashMap<DataStoreID, AuraList<DataStoreID>> ContainedSortGroups;
         [NativeDisableParallelForRestriction]
         public NativeList<VisualModifierID, VisualModifierID> ParentVisualModifier;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, NovaList<VisualModifierID>> ContainedVisualModifers;
+        public AuraHashMap<DataStoreID, AuraList<VisualModifierID>> ContainedVisualModifers;
 
         private DataStoreID batchRootID;
         private DrawCallSummary drawCallSummary;
         private BatchZLayers zLayers;
-        private NovaList<VisualElementIndex, VisualElement> visualElements;
+        private AuraList<VisualElementIndex, VisualElement> visualElements;
         private RotationSetSummary rotationSetSummary;
-        private NovaList<VisualModifierID> containedVisualModifers;
+        private AuraList<VisualModifierID> containedVisualModifers;
 
         private VisualElementIndex CurrentVisualElementIndex
         {
@@ -113,7 +113,7 @@ namespace Nova.Internal.Rendering
         {
             batchRootID = BatchesToProcess[index];
 
-            NovaList<RenderHierarchyElement> processQueue = SortingProcessQueues.GetAndClear(batchRootID);
+            AuraList<RenderHierarchyElement> processQueue = SortingProcessQueues.GetAndClear(batchRootID);
 
             zLayers = ZLayers.GetAndClear(batchRootID);
             visualElements = VisualElements.GetAndClear(batchRootID);
@@ -123,7 +123,7 @@ namespace Nova.Internal.Rendering
             rotationSetSummary = RotationSets[batchRootID];
             ZLayerCounts zLayerCounts = ZLayerCounts.GetAndClear(batchRootID);
 
-            NovaList<DataStoreID> containedSortGroups = ContainedSortGroups.GetAndClear(batchRootID);
+            AuraList<DataStoreID> containedSortGroups = ContainedSortGroups.GetAndClear(batchRootID);
 
             // First, get all of the nodes order in their respective layers
             DataStoreIndex batchRootDataStoreIndex = DataStoreIDToDataStoreIndex[batchRootID];
@@ -151,7 +151,7 @@ namespace Nova.Internal.Rendering
                 // Add the children
                 AddChildren(ref processQueue, ref currentElement.DataStoreIndex, ref hierarchyElement);
 
-                if (!baseInfo.Val.Visible || (NovaApplication.ConstIsEditor && HiddenElements.ContainsKey(hierarchyElement.ID)))
+                if (!baseInfo.Val.Visible || (AuraApplication.ConstIsEditor && HiddenElements.ContainsKey(hierarchyElement.ID)))
                 {
                     continue;
                 }
@@ -214,7 +214,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddChildren(ref NovaList<RenderHierarchyElement> processQueue, ref DataStoreIndex dataStoreIndex, ref HierarchyElement hierarchyElement)
+        private void AddChildren(ref AuraList<RenderHierarchyElement> processQueue, ref DataStoreIndex dataStoreIndex, ref HierarchyElement hierarchyElement)
         {
             for (int i = hierarchyElement.Children.Length - 1; i >= 0; --i)
             {
@@ -293,7 +293,7 @@ namespace Nova.Internal.Rendering
             drawCallDescriptor.Surface = SurfaceData[dataStoreIndex];
             drawCallDescriptor.VisualModifierID = visualModifierID;
 
-            if (NovaSettings.Config.SuperSampleText)
+            if (AuraSettings.Config.SuperSampleText)
             {
                 drawCallDescriptor.MaterialModifiers |= MaterialModifier.SuperSample;
             }

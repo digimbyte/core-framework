@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Utilities.Extensions;
 using System;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     /// <summary>
     /// Similar to a List<T>, an array buffer will resize itself as new elements are added. It mainly 

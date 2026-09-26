@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Provide a display name to show in the the <see cref="ItemVisuals"/> dropdown inspector in place of the class name.

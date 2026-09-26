@@ -1,12 +1,12 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     internal struct NativeBitList : IDisposable
     {

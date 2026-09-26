@@ -1,13 +1,13 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomPropertyDrawer(typeof(NavNode))]
-    internal class NavNodeDrawer : NovaPropertyDrawer<_NavNode>
+    internal class NavNodeDrawer : AuraPropertyDrawer<_NavNode>
     {
         protected override float GetPropertyHeight(GUIContent label)
         {
@@ -23,13 +23,13 @@ namespace Nova.Editor.GUIs
             height += Mathf.Max(NavLinkDrawer.GetPropertyHeight(wrapper.Left), NavLinkDrawer.GetPropertyHeight(wrapper.Right));
             height += NavLinkDrawer.GetPropertyHeight(wrapper.Down);
 
-            if (NovaEditorPrefs.DisplayNavigationZAxis)
+            if (AuraEditorPrefs.DisplayNavigationZAxis)
             {
                 numSpaces++;
                 height += Mathf.Max(NavLinkDrawer.GetPropertyHeight(wrapper.Back), NavLinkDrawer.GetPropertyHeight(wrapper.Forward));
             }
 
-            return height + (numSpaces * NovaGUI.MinSpaceBetweenFields);
+            return height + (numSpaces * AuraGUI.MinSpaceBetweenFields);
         }
 
         protected override void OnGUI(Rect position, GUIContent label)
@@ -46,13 +46,13 @@ namespace Nova.Editor.GUIs
             position.BumpLine();
 
             Rect box = position;
-            box.height = GetPropertyHeight(label) - (PropertyDrawerUtils.SingleLineHeight + NovaGUI.MinSpaceBetweenFields);
+            box.height = GetPropertyHeight(label) - (PropertyDrawerUtils.SingleLineHeight + AuraGUI.MinSpaceBetweenFields);
 
             EditorGUI.HelpBox(box, string.Empty, MessageType.None);
 
-            position.y += NovaGUI.MinSpaceBetweenFields;
-            position.xMin += NovaGUI.MinSpaceBetweenFields;
-            position.xMax -= NovaGUI.MinSpaceBetweenFields;
+            position.y += AuraGUI.MinSpaceBetweenFields;
+            position.xMin += AuraGUI.MinSpaceBetweenFields;
+            position.xMax -= AuraGUI.MinSpaceBetweenFields;
 
             Draw3DToggle(position);
 
@@ -61,22 +61,22 @@ namespace Nova.Editor.GUIs
             Rect center = position.Center(position.width * 0.5f);
             EditorGUI.PropertyField(center, wrapper.UpProp);
 
-            position.Bump(position.height + NovaGUI.MinSpaceBetweenFields);
+            position.Bump(position.height + AuraGUI.MinSpaceBetweenFields);
             position.height = Mathf.Max(NavLinkDrawer.GetPropertyHeight(wrapper.Left), NavLinkDrawer.GetPropertyHeight(wrapper.Right));
 
             position.Split(out Rect left, out Rect right);
             EditorGUI.PropertyField(left, wrapper.LeftProp);
             EditorGUI.PropertyField(right, wrapper.RightProp);
 
-            position.Bump(position.height + NovaGUI.MinSpaceBetweenFields);
+            position.Bump(position.height + AuraGUI.MinSpaceBetweenFields);
             position.height = NavLinkDrawer.GetPropertyHeight(wrapper.Down);
 
             center = position.Center(position.width * 0.5f);
             EditorGUI.PropertyField(center, wrapper.DownProp);
 
-            if (NovaEditorPrefs.DisplayNavigationZAxis)
+            if (AuraEditorPrefs.DisplayNavigationZAxis)
             {
-                position.Bump(position.height + NovaGUI.MinSpaceBetweenFields);
+                position.Bump(position.height + AuraGUI.MinSpaceBetweenFields);
                 position.height = Mathf.Max(NavLinkDrawer.GetPropertyHeight(wrapper.Back), NavLinkDrawer.GetPropertyHeight(wrapper.Forward));
 
                 position.Split(out left, out right);
@@ -93,11 +93,11 @@ namespace Nova.Editor.GUIs
         private void Draw3DToggle(Rect position)
         {
             float labelWidth = EditorGUIUtility.labelWidth;
-            EditorGUIUtility.labelWidth = 2 * NovaGUI.SingleCharacterGUIWidth;
+            EditorGUIUtility.labelWidth = 2 * AuraGUI.SingleCharacterGUIWidth;
 
-            float toggleWidth = 2 * NovaGUI.SingleCharacterGUIWidth;
+            float toggleWidth = 2 * AuraGUI.SingleCharacterGUIWidth;
             Rect zToggle = position.TopRight(toggleWidth, PropertyDrawerUtils.SingleLineHeight);
-            NovaEditorPrefs.DisplayNavigationZAxis = GUI.Toggle(zToggle, NovaEditorPrefs.DisplayNavigationZAxis, Labels.NavNode.ThreeDToggle, NovaGUI.Styles.ToolbarButtonMid);
+            AuraEditorPrefs.DisplayNavigationZAxis = GUI.Toggle(zToggle, AuraEditorPrefs.DisplayNavigationZAxis, Labels.NavNode.ThreeDToggle, AuraGUI.Styles.ToolbarButtonMid);
             EditorGUIUtility.labelWidth = labelWidth;
         }
     }

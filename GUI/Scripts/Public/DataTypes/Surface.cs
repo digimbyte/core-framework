@@ -1,12 +1,12 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A lighting model.
@@ -258,7 +258,7 @@ namespace Nova
         [SerializeField, NotKeyable]
         private float param2;
         /// <summary>
-        /// The lighting model to use. See <see cref="Nova.LightingModel"/> for more info.
+        /// The lighting model to use. See <see cref="Aura.LightingModel"/> for more info.
         /// </summary>
         [SerializeField]
         public LightingModel LightingModel;

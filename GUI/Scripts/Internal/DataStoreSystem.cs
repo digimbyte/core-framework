@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Core;
+using Aura.Internal.Core;
 using System.Collections.Generic;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal class DataStoreSystem : System<DataStoreSystem>
     {

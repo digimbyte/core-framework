@@ -1,11 +1,11 @@
-using Nova;
+using Aura;
 using System;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
-    /// Handles focus/unfocus logic for a <see cref="TextField"/> using Nova's
+    /// Handles focus/unfocus logic for a <see cref="TextField"/> using Aura's
     /// <see cref="Gesture"/> system. Also handles drag-to-select within the <see cref="TextField"/>.
     /// </summary>
     /// <remarks>

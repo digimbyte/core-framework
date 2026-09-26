@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class ArrayExtensions
     {

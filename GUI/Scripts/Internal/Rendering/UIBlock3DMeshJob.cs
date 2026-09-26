@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct UIBlock3DMeshJob : INovaJob
+    internal struct UIBlock3DMeshJob : IAuraJob
     {
         public int CornerDivisions;
         public int EdgeDivisions;

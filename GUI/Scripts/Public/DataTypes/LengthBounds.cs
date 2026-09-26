@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A set of <see cref="Length">Lengths</see> used to configure offsets from each face of an axis-aligned bounding box.

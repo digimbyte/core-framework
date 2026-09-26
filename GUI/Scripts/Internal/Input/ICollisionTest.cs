@@ -1,12 +1,12 @@
 ﻿
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     /// <summary>
     /// A ray stored in a few different structures for faster access and to reduce common calculations

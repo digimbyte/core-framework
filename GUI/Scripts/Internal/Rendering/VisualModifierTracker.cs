@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct VisualModifierRenderData
     {
@@ -163,13 +163,13 @@ namespace Nova.Internal.Rendering
 
     internal class VisualModifierTracker : IInitializable
     {
-        public NovaHashMap<DataStoreID, VisualModifierID> BlockToModifierID;
+        public AuraHashMap<DataStoreID, VisualModifierID> BlockToModifierID;
         public NativeList<VisualModifierID, ClipMaskInfo> Data;
         public NativeList<VisualModifierID, DataStoreID> ModifierToBlockID;
         public NativeList<VisualModifierID, VisualModifierRenderData> RenderData;
         public NativeList<VisualModifierID, VisualModifierShaderData> ShaderData;
         public List<ManagedVisualModifierShaderData> ManagedShaderData = new List<ManagedVisualModifierShaderData>();
-        public NovaHashMap<VisualModifierID, AABB> ClipBounds;
+        public AuraHashMap<VisualModifierID, AABB> ClipBounds;
         /// <summary>
         /// If the modifier is nested, this will contain it's parent modifier
         /// </summary>

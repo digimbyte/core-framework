@@ -1,21 +1,21 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using Unity.Burst;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct VisualElementCountJob : INovaJob
+    internal struct VisualElementCountJob : IAuraJob
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatchRoots;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, RotationSetSummary> RotationSets;
+        public AuraHashMap<DataStoreID, RotationSetSummary> RotationSets;
 
         [WriteOnly]
         public NativeReference<RenderEngineUpdateCounts> VisualElementCount;

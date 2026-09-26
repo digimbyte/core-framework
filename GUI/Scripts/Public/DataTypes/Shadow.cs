@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Specifies the direction for a shadow to expand.

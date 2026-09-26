@@ -1,7 +1,7 @@
-using Nova;
+using Aura;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// An abstract base class used to share common functionality of various UI controls (e.g. Button, Toggle, Slider, Dropdown, etc.) 

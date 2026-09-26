@@ -1,19 +1,19 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct RenderSetFilterJob : INovaJob
+    internal struct RenderSetFilterJob : IAuraJob
     {
         [ReadOnly]
         public NativeList<DataStoreIndex> PotentialCoplanarSetRoots;
@@ -26,7 +26,7 @@ namespace Nova.Internal.Rendering
         [NativeDisableParallelForRestriction]
         public NativeList<float4x4> WorldFromLocalMatrices;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [NativeDisableContainerSafetyRestriction]
         public NativeList<BatchGroupElement> BatchGroupElements;
         [NativeDisableContainerSafetyRestriction]
@@ -34,10 +34,10 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<DataStoreID> DirtyRoots;
 
-        public NovaHashMap<DataStoreID, CoplanarSetID> CoplanarSetRoots;
-        public NovaHashMap<DataStoreID, RotationSetID> RotationSetRoots;
-        public NovaHashMap<DataStoreID, NovaList<CoplanarSetID, CoplanarSet>> CoplanarSets;
-        public NovaHashMap<DataStoreID, RotationSetSummary> RotationSets;
+        public AuraHashMap<DataStoreID, CoplanarSetID> CoplanarSetRoots;
+        public AuraHashMap<DataStoreID, RotationSetID> RotationSetRoots;
+        public AuraHashMap<DataStoreID, AuraList<CoplanarSetID, CoplanarSet>> CoplanarSets;
+        public AuraHashMap<DataStoreID, RotationSetSummary> RotationSets;
 
         public void Execute()
         {
@@ -115,7 +115,7 @@ namespace Nova.Internal.Rendering
                 }
 
                 ref BatchGroupElement batchGroupElement = ref BatchGroupElements.ElementAt(dataStoreIndex);
-                NovaList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets[batchGroupElement.BatchRootID];
+                AuraList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets[batchGroupElement.BatchRootID];
 
                 ref float4x4 localFromWorld = ref LocalFromWorldMatrices.ElementAt(dataStoreIndex);
 
@@ -164,7 +164,7 @@ namespace Nova.Internal.Rendering
                 ref float4x4 worldFromLocal = ref WorldFromLocalMatrices.ElementAt(dataStoreIndex);
 
                 // Clear
-                NovaList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets.GetAndClear(batchRootID);
+                AuraList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets.GetAndClear(batchRootID);
                 CreateNewCoplanarSet(ref coplanarSets, batchRootID, batchRootID);
 
                 RotationSetSummary rotationSetSummary = RotationSets.GetAndClear(batchRootID);
@@ -179,7 +179,7 @@ namespace Nova.Internal.Rendering
             RotationSets[batchRootID] = rotationSetSummary;
         }
 
-        private void CreateNewCoplanarSet(ref NovaList<CoplanarSetID, CoplanarSet> coplanarSets, DataStoreID rootID, DataStoreID batchRootID)
+        private void CreateNewCoplanarSet(ref AuraList<CoplanarSetID, CoplanarSet> coplanarSets, DataStoreID rootID, DataStoreID batchRootID)
         {
             CoplanarSetRoots.Add(rootID, coplanarSets.Length);
             coplanarSets.Add(new CoplanarSet(rootID));

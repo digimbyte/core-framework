@@ -1,10 +1,10 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
@@ -13,7 +13,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     internal struct NavigationHit : IComparer<NavigationHit>, IHit
     {
@@ -66,13 +66,13 @@ namespace Nova.Internal.Input
         [ReadOnly]
         public NativeList<Length3.Calculated> LengthProperties;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+        public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
         [ReadOnly]
         public NativeList<HierarchyElement> Hierarchy;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, bool> NavigationScopeFlags;
+        public AuraHashMap<DataStoreID, bool> NavigationScopeFlags;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, bool> NavigationNodeFlags;
+        public AuraHashMap<DataStoreID, bool> NavigationNodeFlags;
 
         [ReadOnly]
         public NativeList<float3> Sizes;
@@ -84,7 +84,7 @@ namespace Nova.Internal.Input
         public NativeList<float4x4> LocalToWorldMatrices;
 
         public bool UseTopLevelProximities;
-        public NovaHashMap<DataStoreID, float> TopLevelProximities;
+        public AuraHashMap<DataStoreID, float> TopLevelProximities;
 
         [NativeDisableUnsafePtrRestriction]
         private float4x4* worldToLocalPtr;

@@ -1534,7 +1534,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1405113017}
-        m_TargetAssemblyTypeName: Nova.Scroller, Nova
+        m_TargetAssemblyTypeName: Aura.Scroller, Aura
         m_MethodName: ScrollToIndex
         m_Mode: 3
         m_Arguments:
@@ -1586,7 +1586,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 1367997891}
@@ -10001,7 +10001,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1405113017}
-        m_TargetAssemblyTypeName: Nova.Scroller, Nova
+        m_TargetAssemblyTypeName: Aura.Scroller, Aura
         m_MethodName: ScrollToIndex
         m_Mode: 3
         m_Arguments:
@@ -10053,7 +10053,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 241901279}
@@ -13526,7 +13526,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1405113017}
-        m_TargetAssemblyTypeName: Nova.Scroller, Nova
+        m_TargetAssemblyTypeName: Aura.Scroller, Aura
         m_MethodName: ScrollToIndex
         m_Mode: 3
         m_Arguments:
@@ -13578,7 +13578,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 2897208}
@@ -14631,7 +14631,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1405113017}
-        m_TargetAssemblyTypeName: Nova.Scroller, Nova
+        m_TargetAssemblyTypeName: Aura.Scroller, Aura
         m_MethodName: ScrollToIndex
         m_Mode: 3
         m_Arguments:
@@ -14683,7 +14683,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 1063609512}
@@ -15066,7 +15066,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1405113017}
-        m_TargetAssemblyTypeName: Nova.Scroller, Nova
+        m_TargetAssemblyTypeName: Aura.Scroller, Aura
         m_MethodName: ScrollToIndex
         m_Mode: 3
         m_Arguments:
@@ -15118,7 +15118,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 1291046036}
@@ -18281,7 +18281,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1405113017}
-        m_TargetAssemblyTypeName: Nova.Scroller, Nova
+        m_TargetAssemblyTypeName: Aura.Scroller, Aura
         m_MethodName: ScrollToIndex
         m_Mode: 3
         m_Arguments:
@@ -18333,7 +18333,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 513030462}
@@ -22866,7 +22866,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393285925343821}
@@ -23168,7 +23168,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1351844810}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -23180,7 +23180,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 27038657}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -23192,7 +23192,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 683209326}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -23282,7 +23282,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393286186990929}
@@ -23584,7 +23584,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 51223881}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -23596,7 +23596,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1113558155}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -23608,7 +23608,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 980783140}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -28846,7 +28846,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393284599490157}
@@ -29148,7 +29148,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1683732030}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -29160,7 +29160,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1652807931}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -29172,7 +29172,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 2001070806}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -31138,7 +31138,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393285256184984}
@@ -31173,7 +31173,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 531029194}
-        m_TargetAssemblyTypeName: NovaSamples.UIPlayground.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIPlayground.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -31185,7 +31185,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1091671862}
-        m_TargetAssemblyTypeName: NovaSamples.UIPlayground.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIPlayground.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -31197,7 +31197,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1820291071}
-        m_TargetAssemblyTypeName: NovaSamples.UIPlayground.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIPlayground.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -31860,7 +31860,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393285552358944}
@@ -31895,7 +31895,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 787092884}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -31907,7 +31907,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 860560775}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -31919,7 +31919,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 685106096}
-        m_TargetAssemblyTypeName: NovaSamples.UIControls.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIControls.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -32029,7 +32029,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393285531190777}
@@ -32331,7 +32331,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2035113351}
-        m_TargetAssemblyTypeName: NovaSamples.UIPlayground.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIPlayground.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -32343,7 +32343,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 228809136}
-        m_TargetAssemblyTypeName: NovaSamples.UIPlayground.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIPlayground.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:
@@ -32355,7 +32355,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 27864853}
-        m_TargetAssemblyTypeName: NovaSamples.UIPlayground.ProgressBar, NovaShared
+        m_TargetAssemblyTypeName: AuraSamples.UIPlayground.ProgressBar, AuraShared
         m_MethodName: set_Percent
         m_Mode: 0
         m_Arguments:

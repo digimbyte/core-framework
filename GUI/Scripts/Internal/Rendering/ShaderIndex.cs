@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct ShaderIndex

@@ -1,8 +1,8 @@
 ﻿
 using System;
-using Nova;
+using Aura;
 
-namespace Nova
+namespace Aura
 {
     public static class UIBlockExtensions
     {

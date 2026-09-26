@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -13,7 +13,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct SortGroupHierarchyInfo
     {
@@ -28,7 +28,7 @@ namespace Nova.Internal.Rendering
     /// Sorts sort groups hierarchically, updates visual modifier shader data, and assigns materials
     /// </summary>
     [BurstCompile]
-    internal struct RenderingFinalizeJob : INovaJob
+    internal struct RenderingFinalizeJob : IAuraJob
     {
         public int CurrentMaterialCount;
         public int CurrentShaderCount;
@@ -40,9 +40,9 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<HierarchyElement> Hierarchy;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<DataStoreID>> ContainedSortGroups;
+        public AuraHashMap<DataStoreID, AuraList<DataStoreID>> ContainedSortGroups;
         [NativeDisableContainerSafetyRestriction]
-        public NovaHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
+        public AuraHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
         [ReadOnly]
         public NativeList<VisualModifierID, ClipMaskInfo> VisualModifierData;
         [ReadOnly]
@@ -52,7 +52,7 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<VisualModifierID, DataStoreID> ModifierToBlockID;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [ReadOnly]
         public NativeList<Length3.Calculated> LayoutProperties;
         [ReadOnly]
@@ -60,31 +60,31 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<RenderIndex, UIBlock2DData> UIBlock2DData;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
+        public AuraHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
         [ReadOnly]
-        public NovaHashMap<MaterialDescriptor, MaterialCacheIndex> CachedMaterials;
+        public AuraHashMap<MaterialDescriptor, MaterialCacheIndex> CachedMaterials;
         [ReadOnly]
-        public NovaHashMap<ShaderDescriptor, ShaderCacheIndex> CachedShaders;
+        public AuraHashMap<ShaderDescriptor, ShaderCacheIndex> CachedShaders;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
+        public AuraHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
         [ReadOnly]
         public NativeList<DataStoreIndex, VisualModifierID> VisualModifierIDs;
         [ReadOnly]
         public NativeList<BatchGroupElement> BatchGroupElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualModifierID>> ContainedVisualModifers;
+        public AuraHashMap<DataStoreID, AuraList<VisualModifierID>> ContainedVisualModifers;
 
-        public NovaHashMap<DataStoreID, SortGroupHierarchyInfo> SortGroupHierarchyInfo;
+        public AuraHashMap<DataStoreID, SortGroupHierarchyInfo> SortGroupHierarchyInfo;
         public NativeList<DataStoreID> ProcessingQueue;
         public NativeList<VisualModifierID, VisualModifierRenderData> VisualModifierRenderData;
         public NativeList<VisualModifierID, VisualModifierShaderData> VisualModifierShaderData;
         public NativeList<VisualModifierID> UpdatedVisualModifiers;
-        public NovaHashMap<DataStoreID, NovaList<DrawCallDescriptorID, MaterialCacheIndex>> MaterialAssignments;
+        public AuraHashMap<DataStoreID, AuraList<DrawCallDescriptorID, MaterialCacheIndex>> MaterialAssignments;
         public NativeList<ValuePair<ShaderCacheIndex, MaterialDescriptor>> MaterialsToAdd;
         public NativeList<ShaderDescriptor> ShadersToAdd;
-        public NovaHashMap<DataStoreID, SortGroupInfo> ProcessedSortGroupInfos;
+        public AuraHashMap<DataStoreID, SortGroupInfo> ProcessedSortGroupInfos;
         public NativeList<VisualModifierID, VisualModifierID> ParentVisualModifier;
-        public NovaHashMap<DataStoreID, VisualModifierShaderData> RootVisualModifierOverride;
+        public AuraHashMap<DataStoreID, VisualModifierShaderData> RootVisualModifierOverride;
 
         private MaterialCacheIndex NextMaterialIndex
         {
@@ -117,7 +117,7 @@ namespace Nova.Internal.Rendering
         private void AssignMaterials(DataStoreID batchRootID)
         {
             DrawCallSummary drawCallSummary = DrawCallSummaries[batchRootID];
-            NovaList<DrawCallDescriptorID, MaterialCacheIndex> materialAssignments = MaterialAssignments.GetAndClear(batchRootID);
+            AuraList<DrawCallDescriptorID, MaterialCacheIndex> materialAssignments = MaterialAssignments.GetAndClear(batchRootID);
 
             for (int i = 0; i < drawCallSummary.DrawCallDescriptors.Length; i++)
             {
@@ -292,7 +292,7 @@ namespace Nova.Internal.Rendering
                 }
 
                 // Update the rendering data for all contained visual modifiers
-                NovaList<VisualModifierID> containedModifiers = ContainedVisualModifers[batchRootID];
+                AuraList<VisualModifierID> containedModifiers = ContainedVisualModifers[batchRootID];
                 for (int j = 0; j < containedModifiers.Length; ++j)
                 {
                     VisualModifierID visualModifierID = containedModifiers[j];
@@ -494,7 +494,7 @@ namespace Nova.Internal.Rendering
                     Order = currentCount++,
                 });
 
-                NovaList<DataStoreID> contained = ContainedSortGroups[sortGroupRoot];
+                AuraList<DataStoreID> contained = ContainedSortGroups[sortGroupRoot];
                 ProcessingQueue.AddRangeReverse(ref contained);
 
                 // Now process the sort group infos, inheriting the hierarchy root's if it is a 

@@ -1,9 +1,9 @@
 ﻿
-using Nova.Events;
-using Nova.Internal;
-using Nova.Internal.Rendering;
+using Aura.Events;
+using Aura.Internal;
+using Aura.Internal.Rendering;
 
-namespace Nova
+namespace Aura
 {
     internal interface IUIBlock : IEventTarget, IRenderBlock
     {

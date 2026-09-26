@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Input.Scrolling
+namespace Aura.Internal.Input.Scrolling
 {
     /// <summary>
     /// Ported from Flutter. See ThirdPartyNotices.txt

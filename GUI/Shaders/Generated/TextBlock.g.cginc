@@ -1,7 +1,7 @@
 #ifndef NOVA_TEXT_STRUCTURES
 #define NOVA_TEXT_STRUCTURES
 
-#include "../NovaPreV2F.cginc"
+#include "../AuraPreV2F.cginc"
 
 ////////////////// BEGIN GENERATED //////////////////
 #define GetFaceColor(val) val.FaceColor
@@ -4711,6 +4711,6 @@ struct v2f
 };
 ////////////////// END GENERATED //////////////////
 
-#include "../NovaPostV2F.cginc"
+#include "../AuraPostV2F.cginc"
 
 #endif

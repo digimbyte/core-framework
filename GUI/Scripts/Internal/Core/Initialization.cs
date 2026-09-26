@@ -1,9 +1,9 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Utilities;
 using UnityEngine;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     /// <summary>
     /// Handles initializing the data stores and engines
@@ -18,7 +18,7 @@ namespace Nova.Internal.Core
             UnityVersionUtilsImpl.Init();
             QualitySettingsUtilsImpl.Init();
 
-            NovaSettingsSystem.CreateInstance();
+            AuraSettingsSystem.CreateInstance();
             DataStoreSystem.CreateInstance();
             EngineManager.CreateInstance();
 
@@ -28,7 +28,7 @@ namespace Nova.Internal.Core
             // whenever we enter play mode
             EngineManager.ResetUpdateState();
 
-            Nova.Interaction.Init();
+            Aura.Interaction.Init();
             Navigation.Init();
         }
     }

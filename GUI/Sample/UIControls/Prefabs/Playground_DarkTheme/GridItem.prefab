@@ -609,7 +609,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 0
-      type: {class: ImageButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ImageButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 5676337096180234235}
@@ -1014,7 +1014,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 0
-      type: {class: ImageButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ImageButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 873127671632279262}
@@ -1148,7 +1148,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &2661622779514302429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1160,7 +1160,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c395591f6f08fb41897eb437d91b587, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlock2D
+  m_EditorClassIdentifier: Aura::Aura.UIBlock2D
   sourceID:
     val: 0
   layout:
@@ -1496,7 +1496,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &5885851137214530189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1508,7 +1508,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccd57ae885e984419d40d63541fda7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TextBlock
+  m_EditorClassIdentifier: Aura::Aura.TextBlock
   sourceID:
     val: 0
   layout:
@@ -1687,7 +1687,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9a45f893942b7e4cbbeda81936ac353, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TMP.TextMeshProTextBlock
+  m_EditorClassIdentifier: Aura::Aura.TMP.TextMeshProTextBlock
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -2088,7 +2088,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 0
-      type: {class: ImageButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ImageButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 7855917759144356333}
@@ -2493,7 +2493,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 0
-      type: {class: ImageButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ImageButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 3545040046299406833}
@@ -2974,7 +2974,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &308847891513031476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2986,7 +2986,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccd57ae885e984419d40d63541fda7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TextBlock
+  m_EditorClassIdentifier: Aura::Aura.TextBlock
   sourceID:
     val: 0
   layout:
@@ -3165,7 +3165,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9a45f893942b7e4cbbeda81936ac353, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TMP.TextMeshProTextBlock
+  m_EditorClassIdentifier: Aura::Aura.TMP.TextMeshProTextBlock
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -3296,7 +3296,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &2272238619992827041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3308,7 +3308,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c395591f6f08fb41897eb437d91b587, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlock2D
+  m_EditorClassIdentifier: Aura::Aura.UIBlock2D
   sourceID:
     val: 0
   layout:
@@ -3669,7 +3669,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &1551905925174206673
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3681,7 +3681,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccd57ae885e984419d40d63541fda7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TextBlock
+  m_EditorClassIdentifier: Aura::Aura.TextBlock
   sourceID:
     val: 0
   layout:
@@ -3860,7 +3860,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9a45f893942b7e4cbbeda81936ac353, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TMP.TextMeshProTextBlock
+  m_EditorClassIdentifier: Aura::Aura.TMP.TextMeshProTextBlock
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -4630,7 +4630,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &5022391923970665567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4642,7 +4642,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccd57ae885e984419d40d63541fda7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TextBlock
+  m_EditorClassIdentifier: Aura::Aura.TextBlock
   sourceID:
     val: 0
   layout:
@@ -4821,7 +4821,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9a45f893942b7e4cbbeda81936ac353, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TMP.TextMeshProTextBlock
+  m_EditorClassIdentifier: Aura::Aura.TMP.TextMeshProTextBlock
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -4955,7 +4955,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &567808176903427688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4967,7 +4967,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c395591f6f08fb41897eb437d91b587, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlock2D
+  m_EditorClassIdentifier: Aura::Aura.UIBlock2D
   sourceID:
     val: 0
   layout:
@@ -5813,7 +5813,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 0
-      type: {class: ImageButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ImageButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 2910042093618663814}
@@ -6001,7 +6001,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &2763109062752953482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6013,7 +6013,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccd57ae885e984419d40d63541fda7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TextBlock
+  m_EditorClassIdentifier: Aura::Aura.TextBlock
   sourceID:
     val: 0
   layout:
@@ -6192,7 +6192,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9a45f893942b7e4cbbeda81936ac353, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TMP.TextMeshProTextBlock
+  m_EditorClassIdentifier: Aura::Aura.TMP.TextMeshProTextBlock
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -6376,7 +6376,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9117b6d975111c47b064a4373cc67ab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.UIBlockActivator
+  m_EditorClassIdentifier: Aura::Aura.UIBlockActivator
 --- !u!114 &5334423133883055356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6388,7 +6388,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccd57ae885e984419d40d63541fda7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TextBlock
+  m_EditorClassIdentifier: Aura::Aura.TextBlock
   sourceID:
     val: 0
   layout:
@@ -6567,7 +6567,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9a45f893942b7e4cbbeda81936ac353, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Nova::Nova.TMP.TextMeshProTextBlock
+  m_EditorClassIdentifier: Aura::Aura.TMP.TextMeshProTextBlock
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1

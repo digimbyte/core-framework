@@ -1,8 +1,8 @@
-using Nova;
+using Aura;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// The <see cref="ItemVisuals"/> type used to display a draggable <see cref="SliderSetting"/> control.

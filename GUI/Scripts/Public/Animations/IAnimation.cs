@@ -1,5 +1,5 @@
 ﻿
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A common interface to implement for simple animation structs which just need a call to <see cref="Update(float)"/>.
@@ -25,7 +25,7 @@ namespace Nova
         ///
         /// <example>
         /// <code>
-        /// using Nova;
+        /// using Aura;
         /// using UnityEngine;
         /// 
         /// public struct PositionAnimation : <see cref="IAnimation"/>

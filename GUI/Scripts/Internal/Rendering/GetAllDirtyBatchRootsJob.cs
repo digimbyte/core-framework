@@ -1,17 +1,17 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct GetAllDirtyBatchRootsJob : INovaJob
+    internal struct GetAllDirtyBatchRootsJob : IAuraJob
     {
         public bool DirtyEverything;
 
@@ -26,7 +26,7 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<BatchGroupElement> BatchGroupElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [ReadOnly]
         public NativeList<DataStoreID> MatrixDirtiedRoots;
         [ReadOnly]

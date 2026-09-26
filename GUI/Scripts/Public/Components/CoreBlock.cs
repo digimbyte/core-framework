@@ -1,16 +1,16 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// An abstract base class for custom components to synchronize a set of properties based on their transform hierarchy
@@ -117,7 +117,7 @@ namespace Nova
         bool IHierarchyActivatable.Deactivating => Deactivating;
         Transform ITransformProvider.Transform => transform;
         bool ITransformProvider.IsVirtual => false;
-        bool ITransformProvider.TransformCanBeRegistered => NovaApplication.IsEditor ? transform.childCount > 0 || transform.parent != null : true;
+        bool ITransformProvider.TransformCanBeRegistered => AuraApplication.IsEditor ? transform.childCount > 0 || transform.parent != null : true;
 
         [NonSerialized, HideInInspector]
         private DataStoreID _id = DataStoreID.Invalid;
@@ -180,7 +180,7 @@ namespace Nova
                 Parent = null;
             }
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 EditorOnly_EnsureTransformRegistration();
             }
@@ -195,7 +195,7 @@ namespace Nova
 
             Self.RefreshChildren();
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 EditorOnly_EnsureTransformRegistration();
             }
@@ -281,9 +281,9 @@ namespace Nova
                 activator.Register(this);
             }
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
-                if (NovaApplication.InPlayer(this))
+                if (AuraApplication.InPlayer(this))
                 {
                     sourceID = ID;
                 }
@@ -394,7 +394,7 @@ namespace Nova
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            if (!NovaApplication.IsPlaying)
+            if (!AuraApplication.IsPlaying)
             {
                 if (sourceID.IsValid)
                 {

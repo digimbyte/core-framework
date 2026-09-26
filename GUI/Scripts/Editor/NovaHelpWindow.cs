@@ -1,27 +1,27 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal class NovaHelpWindow : EditorWindow
+    internal class AuraHelpWindow : EditorWindow
     {
-        private const string WelcomeMessage = "Thank you for choosing Nova!\n\nIf you're new to Nova," +
-                                              " we recommend diving in to the scenes under Nova\\Sample\\UIControls " +
+        private const string WelcomeMessage = "Thank you for choosing Aura!\n\nIf you're new to Aura," +
+                                              " we recommend diving in to the scenes under Aura\\Sample\\UIControls " +
                                               "to get started.\n\nIf you're looking for even more complete example projects, " +
                                               "such as a settings menu, inventory system, XR handtracking, etc., then we recommend checking out" +
                                               " our GitHub page, where the full source for those projects is readily available to download!" +
                                               "\n\nIf you'd prefer something more instructive, we have several step-by-step " +
                                               "video tutorials for you on our YouTube channel, and our documentation is chock-full of videos, code snippets," +
-                                              " and everything else you might need to become a true Nova expert!\n\nGot a feature request, have a question, or found a bug? Get " +
-                                              "in touch with us via email and/or start a new discussion with the Nova Community on GitHub!";
+                                              " and everything else you might need to become a true Aura expert!\n\nGot a feature request, have a question, or found a bug? Get " +
+                                              "in touch with us via email and/or start a new discussion with the Aura Community on GitHub!";
 
-        private const string EnjoyingNova = "Enjoying Nova? Mind leaving us a ";
+        private const string EnjoyingAura = "Enjoying Aura? Mind leaving us a ";
         private const string LeaveReview = "review?";
-        private const string NovaFAQ = "Nova FAQ";
+        private const string AuraFAQ = "Aura FAQ";
         private const float FooterHeight = 36;
         private const float SectionGap = 18;
         private const float LogoWidthPercentOfLogoTexture = 0.75f;
@@ -54,7 +54,7 @@ namespace Nova.Editor.GUIs
 
         private static void ShowHelpDialogFirstTime()
         {
-            if (NovaEditorPrefs.HelpDialogPresented)
+            if (AuraEditorPrefs.HelpDialogPresented)
             {
                 return;
             }
@@ -69,7 +69,7 @@ namespace Nova.Editor.GUIs
 
         private void OnEnable()
         {
-            NovaEditorPrefs.HelpDialogPresented = true;
+            AuraEditorPrefs.HelpDialogPresented = true;
         }
 
         Vector2 scrollPosition = Vector2.zero;
@@ -79,12 +79,12 @@ namespace Nova.Editor.GUIs
             float height = Mathf.Min(position.size.y, LogoWidth) / 3f;
             float width = Mathf.Min(position.size.x, height * LogoWidth / LogoHeight);
 
-            Rect logo = NovaGUI.Layout.GetControlRect(GUILayout.Height(height));
+            Rect logo = AuraGUI.Layout.GetControlRect(GUILayout.Height(height));
             logo = logo.Center(width);
 
             EditorGUI.LabelField(logo, Labels.Logo);
 
-            NovaGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+            AuraGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
 
             EditorGUILayout.Space(SectionGap);
 
@@ -100,22 +100,22 @@ namespace Nova.Editor.GUIs
         private void DrawWelcomeMessage()
         {
             Rect previousRect = GUILayoutUtility.GetLastRect();
-            previousRect.y -= NovaGUI.MinSpaceBetweenFields;
+            previousRect.y -= AuraGUI.MinSpaceBetweenFields;
 
-            NovaGUI.Styles.DrawSeparator(previousRect);
+            AuraGUI.Styles.DrawSeparator(previousRect);
 
             float scrollViewHeight = (position.size.y * 0.5f) - (FooterHeight + SectionGap);
 
             Rect scrollRect = previousRect.Center(position.size.x);
             scrollRect.y = previousRect.yMax;
-            scrollRect.height = scrollViewHeight + NovaGUI.MinSpaceBetweenFields;
-            NovaGUI.Styles.Draw(scrollRect, NovaGUI.Styles.OverlayColor);
+            scrollRect.height = scrollViewHeight + AuraGUI.MinSpaceBetweenFields;
+            AuraGUI.Styles.Draw(scrollRect, AuraGUI.Styles.OverlayColor);
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(scrollViewHeight));
-            EditorGUILayout.LabelField(WelcomeMessage, NovaGUI.Styles.ParagraphLabel);
+            EditorGUILayout.LabelField(WelcomeMessage, AuraGUI.Styles.ParagraphLabel);
             EditorGUILayout.EndScrollView();
 
-            NovaGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+            AuraGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
         }
 
         private void DrawLinks(float totalWidth)
@@ -123,7 +123,7 @@ namespace Nova.Editor.GUIs
             float labelWidth = EditorGUIUtility.labelWidth;
             float fieldWidth = EditorGUIUtility.fieldWidth;
 
-            GUIStyle labelStyle = NovaGUI.Styles.LargeHeader;
+            GUIStyle labelStyle = AuraGUI.Styles.LargeHeader;
 
             Vector2 labelSize = labelStyle.CalcSize(EditorGUIUtility.TrTempContent("UI Playground"));
             float column1 = labelSize.x;
@@ -136,25 +136,25 @@ namespace Nova.Editor.GUIs
 
             float totalLabelWidth = column1 + column2 + column3 + column4;
 
-            float columnSpace = Mathf.Max((totalWidth - totalLabelWidth) / 3, NovaGUI.MinSpaceBetweenFields);
+            float columnSpace = Mathf.Max((totalWidth - totalLabelWidth) / 3, AuraGUI.MinSpaceBetweenFields);
 
-            Rect headers = NovaGUI.Layout.GetControlRect(GUILayout.Height(labelSize.y));
+            Rect headers = AuraGUI.Layout.GetControlRect(GUILayout.Height(labelSize.y));
             headers = headers.Center(totalWidth);
 
-            Rect row1 = NovaGUI.Layout.GetControlRect(GUILayout.Height(labelSize.y));
+            Rect row1 = AuraGUI.Layout.GetControlRect(GUILayout.Height(labelSize.y));
             row1 = row1.Center(totalWidth);
 
-            Rect row2 = NovaGUI.Layout.GetControlRect(GUILayout.Height(labelSize.y));
+            Rect row2 = AuraGUI.Layout.GetControlRect(GUILayout.Height(labelSize.y));
             row2 = row2.Center(totalWidth);
 
             EditorGUI.LabelField(headers, "Experiment", labelStyle);
             
-            if (NovaGUI.LinkButton(row1, "UI Controls"))
+            if (AuraGUI.LinkButton(row1, "UI Controls"))
             {
                 OpenScene("UIControls");
             }
 
-            if (NovaGUI.LinkButton(row2, "UI Playground"))
+            if (AuraGUI.LinkButton(row2, "UI Playground"))
             {
                 OpenScene("UIPlayground");
             }
@@ -164,24 +164,24 @@ namespace Nova.Editor.GUIs
             row2.xMin += column1 + columnSpace;
 
             EditorGUI.LabelField(headers, "Discover", labelStyle);
-            NovaGUI.LinkLabel(row1, "Examples", "https://novaui.io/samples/");
-            NovaGUI.LinkLabel(row2, "YouTube", "https://www.youtube.com/@NovaUI");
+            AuraGUI.LinkLabel(row1, "Examples", "https://novaui.io/samples/");
+            AuraGUI.LinkLabel(row2, "YouTube", "https://www.youtube.com/@AuraUI");
 
             headers.xMin += column2 + columnSpace;
             row1.xMin += column2 + columnSpace;
             row2.xMin += column2 + columnSpace;
 
             EditorGUI.LabelField(headers, "Learn", labelStyle);
-            NovaGUI.LinkLabel(row1, "Manual", "https://novaui.io/manual/");
-            NovaGUI.LinkLabel(row2, "API", "https://novaui.io/api/");
+            AuraGUI.LinkLabel(row1, "Manual", "https://novaui.io/manual/");
+            AuraGUI.LinkLabel(row2, "API", "https://novaui.io/api/");
 
             headers.xMin += column3 + columnSpace;
             row1.xMin += column3 + columnSpace;
             row2.xMin += column3 + columnSpace;
 
             EditorGUI.LabelField(headers, "Contact", labelStyle);
-            NovaGUI.LinkLabel(row1, "Community", "https://github.com/NovaUI-Unity/Feedback/discussions");
-            NovaGUI.LinkLabel(row2, "Email", "mailto:contact@novaui.io");
+            AuraGUI.LinkLabel(row1, "Community", "https://github.com/AuraUI-Unity/Feedback/discussions");
+            AuraGUI.LinkLabel(row2, "Email", "mailto:contact@novaui.io");
 
             EditorGUIUtility.labelWidth = labelWidth;
             EditorGUIUtility.fieldWidth = fieldWidth;
@@ -189,9 +189,9 @@ namespace Nova.Editor.GUIs
 
         private void DrawLeaveReview()
         {
-            Rect position = NovaGUI.Layout.GetControlRect(GUILayout.Height(FooterHeight));
+            Rect position = AuraGUI.Layout.GetControlRect(GUILayout.Height(FooterHeight));
 
-            float questionWidth = EditorStyles.label.CalcSize(EditorGUIUtility.TrTempContent(EnjoyingNova)).x;
+            float questionWidth = EditorStyles.label.CalcSize(EditorGUIUtility.TrTempContent(EnjoyingAura)).x;
             float answerWidth = EditorStyles.linkLabel.CalcSize(EditorGUIUtility.TrTempContent(LeaveReview)).x;
 
             position = position.Center(new Vector2(questionWidth + answerWidth, EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing));
@@ -199,20 +199,20 @@ namespace Nova.Editor.GUIs
             float labelWidth = EditorGUIUtility.labelWidth;
 
             EditorGUIUtility.labelWidth = questionWidth;
-            EditorGUI.LabelField(position, EnjoyingNova);
+            EditorGUI.LabelField(position, EnjoyingAura);
             EditorGUIUtility.labelWidth = labelWidth;
 
             position.xMin += questionWidth;
-            NovaGUI.LinkLabel(position, LeaveReview, "https://u3d.as/2Sge", largeLink: false);
+            AuraGUI.LinkLabel(position, LeaveReview, "https://u3d.as/2Sge", largeLink: false);
         }
 
-        private static NovaHelpWindow GetOrCreateWindow()
+        private static AuraHelpWindow GetOrCreateWindow()
         {
-            NovaHelpWindow window = GetWindow<NovaHelpWindow>(NovaFAQ);
+            AuraHelpWindow window = GetWindow<AuraHelpWindow>(AuraFAQ);
 
             if (window == null)
             {
-                window = CreateWindow<NovaHelpWindow>(NovaFAQ);
+                window = CreateWindow<AuraHelpWindow>(AuraFAQ);
             }
 
             window.position = Window;
@@ -228,7 +228,7 @@ namespace Nova.Editor.GUIs
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
 
-                if (path.Contains("Nova"))
+                if (path.Contains("Aura"))
                 {
                     SceneAsset scene = AssetDatabase.LoadAssetAtPath<SceneAsset>(path);
                     AssetDatabase.OpenAsset(scene);

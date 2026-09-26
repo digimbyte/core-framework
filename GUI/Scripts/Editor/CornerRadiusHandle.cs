@@ -1,11 +1,11 @@
 ﻿
-using Nova.Editor.Utilities;
-using Nova.Internal.Utilities;
+using Aura.Editor.Utilities;
+using Aura.Internal.Utilities;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     internal class CornerRadiusHandle
     {

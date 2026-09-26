@@ -1,10 +1,10 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Input;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Input;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
@@ -12,7 +12,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     internal class SceneViewInput : System<SceneViewInput>
     {
@@ -63,7 +63,7 @@ namespace Nova.Editor
         /// <typeparam name="T"></typeparam>
         /// <param name="ray"></param>
         /// <param name="results"></param>
-        internal static bool DetectEdges(Ray ray, List<EdgeHitResult> results, Camera sceneViewCamera, NovaHashMap<DataStoreID, bool> filterRoots, int max = int.MaxValue)
+        internal static bool DetectEdges(Ray ray, List<EdgeHitResult> results, Camera sceneViewCamera, AuraHashMap<DataStoreID, bool> filterRoots, int max = int.MaxValue)
         {
             PerformEdgeDetectionSceneView(ray, sceneViewCamera, ref filterRoots, ref EdgeDetectionCache);
             GetSceneViewHitResults(ref EdgeDetectionCache.Hits, results, max);
@@ -90,7 +90,7 @@ namespace Nova.Editor
             return InputEngine.Instance.HitTestIncludingInvisible(ray, out result, FilterToScene);
         }
 
-        private static void PerformEdgeDetectionSceneView(Ray ray, Camera sceneViewCamera, ref NovaHashMap<DataStoreID, bool> filterFromRoot, ref InputEngine.HitTestCache<EdgeHit> buffers)
+        private static void PerformEdgeDetectionSceneView(Ray ray, Camera sceneViewCamera, ref AuraHashMap<DataStoreID, bool> filterFromRoot, ref InputEngine.HitTestCache<EdgeHit> buffers)
         {
             float4x4 worldToViewport = sceneViewCamera.projectionMatrix * sceneViewCamera.transform.worldToLocalMatrix;
 

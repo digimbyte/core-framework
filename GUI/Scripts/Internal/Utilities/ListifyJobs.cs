@@ -1,21 +1,21 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using System;
 using Unity.Burst;
 using Unity.Collections;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal static partial class EngineUtils
     {
         [BurstCompile]
-        internal struct Listify<KeyType,ValType> : INovaJob
+        internal struct Listify<KeyType,ValType> : IAuraJob
             where KeyType : unmanaged, IEquatable<KeyType>
             where ValType : unmanaged
         {
             [ReadOnly]
-            public NovaHashMap<KeyType, ValType> Map;
+            public AuraHashMap<KeyType, ValType> Map;
             [ReadOnly]
             public NativeList<KeyType> KeysToListify;
 

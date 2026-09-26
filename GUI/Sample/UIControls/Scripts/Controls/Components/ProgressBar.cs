@@ -1,8 +1,8 @@
-using Nova;
+using Aura;
 using System.Text;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// The style of a progress bar

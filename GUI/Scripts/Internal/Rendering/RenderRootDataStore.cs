@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal enum RenderRootType
     {
@@ -19,18 +19,18 @@ namespace Nova.Internal.Rendering
 
     internal struct RenderRootDataStore : IInitializable
     {
-        public NovaHashMap<DataStoreID, RenderRootType> Roots;
-        public NovaHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
-        public NovaHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
-        public NovaHashMap<DataStoreID, NovaList<EntityId>> ScreenSpaceAdditionalCameras;
+        public AuraHashMap<DataStoreID, RenderRootType> Roots;
+        public AuraHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
+        public AuraHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
+        public AuraHashMap<DataStoreID, AuraList<EntityId>> ScreenSpaceAdditionalCameras;
 
-        private NativeList<NovaList<EntityId>> additionalCameraPool;
+        private NativeList<AuraList<EntityId>> additionalCameraPool;
 
         public void AddScreenSpaceRoot(DataStoreID dataStoreID, IScreenSpace screenSpace)
         {
             ScreenSpaceCameraTargets[dataStoreID] = screenSpace.CameraID;
 
-            if (!ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out NovaList<EntityId> additionalCameras))
+            if (!ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out AuraList<EntityId> additionalCameras))
             {
                 additionalCameras = additionalCameraPool.GetFromPoolOrInit();
             }
@@ -53,7 +53,7 @@ namespace Nova.Internal.Rendering
         public void RemoveScreenSpaceRoot(DataStoreID dataStoreID)
         {
             ScreenSpaceCameraTargets.Remove(dataStoreID);
-            if (ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out NovaList<EntityId> additionalCameras))
+            if (ScreenSpaceAdditionalCameras.TryGetValue(dataStoreID, out AuraList<EntityId> additionalCameras))
             {
                 additionalCameraPool.ReturnToPool(ref additionalCameras);
                 ScreenSpaceAdditionalCameras.Remove(dataStoreID);

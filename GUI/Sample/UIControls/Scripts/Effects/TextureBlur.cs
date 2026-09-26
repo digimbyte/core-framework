@@ -1,10 +1,10 @@
-using Nova;
+using Aura;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace NovaSamples.Effects
+namespace AuraSamples.Effects
 {
     internal struct BlurFilter : IEquatable<BlurFilter>
     {

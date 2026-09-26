@@ -1,12 +1,12 @@
 ﻿
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal enum LengthType
     {

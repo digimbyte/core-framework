@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A radial gradient to blend with the body color of a parent element.

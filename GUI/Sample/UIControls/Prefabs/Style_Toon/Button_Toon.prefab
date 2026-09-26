@@ -653,7 +653,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 5048850145605850988}

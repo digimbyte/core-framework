@@ -1,17 +1,17 @@
 ﻿
-using Nova.Editor.GUIs;
-using Nova.Editor.Utilities;
+using Aura.Editor.GUIs;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     internal static class UIBlockGizmos
     {
         [DrawGizmo(GizmoType.Pickable | GizmoType.Active | GizmoType.InSelectionHierarchy | GizmoType.NonSelected | GizmoType.NotInSelectionHierarchy, typeof(UIBlock))]
         public static void DrawGizmos(UIBlock uiBlock, GizmoType gizmoType)
         {
-            if (!NovaEditorPrefs.HierarchyGizmosEnabled)
+            if (!AuraEditorPrefs.HierarchyGizmosEnabled)
             {
                 return;
             }
@@ -29,7 +29,7 @@ namespace Nova.Editor.Tools
             Color selectedColor = SceneView.selectedOutlineColor;
             selectedColor.a = 1;
 
-            OnDrawGizmosInSelection(uiBlock, selected ? selectedColor : NovaGUI.Styles.SceneViewInSelectionHiearchyColor);
+            OnDrawGizmosInSelection(uiBlock, selected ? selectedColor : AuraGUI.Styles.SceneViewInSelectionHiearchyColor);
         }
 
         private static void OnDrawGizmosInSelection(UIBlock uiBlock, Color color)

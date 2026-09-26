@@ -1,12 +1,12 @@
 ﻿
 //#define USE_FALLBACK
-using Nova.Compat;
+using Aura.Compat;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal class SystemSettings
     {

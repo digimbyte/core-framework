@@ -1,11 +1,11 @@
 ﻿
-using Nova.Editor.Utilities.Extensions;
+using Aura.Editor.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal abstract class NovaEditor<T> : NovaEditor
+    internal abstract class AuraEditor<T> : AuraEditor
     {
         protected List<T> targetComponents = null;
 
@@ -27,7 +27,7 @@ namespace Nova.Editor.GUIs
 
     }
 
-    internal abstract class NovaEditor : UnityEditor.Editor
+    internal abstract class AuraEditor : UnityEditor.Editor
     {
         private const string ScriptPropertyPath = "m_Script";
 

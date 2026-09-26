@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A generic 2D wrapper.

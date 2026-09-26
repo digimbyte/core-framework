@@ -1,11 +1,11 @@
-using Nova;
+using Aura;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A simple example of a Tooltip componenent, which can activate a  <see cref="TooltipVisual"/>
-    /// when a designated <see cref="TriggerRegion"/> is hovered using Nova's <see cref="Interaction"/> API.
+    /// when a designated <see cref="TriggerRegion"/> is hovered using Aura's <see cref="Interaction"/> API.
     /// </summary>
     public class Tooltip : MonoBehaviour
     {

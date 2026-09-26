@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A min/max range, per 3D face (Left, Right, Top, Bottom, Front, and Back) offset.

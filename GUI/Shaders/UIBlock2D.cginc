@@ -8,21 +8,21 @@
 #define NOVA_NO_INDEX_BUFFER 1
 #define NOVA_PREMUL_COLORS
 
-#include "Nova.cginc"
+#include "Aura.cginc"
 #include "Generated/UIBlock2D.g.cginc"
 
-NOVA_DECLARE_BUFFER(SubQuadVert, _NovaSubQuadVerts);
+NOVA_DECLARE_BUFFER(SubQuadVert, _AuraSubQuadVerts);
 
 #if defined(NOVA_DYNAMIC_IMAGE)
     #define NOVA_IMAGE 1
-    sampler2D _NovaDynamicTexture;
+    sampler2D _AuraDynamicTexture;
     
 #elif defined(NOVA_STATIC_IMAGE)
     #define NOVA_IMAGE 1
-    UNITY_DECLARE_TEX2DARRAY(_NovaTextureArray);
+    UNITY_DECLARE_TEX2DARRAY(_AuraTextureArray);
 #endif
 
-NOVA_DECLARE_BUFFER(UIBlock2DData, _NovaData);
+NOVA_DECLARE_BUFFER(UIBlock2DData, _AuraData);
 
 // In order to avoid matrix mul, we just transform the axes using the matrices in several steps
 float2 GetBlockFromViewScale(float4x4 rootFromBlock)
@@ -39,16 +39,16 @@ float2 GetBlockFromViewScale(float4x4 rootFromBlock)
     return abs(scale) > NOVA_EPSILON ? 1.0 / scale : 0;
 }
 
-v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERTEXID)
+v2f AuraVert(AuraQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERTEXID)
 {
-    NovaVertInit(instanceID, v2f, o);
+    AuraVertInit(instanceID, v2f, o);
 
     uint vertIndex = InstanceIDToVertIndex(instanceID, vid, 4u);
 
-    NOVA_GET_BUFFER_ITEM_SubQuadVert(vert, vertIndex, _NovaSubQuadVerts);
-    NOVA_GET_BUFFER_ITEM_UIBlock2DData(shaderData, vert.BlockDataIndex, _NovaData);
+    NOVA_GET_BUFFER_ITEM_SubQuadVert(vert, vertIndex, _AuraSubQuadVerts);
+    NOVA_GET_BUFFER_ITEM_UIBlock2DData(shaderData, vert.BlockDataIndex, _AuraData);
 
-    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, shaderData.TransformIndex, _NovaTransformsAndLighting);
+    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, shaderData.TransformIndex, _AuraTransformsAndLighting);
 
     float2 blockPos = vert.Pos;
 
@@ -58,7 +58,7 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     // Bump up the size so we have space to soften the edges
     float3 viewSpaceVertPos = UnityObjectToViewPos(rootSpace);
     float minScreenDimension = min(_ScreenParams.x, _ScreenParams.y);
-    float sizeIncreaseAmount = 1.5 * _NovaEdgeSoftenWidth * abs(viewSpaceVertPos.z) / minScreenDimension;
+    float sizeIncreaseAmount = 1.5 * _AuraEdgeSoftenWidth * abs(viewSpaceVertPos.z) / minScreenDimension;
 
     float2 borderedHalfSize = halfBlockSize;
     #if defined(NOVA_OUTER_BORDER)
@@ -81,20 +81,20 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     SetNPos(o, nPos);
 
     o.CornerRadii = shaderData.CornerRadii * nFactor;
-    half rSel = NovaPickCornerRadius(blockPos.xy, (half4)abs(shaderData.CornerRadii));
+    half rSel = AuraPickCornerRadius(blockPos.xy, (half4)abs(shaderData.CornerRadii));
     float nCornerRadius = (float)rSel * nFactor;
     SetNCornerRadius(o, nCornerRadius);
     float2 nCornerOrigin = nHalfSize - nCornerRadius;
     SetNCornerOrigin(o, nCornerOrigin);
 
 
-    float3 worldPos = NovaRootToWorldPos(rootSpace);
+    float3 worldPos = AuraRootToWorldPos(rootSpace);
     o.pos = UnityWorldToClipPos(worldPos);
     
     SetEdgeSoftenDisabled(o, 1.0 - vert.EdgeSoftenMask);
 
-    NovaColorToV2F(Color, o, shaderData.PrimaryColor);
-    NovaColorToV2F(GradientColor, o, shaderData.GradientColor);
+    AuraColorToV2F(Color, o, shaderData.PrimaryColor);
+    AuraColorToV2F(GradientColor, o, shaderData.GradientColor);
 
     float2 unrotatedGradientSpacePos = blockPos - shaderData.GradientCenter;
     float2 gradientSpacePos = 0;
@@ -133,7 +133,7 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
 
     #if defined(NOVA_BORDER)
         o.BorderSegments = float3(nHalfSize, shaderData.DisabledBorderSegments);
-        NovaColorToV2F(BorderColor, o, shaderData.BorderColor);
+        AuraColorToV2F(BorderColor, o, shaderData.BorderColor);
         float borderNWidth = shaderData.BorderWidth * nFactor;
         #if defined(NOVA_CENTER_BORDER)
             // Store half width to avoid doing it in frag
@@ -145,12 +145,12 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     #endif
 
     #if defined(NOVA_INNER_SHADOW)
-        NovaColorToV2F(ShadowColor, o, shaderData.ShadowColor);
+        AuraColorToV2F(ShadowColor, o, shaderData.ShadowColor);
         float2 nShadowOffset = shaderData.ShadowOffset * nFactor;
         float2 nShadowSpacePos = nPos - nShadowOffset;
         SetNShadowSpacePos(o, nShadowSpacePos);
 
-        half maxCorner = NovaMaxCornerRadius((half4)abs(shaderData.CornerRadii));
+        half maxCorner = AuraMaxCornerRadius((half4)abs(shaderData.CornerRadii));
         float shadowRadius = max(shaderData.ShadowBlur, maxCorner - shaderData.ShadowWidth);
         float nShadowRadius = shadowRadius * nFactor;
         SetNShadowRadius(o, nShadowRadius);
@@ -163,17 +163,17 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
     #endif
 
     #if defined(NOVA_LIT)
-        NovaSetLitV2FParams(o, transformAndLighting);
+        AuraSetLitV2FParams(o, transformAndLighting);
         SetWorldPos(o, worldPos);
-        float3 rootNormal = NovaRootFromBlockNormal(transformAndLighting.RootFromBlock, v.Normal);
+        float3 rootNormal = AuraRootFromBlockNormal(transformAndLighting.RootFromBlock, v.Normal);
         float3 worldNormal = UnityObjectToWorldNormal(rootNormal);
         SetWorldNormal(o, worldNormal);
 
-        NovaInitInstance(appdata_full, appdata);
+        AuraInitInstance(appdata_full, appdata);
         appdata.vertex = float4(rootSpace, 1);
         appdata.normal = rootNormal;
 
-        NovaDoLitVert(o, worldPos, worldNormal, appdata);
+        AuraDoLitVert(o, worldPos, worldNormal, appdata);
     #endif
 
     return o;
@@ -181,7 +181,7 @@ v2f NovaVert(NovaQuadVert v, uint instanceID : SV_InstanceID, uint vid : SV_VERT
 
 // Bits follow the inspector grid: TL, T, TR, L, R, BL, B, BR.
 // A corner owns its bend/join; straight runs belong to their edge.
-float NovaBorderSegmentEnabled(v2f i)
+float AuraBorderSegmentEnabled(v2f i)
 {
 #if NOVA_BORDER
     float2 p = GetNPos(i);
@@ -190,7 +190,7 @@ float NovaBorderSegmentEnabled(v2f i)
 #if defined(NOVA_INNER_BORDER) || defined(NOVA_CENTER_BORDER)
     inwardWidth = GetBorderNWidth(i);
 #endif
-    float radius = NovaPickCornerRadius(p, i.CornerRadii);
+    float radius = AuraPickCornerRadius(p, i.CornerRadii);
     float extent = max(radius < 0 ? -radius : GetNCornerRadius(i), inwardWidth);
     float2 cornerStart = max(halfSize - extent, 0);
     bool right = p.x >= 0;
@@ -212,7 +212,7 @@ float NovaBorderSegmentEnabled(v2f i)
 #if NOVA_BORDER
 // Distance to a finite quarter-circle includes its endpoints. Its stroke can
 // therefore cross a quadrant boundary without extending the circle itself.
-float NovaNeighbourCornerCoverage(float2 p, float2 halfSize, float radius,
+float AuraNeighbourCornerCoverage(float2 p, float2 halfSize, float radius,
     float2 cornerSign, float bit, float disabledSegments, float width, float softenInverse)
 {
     if (radius == 0)
@@ -238,7 +238,7 @@ float NovaNeighbourCornerCoverage(float2 p, float2 halfSize, float radius,
     return 1 - saturate((distanceToArc - width) * softenInverse);
 }
 
-float NovaNeighbourBorderCoverage(v2f i, float softenInverse, float distanceOutsideBounds)
+float AuraNeighbourBorderCoverage(v2f i, float softenInverse, float distanceOutsideBounds)
 {
     float2 p = GetNPos(i);
     float2 halfSize = i.BorderSegments.xy;
@@ -248,32 +248,32 @@ float NovaNeighbourBorderCoverage(v2f i, float softenInverse, float distanceOuts
     // Match the existing inner/outer edge antialiasing on either side of the body.
     if (distanceOutsideBounds < 0)
         width -= 1.0 / softenInverse;
-    float coverage = NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.x,
+    float coverage = AuraNeighbourCornerCoverage(p, halfSize, i.CornerRadii.x,
         float2(-1, 1), 1, mask, width, softenInverse);
-    coverage = max(coverage, NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.y,
+    coverage = max(coverage, AuraNeighbourCornerCoverage(p, halfSize, i.CornerRadii.y,
         float2(1, 1), 4, mask, width, softenInverse));
-    coverage = max(coverage, NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.z,
+    coverage = max(coverage, AuraNeighbourCornerCoverage(p, halfSize, i.CornerRadii.z,
         float2(1, -1), 128, mask, width, softenInverse));
-    return max(coverage, NovaNeighbourCornerCoverage(p, halfSize, i.CornerRadii.w,
+    return max(coverage, AuraNeighbourCornerCoverage(p, halfSize, i.CornerRadii.w,
         float2(-1, -1), 32, mask, width, softenInverse));
 }
 #endif
 
-fixed4 NovaFrag(v2f i) : SV_Target
+fixed4 AuraFrag(v2f i) : SV_Target
 {
-    NovaFragInit(i);
+    AuraFragInit(i);
 
     half2 gradientSpaceUV = GetGradientSpaceUV(i);
     half gradientLerpVal = length(gradientSpaceUV);
     fixed4 color = lerp(GetGradientColor(i), GetColor(i), min(1.0, gradientLerpVal));
 
     #if defined(NOVA_DYNAMIC_IMAGE)
-        fixed4 texColor = tex2D(_NovaDynamicTexture, ToUnityUV(GetImageUV(i)));
+        fixed4 texColor = tex2D(_AuraDynamicTexture, ToUnityUV(GetImageUV(i)));
         color = ApplyColorTint(color, texColor);
         fixed imageMask = texColor.a;
 
     #elif defined(NOVA_STATIC_IMAGE)
-        fixed4 texColor = UNITY_SAMPLE_TEX2DARRAY(_NovaTextureArray, float3(ToUnityUV(GetImageUV(i)), GetTextureBufferIndex(i)));
+        fixed4 texColor = UNITY_SAMPLE_TEX2DARRAY(_AuraTextureArray, float3(ToUnityUV(GetImageUV(i)), GetTextureBufferIndex(i)));
         color = ApplyColorTint(color, texColor);
         fixed imageMask = texColor.a;
 
@@ -289,7 +289,7 @@ fixed4 NovaFrag(v2f i) : SV_Target
     half2 clampedCornerSpace;
     half distanceOutsideBounds = DistanceFromCircleEdge(GetNPos(i), GetNCornerOrigin(i), GetNCornerRadius(i), clampedCornerSpace);
     // Select in the fragment, so a quad can span both inward and outward corners.
-    float cornerRadius = NovaPickCornerRadius(GetNPos(i), i.CornerRadii);
+    float cornerRadius = AuraPickCornerRadius(GetNPos(i), i.CornerRadii);
     if (cornerRadius < 0)
     {
         float2 halfSize = GetNCornerOrigin(i) + GetNCornerRadius(i);
@@ -330,8 +330,8 @@ fixed4 NovaFrag(v2f i) : SV_Target
             borderDistance = max(max(inwardCornerSpace.x, inwardCornerSpace.y),
                 -cornerRadius - length(inwardCornerSpace));
         }
-        float segmentEnabled = NovaBorderSegmentEnabled(i);
-        float neighbourCoverage = NovaNeighbourBorderCoverage(i, softenInverse, borderDistance);
+        float segmentEnabled = AuraBorderSegmentEnabled(i);
+        float neighbourCoverage = AuraNeighbourBorderCoverage(i, softenInverse, borderDistance);
     if (segmentEnabled > 0.5 || neighbourCoverage > 0)
     {
         // Need to correct the weight for when the border is very thin or has zero width
@@ -400,9 +400,9 @@ fixed4 NovaFrag(v2f i) : SV_Target
         #if defined(NOVA_SHADOW_CAST_PASS)
             // Don't assign back to color because the shadow caster pass just returns 0,
             // but we want to clip
-            NovaDoLightingCalculations(i, color);
+            AuraDoLightingCalculations(i, color);
         #else
-            color = NovaDoLightingCalculations(i, color);
+            color = AuraDoLightingCalculations(i, color);
         #endif
     #endif
 

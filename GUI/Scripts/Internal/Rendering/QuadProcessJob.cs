@@ -1,26 +1,26 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// Goes through every quad in the rotation set and assigns render under
     /// </summary>
     [BurstCompile]
-    internal struct QuadProcessJob : INovaJobParallelFor
+    internal struct QuadProcessJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, RotationSetSummary> RotationSets;
+        public AuraHashMap<DataStoreID, RotationSetSummary> RotationSets;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
         public NativeList<DataStoreIndex, VisualModifierID> VisualModifierIDs;
 
@@ -28,7 +28,7 @@ namespace Nova.Internal.Rendering
         public NativeList<RenderIndex, SubQuadData> SubQuadData;
 
         private BoundarySummary boundarySummary;
-        private NovaList<VisualElementIndex, VisualElement> visualElements;
+        private AuraList<VisualElementIndex, VisualElement> visualElements;
 
         public void Execute(int index)
         {

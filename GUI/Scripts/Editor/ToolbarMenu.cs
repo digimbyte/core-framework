@@ -1,40 +1,40 @@
 ﻿
-using Nova.Editor.GUIs;
+using Aura.Editor.GUIs;
 using System.Diagnostics;
 using UnityEditor;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     internal static class ToolbarMenu
     {
-        [MenuItem("Tools/Nova/FAQ")]
+        [MenuItem("Tools/Aura/FAQ")]
         private static void ShowHelpDialog()
         { 
-            NovaHelpWindow.ShowHelpDialog();
+            AuraHelpWindow.ShowHelpDialog();
         }
 
-        [MenuItem("Tools/Nova/Manual")]
+        [MenuItem("Tools/Aura/Manual")]
         private static void OpenManual()
         {
             Process.Start("https://novaui.io/manual/");
         }
 
-        [MenuItem("Tools/Nova/API Reference")]
+        [MenuItem("Tools/Aura/API Reference")]
         private static void OpenAPI()
         {
             Process.Start("https://novaui.io/api/");
         }
 
-        [MenuItem("Tools/Nova/Samples")]
+        [MenuItem("Tools/Aura/Samples")]
         private static void OpenSamples()
         {
             Process.Start("https://novaui.io/samples/");
         }
 
-        [MenuItem("Tools/Nova/Feedback and Support")]
+        [MenuItem("Tools/Aura/Feedback and Support")]
         private static void OpenSupport()
         {
-            Process.Start("https://github.com/NovaUI-Unity/Feedback/discussions");
+            Process.Start("https://github.com/AuraUI-Unity/Feedback/discussions");
         }
     }
 }

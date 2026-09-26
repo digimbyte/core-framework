@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
+Shader "Hidden/Aura/AuraUIBlock3DBlinnPhongOpaque"
 {
     Properties
     {
@@ -46,8 +46,8 @@ Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
 			// 
 
             // compile directives
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -79,7 +79,9 @@ Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
 
             #define NOVA_BLINNPHONG_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../UIBlock3D.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../UIBlock3D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -99,8 +101,8 @@ Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
             
             CGPROGRAM
 
-			// 
-            // compile directives
+			// Aura
+            // compile directAura
             #pragma vertex NovaVert
             #pragma fragment NovaFrag
             #pragma target 3.5
@@ -130,7 +132,9 @@ Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
 
             #define NOVA_BLINNPHONG_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../UIBlock3D.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../UIBlock3D.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -146,8 +150,8 @@ Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
             ZTest LEqual
-
-            CGPROGRAM
+Aura
+            CGPROGRAMAura
 
 			// 
             #pragma vertex NovaVert
@@ -175,7 +179,9 @@ Shader "Hidden/Nova/NovaUIBlock3DBlinnPhongOpaque"
 
             #define NOVA_BLINNPHONG_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../UIBlock3D.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../UIBlock3D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

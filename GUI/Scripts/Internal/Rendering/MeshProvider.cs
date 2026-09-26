@@ -7,7 +7,7 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal unsafe class MeshProvider : IDisposable
     {
@@ -99,8 +99,8 @@ namespace Nova.Internal.Rendering
             uiblock3DVertData.Clear();
             uiBlock3DIndices.Clear();
 
-            block3DCornerDivisionsUsed = NovaSettings.UIBlock3DCornerDivisions;
-            block3DChamferDivisionsUsed = NovaSettings.UIBlock3DEdgeDivisions;
+            block3DCornerDivisionsUsed = AuraSettings.UIBlock3DCornerDivisions;
+            block3DChamferDivisionsUsed = AuraSettings.UIBlock3DEdgeDivisions;
 
             UIBlock3DMeshJob job = new UIBlock3DMeshJob()
             {
@@ -122,8 +122,8 @@ namespace Nova.Internal.Rendering
         #region Init and Cleanup
         private void HandleSettingsChanged()
         {
-            if (NovaSettings.UIBlock3DCornerDivisions != block3DCornerDivisionsUsed ||
-                NovaSettings.UIBlock3DEdgeDivisions != block3DChamferDivisionsUsed)
+            if (AuraSettings.UIBlock3DCornerDivisions != block3DCornerDivisionsUsed ||
+                AuraSettings.UIBlock3DEdgeDivisions != block3DChamferDivisionsUsed)
             {
                 _roundedCubeMesh = null;
             }
@@ -131,12 +131,12 @@ namespace Nova.Internal.Rendering
 
         public MeshProvider()
         {
-            NovaSettings.OnRenderSettingsChanged += HandleSettingsChanged;
+            AuraSettings.OnRenderSettingsChanged += HandleSettingsChanged;
         }
 
         public void Dispose()
         {
-            NovaSettings.OnRenderSettingsChanged -= HandleSettingsChanged;
+            AuraSettings.OnRenderSettingsChanged -= HandleSettingsChanged;
 
             if (uiblock3DVertData.IsCreated)
             {

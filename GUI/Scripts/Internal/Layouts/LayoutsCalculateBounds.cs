@@ -1,19 +1,19 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {
         [BurstCompile]
-        public struct ContentBounds : INovaJobParallelFor
+        public struct ContentBounds : IAuraJobParallelFor
         {
             [NativeDisableParallelForRestriction]
             public NativeList<float3> DirectContentSizes;
@@ -112,7 +112,7 @@ namespace Nova.Internal.Layouts
         }
 
         [BurstCompile]
-        public struct HierarchyBounds : INovaJob
+        public struct HierarchyBounds : IAuraJob
         {
             public NativeList<float3> TotalContentSizes;
             public NativeList<float3> TotalContentOffsets;

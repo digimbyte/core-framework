@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Core;
+using Aura.Internal.Core;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct GCHandleCleanup : IDisposable
     {

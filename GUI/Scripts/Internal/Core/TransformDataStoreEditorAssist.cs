@@ -1,10 +1,10 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
+using Aura.Compat;
+using Aura.Internal.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     internal partial interface ITransformProvider
     {
@@ -21,7 +21,7 @@ namespace Nova.Internal.Core
 
             public void LockTransforms()
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }
@@ -36,7 +36,7 @@ namespace Nova.Internal.Core
 
             public void ReleaseTransforms()
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }
@@ -51,7 +51,7 @@ namespace Nova.Internal.Core
 
             public void SetTransformTrackingState(ITransformProvider provider)
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }
@@ -87,7 +87,7 @@ namespace Nova.Internal.Core
 
             public void Add(ITransformProvider provider)
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }
@@ -104,7 +104,7 @@ namespace Nova.Internal.Core
 
             public void Remove(DataStoreID idToRemove, Transform transform)
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }
@@ -119,7 +119,7 @@ namespace Nova.Internal.Core
 
             public bool Tracking(Transform transform)
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return false;
                 }
@@ -134,7 +134,7 @@ namespace Nova.Internal.Core
 
             public void Init(TransformDataStore<TDataStore, T> transformDataStore)
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }
@@ -146,7 +146,7 @@ namespace Nova.Internal.Core
 
             public void Dispose()
             {
-                if (!NovaApplication.IsEditor)
+                if (!AuraApplication.IsEditor)
                 {
                     return;
                 }

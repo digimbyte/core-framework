@@ -1,54 +1,54 @@
 #ifndef NOVA_UIBLOCK_3D
 #define NOVA_UIBLOCK_3D
 
-#include "Nova.cginc"
+#include "Aura.cginc"
 #include "Generated/UIBlock3D.g.cginc"
 
-NOVA_DECLARE_BUFFER(UIBlock3DData, _NovaData);
+NOVA_DECLARE_BUFFER(UIBlock3DData, _AuraData);
 
-v2f NovaVert(UIBlock3DVert v, uint instanceID : SV_InstanceID)
+v2f AuraVert(UIBlock3DVert v, uint instanceID : SV_InstanceID)
 {
-    NovaVertInit(instanceID, v2f, o);
+    AuraVertInit(instanceID, v2f, o);
 
     uint indexIntoIndexBuffer = InstanceIDToDataIndex(instanceID);
-    NOVA_GET_BUFFER_ITEM_uint(index, indexIntoIndexBuffer, _NovaDataIndices);
-    NOVA_GET_BUFFER_ITEM_UIBlock3DData(shaderData, index, _NovaData);
+    NOVA_GET_BUFFER_ITEM_uint(index, indexIntoIndexBuffer, _AuraDataIndices);
+    NOVA_GET_BUFFER_ITEM_UIBlock3DData(shaderData, index, _AuraData);
 
-    half rCorner = NovaPickCornerRadius(v.Pos.xy, (half4)shaderData.CornerRadii);
+    half rCorner = AuraPickCornerRadius(v.Pos.xy, (half4)shaderData.CornerRadii);
     float3 vertNodePos = v.Pos * shaderData.Size + v.CornerOffsetDir * (float)rCorner + v.EdgeOffsetDir * shaderData.EdgeRadius;
 
-    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, shaderData.TransformIndex, _NovaTransformsAndLighting);
+    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, shaderData.TransformIndex, _AuraTransformsAndLighting);
     float3 rootSpace = mul(transformAndLighting.RootFromBlock, float4(vertNodePos, 1)).xyz;
-    float3 worldPos = NovaRootToWorldPos(rootSpace);
+    float3 worldPos = AuraRootToWorldPos(rootSpace);
     o.pos = UnityWorldToClipPos(worldPos);
 
     #if defined(NOVA_CLIPPING)
         SetRootPos(o, rootSpace);
     #endif
 
-    NovaColorToV2F(Color, o, shaderData.Color);
+    AuraColorToV2F(Color, o, shaderData.Color);
 
     #if defined(NOVA_LIT)
-        NovaSetLitV2FParams(o, transformAndLighting);
+        AuraSetLitV2FParams(o, transformAndLighting);
         SetWorldPos(o, worldPos);
-        float3 rootNormal = NovaRootFromBlockNormal(transformAndLighting.RootFromBlock, v.Normal);
+        float3 rootNormal = AuraRootFromBlockNormal(transformAndLighting.RootFromBlock, v.Normal);
         float3 worldNormal = UnityObjectToWorldNormal(rootNormal);
         SetWorldNormal(o, worldNormal);
 
-        NovaInitInstance(appdata_full, appdata);
+        AuraInitInstance(appdata_full, appdata);
         appdata.vertex = float4(rootSpace, 1);
         appdata.normal = rootNormal;
 
-        NovaDoLitVert(o, worldPos, worldNormal, appdata);
+        AuraDoLitVert(o, worldPos, worldNormal, appdata);
     #endif
 
 
     return o;
 }
 
-fixed4 NovaFrag(v2f i) : SV_Target
+fixed4 AuraFrag(v2f i) : SV_Target
 {
-    NovaFragInit(i);
+    AuraFragInit(i);
 
     fixed4 color = GetColor(i);
 
@@ -65,7 +65,7 @@ fixed4 NovaFrag(v2f i) : SV_Target
     #endif
 
     #if defined(NOVA_LIT)
-        color = NovaDoLightingCalculations(i, color);
+        color = AuraDoLightingCalculations(i, color);
     #endif
 
     return color;

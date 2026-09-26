@@ -1,35 +1,35 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Burst;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct SubQuadVertCopyJob : INovaJobParallelFor
+    internal struct SubQuadVertCopyJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [NativeDisableParallelForRestriction]
         public NativeList<RenderIndex, SubQuadData> SubQuadData;
 
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
+        public AuraHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, NovaList<SubQuadVert>> SubQuadBuffers;
+        public AuraHashMap<DataStoreID, AuraList<SubQuadVert>> SubQuadBuffers;
 
-        private NovaList<SubQuadVert> shaderData;
+        private AuraList<SubQuadVert> shaderData;
 
         public void Execute(int index)
         {
             DataStoreID batchRootID = DirtyBatches[index];
             shaderData = SubQuadBuffers.GetAndClear(batchRootID);
-            NovaList<VisualElementIndex, VisualElement> visualElements = VisualElements[batchRootID];
+            AuraList<VisualElementIndex, VisualElement> visualElements = VisualElements[batchRootID];
 
             DrawCallSummary drawCallSummary = DrawCallSummaries[batchRootID];
             for (int i = 0; i < drawCallSummary.DrawCalls.Length; ++i)
@@ -42,7 +42,7 @@ namespace Nova.Internal.Rendering
                     continue;
                 }
 
-                ref NovaList<VisualElementIndex> orderedBlocks = ref drawCallSummary.NonIndexedElements.ElementAt(drawCall.ID);
+                ref AuraList<VisualElementIndex> orderedBlocks = ref drawCallSummary.NonIndexedElements.ElementAt(drawCall.ID);
                 ref ShaderIndexBounds indexBounds = ref drawCallSummary.IndexBounds.ElementAt(drawCall.ID);
                 indexBounds.InstanceStart = shaderData.Length;
 

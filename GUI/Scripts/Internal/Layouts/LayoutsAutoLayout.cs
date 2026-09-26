@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {

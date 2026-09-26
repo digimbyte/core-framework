@@ -1,19 +1,19 @@
 ﻿
-using Nova.Editor.Serialization;
-using Nova.Internal.Core;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Editor.Serialization;
+using Aura.Internal.Core;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(SortGroup))]
     [CanEditMultipleObjects]
-    internal class SortGroupEditor : NovaEditor<SortGroup>
+    internal class SortGroupEditor : AuraEditor<SortGroup>
     {
         private _SortGroupInfo info = new _SortGroupInfo();
 
@@ -99,19 +99,19 @@ namespace Nova.Editor.GUIs
         public override void OnInspectorGUI()
         {
             EditorGUI.BeginChangeCheck();
-            NovaGUI.IntFieldClamped(Labels.SortGroup.SortingOrder, info.SortingOrderProp, Int16.MinValue, Int16.MaxValue);
+            AuraGUI.IntFieldClamped(Labels.SortGroup.SortingOrder, info.SortingOrderProp, Int16.MinValue, Int16.MaxValue);
 
             bool anyInheritsProps = AnyTargetInheritsProperties(out SortGroupInfo rootInfo);
             if (anyInheritsProps)
             {
                 EditorGUI.BeginDisabledGroup(true);
 
-                Rect fieldRect = NovaGUI.Layout.GetControlRect(NovaGUI.Layout.MinFloatFieldWidthOption);
+                Rect fieldRect = AuraGUI.Layout.GetControlRect(AuraGUI.Layout.MinFloatFieldWidthOption);
                 GUIContent propertyLabel = EditorGUI.BeginProperty(fieldRect, Labels.SortGroup.RenderQueue_Overridden, info.RenderQueueProp);
                 EditorGUI.IntField(fieldRect, propertyLabel, rootInfo.RenderQueue);
                 EditorGUI.EndProperty();
 
-                Rect rect = NovaGUI.Layout.GetControlRect();
+                Rect rect = AuraGUI.Layout.GetControlRect();
                 GUIContent labelContent = EditorGUI.BeginProperty(rect, Labels.SortGroup.RenderOverOpaqueGeometry_Overridden, info.RenderOverOpaqueGeometryProp);
                 EditorGUI.Toggle(rect, labelContent, rootInfo.RenderOverOpaqueGeometry);
 
@@ -119,8 +119,8 @@ namespace Nova.Editor.GUIs
             }
             else
             {
-                NovaGUI.IntFieldClamped(Labels.SortGroup.RenderQueue, info.RenderQueueProp, 0, 5000);
-                NovaGUI.ToggleField(Labels.SortGroup.RenderOverOpaqueGeometry, info.RenderOverOpaqueGeometryProp);
+                AuraGUI.IntFieldClamped(Labels.SortGroup.RenderQueue, info.RenderQueueProp, 0, 5000);
+                AuraGUI.ToggleField(Labels.SortGroup.RenderOverOpaqueGeometry, info.RenderOverOpaqueGeometryProp);
             }
 
             if (EditorGUI.EndChangeCheck())

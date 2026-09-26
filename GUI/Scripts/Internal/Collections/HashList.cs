@@ -1,12 +1,12 @@
 ﻿
 //#define DEBUG_LOG
 
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     internal class HashList<T> : ICollection<T>
     {

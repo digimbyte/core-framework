@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Animations;
-using Nova.Internal.Rendering;
+using Aura.Internal.Animations;
+using Aura.Internal.Rendering;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     internal static class PlayModeCleanup
     {

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     internal struct UID<T> : IEquatable<UID<T>>
     {

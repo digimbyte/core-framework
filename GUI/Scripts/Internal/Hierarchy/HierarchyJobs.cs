@@ -1,10 +1,10 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -13,7 +13,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal partial class Hierarchy
     {
@@ -365,7 +365,7 @@ namespace Nova.Internal.Hierarchy
                         return;
                     }
 
-                    NovaList<DataStoreIndex> children = parentElement.Children;
+                    AuraList<DataStoreIndex> children = parentElement.Children;
                     children.Clear();
 
                     unsafe
@@ -441,7 +441,7 @@ namespace Nova.Internal.Hierarchy
         }
 
         [BurstCompile]
-        private struct CombineSubtrees : INovaJob
+        private struct CombineSubtrees : IAuraJob
         {
             public NativeHierarchy.ReadOnly Hierarchy;
 
@@ -499,7 +499,7 @@ namespace Nova.Internal.Hierarchy
                         int endOfHierarchy = depthSortedHierarchyToPopulate.Length;
                         for (int j = endOfHierarchy - 1; j < endOfHierarchy; ++j)
                         {
-                            NovaList<DataStoreIndex> grandChildren = hierarchy.Elements[depthSortedHierarchyToPopulate[j]].Children;
+                            AuraList<DataStoreIndex> grandChildren = hierarchy.Elements[depthSortedHierarchyToPopulate[j]].Children;
 
                             int grandchildCount = grandChildren.Length;
 
@@ -531,7 +531,7 @@ namespace Nova.Internal.Hierarchy
         }
 
         [BurstCompile]
-        private struct GetDirtyElements : INovaJob
+        private struct GetDirtyElements : IAuraJob
         {
             public NativeHierarchy.ReadOnly Hierarchy;
             public NativeList<DataStoreID> RootsToUpdate;
@@ -646,7 +646,7 @@ namespace Nova.Internal.Hierarchy
             childElement.ParentID = parentElement.ID;
             hierarchy.Elements[childIndex] = childElement;
 
-            NovaList<DataStoreIndex> childIDs = parentElement.Children;
+            AuraList<DataStoreIndex> childIDs = parentElement.Children;
             childIDs.Insert(siblingIndex, childIndex);
             parentElement.Children = childIDs;
 
@@ -699,7 +699,7 @@ namespace Nova.Internal.Hierarchy
                 Debug.LogError($"ChildIndex [{(int)childIndex}] not found in parent [0x{parentElement.ID:X8}] list. Something is broken");
             }
 
-            NovaList<DataStoreIndex> children = parentElement.Children;
+            AuraList<DataStoreIndex> children = parentElement.Children;
             children.RemoveAt(siblingIndex);
             parentElement.Children = children;
 
@@ -751,7 +751,7 @@ namespace Nova.Internal.Hierarchy
         /// <param name="hierarchy"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe int AppendChildrenToCache(ref NovaList<DataStoreID> parentIDs, ref NativeList<DataStoreIndex> childIndexCache, ref NativeHierarchy hierarchy)
+        private static unsafe int AppendChildrenToCache(ref AuraList<DataStoreID> parentIDs, ref NativeList<DataStoreIndex> childIndexCache, ref NativeHierarchy hierarchy)
         {
             int appendedActiveChildCount = 0;
 
@@ -760,7 +760,7 @@ namespace Nova.Internal.Hierarchy
                 DataStoreIndex parentIndex = hierarchy.Lookup[parentIDs[i]];
                 HierarchyElement parentElement = hierarchy.Elements[parentIndex];
 
-                NovaList<DataStoreIndex> children = parentElement.Children;
+                AuraList<DataStoreIndex> children = parentElement.Children;
                 int childCount = children.Length;
 
                 childIndexCache.AddRange(children.Ptr, childCount);
@@ -782,7 +782,7 @@ namespace Nova.Internal.Hierarchy
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void RedistributeChildren(ref ProxyContainer proxyContainer, ref NativeList<DataStoreIndex> children, int activeChildCountInCache, ref NativeHierarchy hierarchy)
         {
-            NovaList<DataStoreID> proxies = proxyContainer.ProxyIDs;
+            AuraList<DataStoreID> proxies = proxyContainer.ProxyIDs;
 
             int activeChildrenPerProxy = activeChildCountInCache / proxies.Length;
             activeChildrenPerProxy = math.select(activeChildrenPerProxy + 1, activeChildrenPerProxy, activeChildCountInCache % proxies.Length == 0);
@@ -854,7 +854,7 @@ namespace Nova.Internal.Hierarchy
                 return;
             }
 
-            NovaList<DataStoreIndex> siblingIDs = parentElement.Children;
+            AuraList<DataStoreIndex> siblingIDs = parentElement.Children;
 
             if (siblingIDs.TryGetIndexOf(childIndex, out int foundSiblingIndex) && foundSiblingIndex != siblingIndex)
             {
@@ -880,11 +880,11 @@ namespace Nova.Internal.Hierarchy
             {
                 proxyContainer = new ProxyContainer()
                 {
-                    ProxyIDs = new NovaList<DataStoreID>(4, Allocator.Persistent),
+                    ProxyIDs = new AuraList<DataStoreID>(4, Allocator.Persistent),
                 };
             }
 
-            NovaList<DataStoreID> virtualProxyIDs = proxyContainer.ProxyIDs;
+            AuraList<DataStoreID> virtualProxyIDs = proxyContainer.ProxyIDs;
 
             int proxySiblingIndex = math.select(virtualProxyIDs.Length, 0, firstPosition);
             virtualProxyIDs.Insert(proxySiblingIndex, virtualProxyID);
@@ -926,7 +926,7 @@ namespace Nova.Internal.Hierarchy
                 return;
             }
 
-            NovaList<DataStoreID> virtualProxyIDs = proxyContainer.ProxyIDs;
+            AuraList<DataStoreID> virtualProxyIDs = proxyContainer.ProxyIDs;
 
             if (!virtualProxyIDs.TryGetIndexOf(virtualProxyID, out int currentIndex))
             {
@@ -949,7 +949,7 @@ namespace Nova.Internal.Hierarchy
             hierarchy.VirtualProxies[parentElement.ID] = proxyContainer;
 
             // Update in child list too
-            NovaList<DataStoreIndex> childProxies = parentElement.Children;
+            AuraList<DataStoreIndex> childProxies = parentElement.Children;
             childProxies.RemoveAt(currentIndex);
             childProxies.Insert(newSiblingIndex, hierarchy.Lookup[virtualProxyID]);
             parentElement.Children = childProxies;
@@ -976,7 +976,7 @@ namespace Nova.Internal.Hierarchy
                 return;
             }
 
-            NovaList<DataStoreID> virtualProxyIDs = proxyContainer.ProxyIDs;
+            AuraList<DataStoreID> virtualProxyIDs = proxyContainer.ProxyIDs;
 
             if (!virtualProxyIDs.TryGetIndexOf(virtualProxyID, out int proxyIndexToRemove))
             {
@@ -1028,7 +1028,7 @@ namespace Nova.Internal.Hierarchy
                     return;
                 }
 
-                NovaList<DataStoreIndex> children = parentElement.Children;
+                AuraList<DataStoreIndex> children = parentElement.Children;
                 children.Clear();
 
                 unsafe
@@ -1154,7 +1154,7 @@ namespace Nova.Internal.Hierarchy
                 if (hierarchy.Lookup.TryGetValue(elementSwappedFromBack.ParentID, out DataStoreIndex parentOfSwappedElementIndex))
                 {
                     HierarchyElement parentOfSwappedElement = hierarchy.Elements[parentOfSwappedElementIndex];
-                    NovaList<DataStoreIndex> swappedElementSiblings = parentOfSwappedElement.Children;
+                    AuraList<DataStoreIndex> swappedElementSiblings = parentOfSwappedElement.Children;
                     if (swappedElementSiblings.TryGetIndexOf(hierarchy.Elements.Length, out int siblingIndex))
                     {
                         swappedElementSiblings[siblingIndex] = indexToRemove;

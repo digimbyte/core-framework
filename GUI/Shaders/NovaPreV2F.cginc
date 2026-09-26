@@ -110,20 +110,20 @@
     #if defined(NOVA_LAMBERT_LIGHTING)
         #define SurfaceOutputType SurfaceOutput
 
-        #define NovaSetLitV2FParams(o, transformAndLighting)
+        #define AuraSetLitV2FParams(o, transformAndLighting)
 
-        #define NovaSetSurfParams(surf, color, v2f) \
-            NovaSurfSetAlbedo(surf, color);
+        #define AuraSetSurfParams(surf, color, v2f) \
+            AuraSurfSetAlbedo(surf, color);
 
     #elif defined(NOVA_BLINNPHONG_LIGHTING)
         #define SurfaceOutputType SurfaceOutput
 
-        #define NovaSetLitV2FParams(o, transformAndLighting) \
+        #define AuraSetLitV2FParams(o, transformAndLighting) \
             SetSpecular(o, transformAndLighting.Lighting.Specular); \
             SetGloss(o, transformAndLighting.Lighting.Gloss)
 
-        #define NovaSetSurfParams(surf, color, v2f) \
-            NovaSurfSetAlbedo(surf, color); \
+        #define AuraSetSurfParams(surf, color, v2f) \
+            AuraSurfSetAlbedo(surf, color); \
             surf.Specular = GetSpecular(v2f); \
             surf.Gloss = GetGloss(v2f); \
             _SpecColor = 1;
@@ -131,24 +131,24 @@
     #elif defined(NOVA_STANDARD_LIGHTING)
         #define SurfaceOutputType SurfaceOutputStandard
 
-        #define NovaSetLitV2FParams(o, transformAndLighting) \
+        #define AuraSetLitV2FParams(o, transformAndLighting) \
             SetSmoothness(o, transformAndLighting.Lighting.Smoothness); \
             SetMetallic(o, transformAndLighting.Lighting.Metallic)
 
-        #define NovaSetSurfParams(surf, color, v2f) \
-            NovaSurfSetAlbedo(surf, color); \
+        #define AuraSetSurfParams(surf, color, v2f) \
+            AuraSurfSetAlbedo(surf, color); \
             surf.Metallic = GetMetallic(i); \
             surf.Smoothness = GetSmoothness(i);
 
     #elif defined(NOVA_STANDARDSPECULAR_LIGHTING)
         #define SurfaceOutputType SurfaceOutputStandardSpecular
 
-        #define NovaSetLitV2FParams(o, transformAndLighting) \
+        #define AuraSetLitV2FParams(o, transformAndLighting) \
             SetSpecularColor(o, UnpackColor(transformAndLighting.Lighting.SpecularColor)); \
             SetSmoothness(o, transformAndLighting.Lighting.Smoothness)
 
-        #define NovaSetSurfParams(surf, color, v2f) \
-            NovaSurfSetAlbedo(surf, color); \
+        #define AuraSetSurfParams(surf, color, v2f) \
+            AuraSurfSetAlbedo(surf, color); \
             surf.Specular = GetSpecularColor(i); \
             surf.Smoothness = GetSmoothness(i);
 
@@ -156,7 +156,7 @@
 #endif
 
 #if defined(NOVA_LIT)
-    SurfaceOutputType NovaInitSurfType(fixed3 normalWorldVertex)
+    SurfaceOutputType AuraInitSurfType(fixed3 normalWorldVertex)
     {
         #ifdef UNITY_COMPILER_HLSL
             SurfaceOutputType o = (SurfaceOutputType)0;
@@ -179,11 +179,11 @@
     }
 
     #ifdef NOVA_ALPHA
-        #define NovaSurfSetAlbedo(o, color) \
+        #define AuraSurfSetAlbedo(o, color) \
         o.Albedo = color; \
         o.Alpha = color.a
     #else
-        #define NovaSurfSetAlbedo(o, color) \
+        #define AuraSurfSetAlbedo(o, color) \
         o.Albedo = color; \
         o.Alpha = 1;
     #endif

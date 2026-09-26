@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct ComputeBufferIndices
     {
@@ -18,20 +18,20 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<RenderIndex, ComputeBufferIndex> UIBlock3D;
         [ReadOnly]
-        public NovaHashMap<RenderIndex, ComputeBufferIndex> Shadow;
+        public AuraHashMap<RenderIndex, ComputeBufferIndex> Shadow;
         [ReadOnly]
-        public NativeList<RenderIndex, NovaList<ComputeBufferIndex>> Text;
+        public NativeList<RenderIndex, AuraList<ComputeBufferIndex>> Text;
     }
 
     internal struct OverlapElements
     {
         [NativeDisableParallelForRestriction]
-        public NativeList<DataStoreIndex, NovaList<VisualElementIndex>> OverlappingElements;
+        public NativeList<DataStoreIndex, AuraList<VisualElementIndex>> OverlappingElements;
         [NativeDisableParallelForRestriction]
-        public NativeList<ComputeBufferIndex, NovaList<VisualElementIndex>> ShadowOverlappingElements;
+        public NativeList<ComputeBufferIndex, AuraList<VisualElementIndex>> ShadowOverlappingElements;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref NovaList<VisualElementIndex> Get(ref VisualElement visualElement, ref ComputeBufferIndices indices)
+        public ref AuraList<VisualElementIndex> Get(ref VisualElement visualElement, ref ComputeBufferIndices indices)
         {
             switch (visualElement.Type)
             {

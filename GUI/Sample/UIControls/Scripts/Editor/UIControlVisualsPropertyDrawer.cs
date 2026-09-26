@@ -1,4 +1,4 @@
-using Nova;
+using Aura;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -7,7 +7,7 @@ using UnityEditor.Animations;
 #endif
 using UnityEngine;
 
-namespace NovaSamples.UIControls.Editor
+namespace AuraSamples.UIControls.Editor
 {
     [CustomPropertyDrawer(typeof(UIControlVisuals), true)]
     public class UIControlVisualsPropertyDrawer : PropertyDrawer

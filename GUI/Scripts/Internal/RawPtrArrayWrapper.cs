@@ -3,7 +3,7 @@ using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
     internal unsafe struct RawPtrArrayWrapper<T> : IDisposable where T : unmanaged
     {

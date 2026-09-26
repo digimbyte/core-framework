@@ -1,12 +1,12 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Utilities;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     internal partial interface ITransformProvider : IDataStoreElement
     {
@@ -73,7 +73,7 @@ namespace Nova.Internal.Core
                 Index = index
             });
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 TransformTracker.SetTransformTrackingState(val);
             }
@@ -156,7 +156,7 @@ namespace Nova.Internal.Core
             }
             else
             {
-                if (NovaApplication.IsEditor)
+                if (AuraApplication.IsEditor)
                 {
                     TransformTracker.Remove(idToRemove, PhysicalTransforms[proxyToRemove.Index]);
                 }
@@ -206,7 +206,7 @@ namespace Nova.Internal.Core
             PhysicalToSharedIndexMap = new NativeList<DataStoreIndex>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             VirtualToSharedIndexMap = new NativeList<DataStoreIndex>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 TransformTracker.Init(this);
             }
@@ -222,7 +222,7 @@ namespace Nova.Internal.Core
             PhysicalToSharedIndexMap.Dispose();
             VirtualToSharedIndexMap.Dispose();
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 TransformTracker.Dispose();
             }

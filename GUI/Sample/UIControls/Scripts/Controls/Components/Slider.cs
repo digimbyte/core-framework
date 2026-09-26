@@ -1,8 +1,8 @@
-using Nova;
+using Aura;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A UI control which reacts to user input and updates an underlying float value as it receives drag events.

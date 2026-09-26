@@ -1,16 +1,16 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.Equals(object o)
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// A plane using normal-distance from origin representation
     /// </summary>
-    internal struct NovaPlane
+    internal struct AuraPlane
     {
         public float3 Normal;
         /// <summary>
@@ -41,10 +41,10 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(NovaPlane a, NovaPlane b) => !(a == b);
+        public static bool operator !=(AuraPlane a, AuraPlane b) => !(a == b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(NovaPlane a, NovaPlane b)
+        public static bool operator ==(AuraPlane a, AuraPlane b)
         {
             if (!Math.ApproximatelyParallel(ref a.Normal, ref b.Normal))
             {
@@ -55,12 +55,12 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NovaPlane Create(ref float4x4 aFromB)
+        public static AuraPlane Create(ref float4x4 aFromB)
         {
             float3 normalInA = math.normalize(math.rotate(aFromB, Math.Back));
             float3 pointOnPlaneInA = math.transform(aFromB, float3.zero);
             float distanceFromOrigin = math.dot(pointOnPlaneInA, normalInA);
-            return new NovaPlane()
+            return new AuraPlane()
             {
                 Normal = normalInA,
                 Point = pointOnPlaneInA,
@@ -131,11 +131,11 @@ namespace Nova.Internal.Rendering
     internal struct Quadrilateral3D
     {
         public float3x4 Points;
-        public NovaPlane Plane;
+        public AuraPlane Plane;
         private float3x4 edges;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Quadrilateral3D(ref float4x4 points, ref NovaPlane plane)
+        public Quadrilateral3D(ref float4x4 points, ref AuraPlane plane)
         {
             Points = new float3x4(
                 points.c0.xyz,

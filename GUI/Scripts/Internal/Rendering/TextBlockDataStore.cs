@@ -1,22 +1,22 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct TextBlockDataStore : IRenderingSubStore<TextBlockData, RenderIndex>
     {
         public NativeList<RenderIndex, TextBlockData> BlockData;
         public NativeList<RenderIndex, DataStoreIndex> DataStoreIndices;
-        public NovaComputeBuffer<PerCharacterTextShaderData, PerVertTextShaderData> PerCharShaderData;
+        public AuraComputeBuffer<PerCharacterTextShaderData, PerVertTextShaderData> PerCharShaderData;
 
-        public NativeList<RenderIndex, NovaList<ComputeBufferIndex>> ComputeBufferIndices;
+        public NativeList<RenderIndex, AuraList<ComputeBufferIndex>> ComputeBufferIndices;
         public NativeList<RenderIndex, TextMargin> Margins;
         public NativeList<ValuePair<DataStoreID, TextMargin>> DirtiedMargins;
         /// <summary>
@@ -37,7 +37,7 @@ namespace Nova.Internal.Rendering
 
         private NativeList<TextBlockMeshData> meshDataPool;
         private NativeList<TextBlockData> blockDataPool;
-        private NativeList<NovaList<ComputeBufferIndex>> computeBufferIndexPool;
+        private NativeList<AuraList<ComputeBufferIndex>> computeBufferIndexPool;
 
         private NativeDedupedList<DataStoreID> dirtiedElements;
 
@@ -63,7 +63,7 @@ namespace Nova.Internal.Rendering
 
                 RenderIndex renderIndex = preUpdateData.BaseInfos[dataStoreIndex].RenderIndex;
                 ref TextBlockData data = ref BlockData.ElementAt(renderIndex);
-                ref NovaList<ComputeBufferIndex> indices = ref ComputeBufferIndices.ElementAt(renderIndex);
+                ref AuraList<ComputeBufferIndex> indices = ref ComputeBufferIndices.ElementAt(renderIndex);
 
                 int newQuadCount = data.QuadCount;
                 if (newQuadCount == indices.Length)
@@ -143,7 +143,7 @@ namespace Nova.Internal.Rendering
             Margins.RemoveAtSwapBack(index);
             ShrinkMask.RemoveAtSwapBack(index);
 
-            NovaList<ComputeBufferIndex> indices = ComputeBufferIndices[index];
+            AuraList<ComputeBufferIndex> indices = ComputeBufferIndices[index];
             PerCharShaderData.FreeRange(indices, 0, indices.Length);
             computeBufferIndexPool.ReturnToPool(ref indices);
             ComputeBufferIndices.RemoveAtSwapBack(index);

@@ -1,10 +1,10 @@
-using Nova;
+using Aura;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A UI control which reacts to user input and displays a list of selectable options.

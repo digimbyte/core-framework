@@ -2,9 +2,9 @@
 using Unity.Collections;
 using static Unity.Collections.AllocatorManager;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
-    internal abstract class NovaAllocator
+    internal abstract class AuraAllocator
     {
         public readonly static AllocatorHandle Handle = Allocator.Persistent;
 

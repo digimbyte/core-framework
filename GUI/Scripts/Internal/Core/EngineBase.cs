@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Common;
-using Nova.Internal.Utilities;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities;
 using System;
 using Unity.Collections;
 using Unity.Jobs;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     /// <summary>
     /// Base class that engines can inherit from to be used with the 

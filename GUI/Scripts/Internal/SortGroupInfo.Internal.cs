@@ -1,9 +1,9 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct SortGroupInfo : IEquatable<SortGroupInfo>

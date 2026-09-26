@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Input;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Input;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal enum MoveResult
     {
@@ -249,7 +249,7 @@ namespace Nova.Internal
             DataStoreID scopeID = scope == null || !scope.Activated ? DataStoreID.Invalid : scope.UniqueID;
             DataStoreID currentID = current == null || !current.Activated ? DataStoreID.Invalid : current.UniqueID;
 
-            bool filterNav = NovaApplication.InPlayer(current);
+            bool filterNav = AuraApplication.InPlayer(current);
 
             if (sortByTopLevelProximity)
             {

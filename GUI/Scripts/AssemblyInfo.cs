@@ -1,1 +1,1 @@
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Nova.Editor")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Aura.Editor")]

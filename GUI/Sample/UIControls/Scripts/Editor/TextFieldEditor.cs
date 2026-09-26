@@ -1,9 +1,9 @@
-using Nova;
-using NovaSamples.UIControls;
+using Aura;
+using AuraSamples.UIControls;
 using UnityEditor;
 using UnityEngine;
 
-namespace NovaSamples.UIControls.Editor
+namespace AuraSamples.UIControls.Editor
 {
     [CustomEditor(typeof(TextField))]
     [CanEditMultipleObjects]

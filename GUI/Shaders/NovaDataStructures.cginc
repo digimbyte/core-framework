@@ -1,12 +1,12 @@
 #ifndef NOVA_DATA_STRUCTURES
 #define NOVA_DATA_STRUCTURES
 
-struct NovaColor
+struct AuraColor
 {
     float4 Val;
 };
 
-fixed4 UnpackColor(NovaColor color)
+fixed4 UnpackColor(AuraColor color)
 {
     return color.Val;
 }
@@ -39,10 +39,10 @@ fixed4 UnpackColor(NovaColor color)
     }
 #endif
 
-#include "Generated/NovaDataTypes.g.cginc"
+#include "Generated/AuraDataTypes.g.cginc"
 
 #if 1 //////////////////////// UIBlock2D ///////////////////////////////////
-    struct NovaQuadVert
+    struct AuraQuadVert
     {
         float3 Pos : POSITION;
         float3 Normal : NORMAL;

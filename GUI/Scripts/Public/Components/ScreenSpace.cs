@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Configures a <see cref="UIBlock"/> hierarchy to render in screen-space.
@@ -16,7 +16,7 @@ namespace Nova
     [RequireComponent(typeof(UIBlock))]
     [RequireComponent(typeof(SortGroup))]
     [DisallowMultipleComponent]
-    [AddComponentMenu("Nova/Screen Space")]
+    [AddComponentMenu("Aura/Screen Space")]
     [ExecuteAlways]
     [HelpURL("https://novaui.io/manual/ScreenSpace.html")]
     public class ScreenSpace : MonoBehaviour, IScreenSpace
@@ -29,7 +29,7 @@ namespace Nova
         public event Action OnPostCameraSync;
 
         /// <summary>
-        /// Configures how to resize a <see cref="Nova.UIBlock"/> to fill a camera's viewport.
+        /// Configures how to resize a <see cref="Aura.UIBlock"/> to fill a camera's viewport.
         /// </summary>
         public enum FillMode
         {
@@ -62,7 +62,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The <see cref="Nova.UIBlock"/> on <c>this.gameObject</c> that will be positioned and sized to
+        /// The <see cref="Aura.UIBlock"/> on <c>this.gameObject</c> that will be positioned and sized to
         /// fill the <see cref="TargetCamera">TargetCamera</see>.
         /// </summary>
         public UIBlock UIBlock
@@ -215,7 +215,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The distance in front of the camera at which to render the Nova content.
+        /// The distance in front of the camera at which to render the Aura content.
         /// </summary>
         public float PlaneDistance
         {
@@ -277,10 +277,10 @@ namespace Nova
         {
             Unregister(uiBlock.ID);
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 DataStoreID id = UIBlock.ID;
-                NovaApplication.EditorDelayCall += () =>
+                AuraApplication.EditorDelayCall += () =>
                 {
                     if (this == null)
                     {

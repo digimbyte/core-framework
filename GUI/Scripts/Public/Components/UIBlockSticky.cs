@@ -1,12 +1,12 @@
 
-using Nova.Internal;
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Smooths the visual pose/size of a `UIBlock` independently from the layout-engine truth.
@@ -24,7 +24,7 @@ namespace Nova
     [ExecuteAlways]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIBlock))]
-    [AddComponentMenu("Nova/UI Block Sticky (Visual)")]
+    [AddComponentMenu("Aura/UI Block Sticky (Visual)")]
     public sealed class UIBlockSticky : MonoBehaviour
     {
         public enum FollowMode

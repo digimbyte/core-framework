@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Animations;
+using Aura.Internal.Animations;
 using System;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A unique identifier of a scheduled <see cref="IAnimation"/>, <see cref="IAnimationWithEvents"/>, or any sequence/combination of the two

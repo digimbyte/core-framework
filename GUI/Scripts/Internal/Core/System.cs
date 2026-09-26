@@ -1,9 +1,9 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using System;
 using UnityEngine;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     internal abstract class System<T> where T : System<T>, new()
     {
@@ -13,7 +13,7 @@ namespace Nova.Internal.Core
 
         protected System()
         {
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 AppDomain.CurrentDomain.DomainUnload -= DomainReloadStarted;
                 AppDomain.CurrentDomain.DomainUnload += DomainReloadStarted;

@@ -1,6 +1,6 @@
 # UIBlock sticky layout: investigation notes
 
-This document records work around **`UIBlockStickyLayout`**, debug logging, and “snapping / teleporting” reports. It is meant as a handoff for anyone touching Nova sticky layout or similar diagnostics—not as user-facing product docs.
+This document records work around **`UIBlockStickyLayout`**, debug logging, and “snapping / teleporting” reports. It is meant as a handoff for anyone touching Aura sticky layout or similar diagnostics—not as user-facing product docs.
 
 ---
 
@@ -21,7 +21,7 @@ This document records work around **`UIBlockStickyLayout`**, debug logging, and 
 - **Heuristics** (flags) to spot suspicious motion, including:
   - step larger than a `MaxSpeed`-based cap,
   - large actual motion while the **goal** barely moved.
-- **Compiler fix (CS8173):** `LayoutDataStore.Instance.AccessCalc(...)` returns `Nova.Internal.Layouts.CalculatedLayout`, not `Nova.CalculatedLayout`. A `ref` local to the wrong type failed; the fix was to **read fields without a mismatched `ref` local** (e.g. read `.Size.Value` inline).
+- **Compiler fix (CS8173):** `LayoutDataStore.Instance.AccessCalc(...)` returns `Aura.Internal.Layouts.CalculatedLayout`, not `Aura.CalculatedLayout`. A `ref` local to the wrong type failed; the fix was to **read fields without a mismatched `ref` local** (e.g. read `.Size.Value` inline).
 
 ### Debug logic correction (important)
 
@@ -39,14 +39,14 @@ No change to that core smoothing math was required to explain the main **false a
 
 ## What we learned (framework behavior)
 
-### 1. Nova runs after `LateUpdate`, not inside it
+### 1. Aura runs after `LateUpdate`, not inside it
 
-The Nova engine update is injected into Unity’s **PostLateUpdate**, **after** normal **`LateUpdate`** callbacks, and is positioned **before** `PlayerUpdateCanvases` (see `EngineManager` comments and insertion logic).
+The Aura engine update is injected into Unity’s **PostLateUpdate**, **after** normal **`LateUpdate`** callbacks, and is positioned **before** `PlayerUpdateCanvases` (see `EngineManager` comments and insertion logic).
 
 **Implication for any `LateUpdate` debug that reads `transform.localPosition`:**
 
-- On frame **N**, your `LateUpdate` sees the pose **before** Nova’s sticky write for frame **N**.
-- Nova then runs and applies **one** sticky step using **`Time.deltaTime` for frame N**.
+- On frame **N**, your `LateUpdate` sees the pose **before** Aura’s sticky write for frame **N**.
+- Aura then runs and applies **one** sticky step using **`Time.deltaTime` for frame N**.
 - On frame **N+1**, your `LateUpdate` sees the pose **after** that write (unless something else moves the transform later in the frame).
 
 So the vector **`actual(N+1) - actual(N)`** is **one** sticky integration step, and its time step is **frame N’s** `Time.deltaTime` (capped the same way as `WriteToPhysicalTransforms`), **not** frame N+1’s `Time.deltaTime`.
@@ -71,7 +71,7 @@ So a capture like:
 - **`err GOAL-ACTUAL: (0,0,0)`** and **buffer** (`TransformLocalPositions`) matches **`transform.localPosition`**
 - **`TARGET SPEC`** equals **`ACTUAL DISPLAY`**
 
-means **sticky layout has finished its job**: the block is exactly where **`StickyLayoutIdealPositions`** says it should be for that frame. It does **not** by itself prove that your **game/feature “end state”** (e.g. a NEWS flow) fired, or that the **design-intent** screen position is correct—only that **Nova’s layout target and the transform match**.
+means **sticky layout has finished its job**: the block is exactly where **`StickyLayoutIdealPositions`** says it should be for that frame. It does **not** by itself prove that your **game/feature “end state”** (e.g. a NEWS flow) fired, or that the **design-intent** screen position is correct—only that **Aura’s layout target and the transform match**.
 
 If something still looks “stuck in limbo” for a long time:
 
@@ -129,10 +129,10 @@ This section answers: **if sticky is doing its job but the ideal jumps, what do 
 | Approach | Idea | Where it lives | Pros | Cons |
 |----------|------|----------------|------|------|
 | **A. Smoothed ideal buffer (engine)** | Keep the raw layout slot in one place; maintain a **second buffer** (per sticky index) that moves toward the raw slot each frame (damp, max speed, or timed). `TransformsWrite` reads the **smoothed ideal**, not the raw ideal. Bounds jobs that must match **stack truth** keep reading the **instant** buffer from layout. | New or extended job between `ConvertToTransforms` and `WriteToPhysicalTransforms`; data beside `StickyLayoutIdealPositions` in `LayoutDataStore`. | One place fixes all sticky elements; matches “global component” wording; one integration step still drives the transform. | You must decide **which systems see which buffer** (§6: bounds already see ideal before sticky—this may widen or narrow the gap on purpose). Large jumps may need **snap thresholds** so menus don’t lag a second behind data. |
-| **B. Visual child / presenter** | Layout drives an **invisible** or **non-sticky** node at the true slot; a child `RectTransform` / `UIBlock` **only for drawing** tweens in local space toward the parent’s pose (or toward a cached “last good” pose). | Feature or small helper component; no Nova fork if you can express it with an extra node. | Full control over what the player sees; layout math stays honest for siblings. | Hit targets and focus need a clear rule (follow visual vs follow layout). Extra hierarchy and bookkeeping. |
+| **B. Visual child / presenter** | Layout drives an **invisible** or **non-sticky** node at the true slot; a child `RectTransform` / `UIBlock` **only for drawing** tweens in local space toward the parent’s pose (or toward a cached “last good” pose). | Feature or small helper component; no Aura fork if you can express it with an extra node. | Full control over what the player sees; layout math stays honest for siblings. | Hit targets and focus need a clear rule (follow visual vs follow layout). Extra hierarchy and bookkeeping. |
 | **C. Defer or stage reflow** | While a panel is “animating layout,” **do not** apply the full sibling reflow (or apply it to a hidden tree), then **commit** when the tween finishes. | Game/feature code that controls dirty flags, visibility, or duplicate layout trees. | Strongest guarantee of a single continuous motion in **screen** space. | Easy to get wrong (stale layout, double layout cost, race with content streaming). |
 | **D. Animate size and spacing explicitly** | Many “teleports” are **size** or **padding** steps, not position smoothing. Drive **CalculatedLength** / style props through your own tweens, or accept instant size and only ease position. | Feature code or custom layout props. | Addresses the yellow/pink spacer case if the pop is mostly **height** changes. | Does not replace A/B if the issue is **pure stack re-order** of position. |
-| **E. Higher-level “semantic target”** | Your flow computes an **expected** end pose (or delta) and blends **that** over time; layout still runs, but you **override** local position after Nova or blend toward a stored goal. | Rare; last resort; fights the engine order in §6. | Can match exact design curves. | Fragile (execution order, double writes, fights sticky). Prefer A or B first. |
+| **E. Higher-level “semantic target”** | Your flow computes an **expected** end pose (or delta) and blends **that** over time; layout still runs, but you **override** local position after Aura or blend toward a stored goal. | Rare; last resort; fights the engine order in §6. | Can match exact design curves. | Fragile (execution order, double writes, fights sticky). Prefer A or B first. |
 
 **Practical recommendation for the “cavity behind the red panel” symptom**
 
@@ -150,7 +150,7 @@ This section answers: **if sticky is doing its job but the ideal jumps, what do 
 
 ## Process lessons (what went wrong in the investigation)
 
-1. **Assumed** a simple invariant (“every step ≤ `MaxSpeed * dt`”) without pinning **`dt` to the same integration interval** as the measured **`Δposition`**. In this stack, that interval is tied to **Nova’s schedule relative to `LateUpdate`**, not “whatever `Time.deltaTime` is when I log.”
+1. **Assumed** a simple invariant (“every step ≤ `MaxSpeed * dt`”) without pinning **`dt` to the same integration interval** as the measured **`Δposition`**. In this stack, that interval is tied to **Aura’s schedule relative to `LateUpdate`**, not “whatever `Time.deltaTime` is when I log.”
 2. **Underweighted** how **large upstream layout deltas** (ideal position + size) dominate perceived pops, especially **instant size**.
 3. **Debug flags** read like engine defects; without the timing note above, they **over-interpret** normal behavior.
 
@@ -171,7 +171,7 @@ This section answers: **if sticky is doing its job but the ideal jumps, what do 
 ## Suggested follow-ups (if symptoms remain)
 
 1. Treat **size** explicitly in product design (animate size, staged layout, or accept instant bounds) if the pop is visual, not positional.
-2. Any code that **reads world/local pose for gameplay or UI hit tests** in **`LateUpdate`** may be **one Nova pass behind** the rendered pose for that frame; consider reading after Nova or using layout/bounds data from the store if that matters.
+2. Any code that **reads world/local pose for gameplay or UI hit tests** in **`LateUpdate`** may be **one Aura pass behind** the rendered pose for that frame; consider reading after Aura or using layout/bounds data from the store if that matters.
 3. Keep debug **stickyBracketDt** (or equivalent) in any future telemetry so MaxSpeed checks stay comparable to real integration steps.
 4. If the issue is **stack reflow** vs **pixel tween**, treat **§6** as the root read: logs that show `err=0` are about **catching the current ideal**, not about **continuity of the ideal** across reflows.
 5. For **product-level** smooth motion when spacers or siblings change, pick an approach from **§7** (smoothed ideal buffer, presenter child, deferred reflow, or explicit size animation)—`UIBlockStickyLayout` alone cannot tween a stable “expected” slot if the engine replaces that slot every dirty pass.

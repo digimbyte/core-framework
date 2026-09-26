@@ -1,20 +1,20 @@
 ﻿
 //#define DEBUG_GUIDES
 
-using Nova.Editor.Utilities;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Input;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Editor.Utilities;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Input;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     internal abstract class UIEdgeSnapTool : UITool
     {
@@ -96,7 +96,7 @@ namespace Nova.Editor.Tools
             positionInWorldSpace = Vector3.one * float.MaxValue;
             EdgeHitResult hit = default;
 
-            if (!NovaEditorPrefs.EdgeSnappingEnabled)
+            if (!AuraEditorPrefs.EdgeSnappingEnabled)
             {
                 return false;
             }

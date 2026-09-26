@@ -1,17 +1,17 @@
 ﻿
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using UnityEditor.Build;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Nova.Editor.Builds
+namespace Aura.Editor.Builds
 {
-    internal class NovaShaderPreprocessor : IPreprocessShaders
+    internal class AuraShaderPreprocessor : IPreprocessShaders
     {
-        private const string NovaShaderPrefix = "Hidden/Nova/Nova";
+        private const string AuraShaderPrefix = "Hidden/Aura/Aura";
 
         public int callbackOrder => 0;
         private List<ShaderKeyword> shaderKeywordsToRemove = new List<ShaderKeyword>();
@@ -28,7 +28,7 @@ namespace Nova.Editor.Builds
 
         public void OnProcessShader(Shader shader, ShaderSnippetData snippet, IList<ShaderCompilerData> data)
         {
-            if (!shader.name.Contains(NovaShaderPrefix))
+            if (!shader.name.Contains(AuraShaderPrefix))
             {
                 // Not a nova shader
                 return;
@@ -69,7 +69,7 @@ namespace Nova.Editor.Builds
                 !TryGetVisualType(shaderName, out VisualType visualType) ||
                 // Need to do this check here to ensure that the settings initialization
                 // happens
-                !Internal.NovaSettings.Initialized)
+                !Internal.AuraSettings.Initialized)
             {
                 return false;
             }

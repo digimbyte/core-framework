@@ -1,20 +1,20 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct BoundarySummary : IInitializable, IClearable
     {
-        public NovaList<QuadBoundsDescriptor> Descriptors;
-        public NovaList<ValuePair<QuadBoundsDescriptor, int>> InProgress;
+        public AuraList<QuadBoundsDescriptor> Descriptors;
+        public AuraList<ValuePair<QuadBoundsDescriptor, int>> InProgress;
 
-        public NovaList<float3> Scratch;
+        public AuraList<float3> Scratch;
 
         public void ResizeQuadDescriptors(int length)
         {
@@ -51,7 +51,7 @@ namespace Nova.Internal.Rendering
         public float4x4 WorldFromSet;
         public float4x4 SetFromWorld;
         public DataStoreID VisualModifierID;
-        public NovaList<VisualElementIndex> QuadProviders;
+        public AuraList<VisualElementIndex> QuadProviders;
         public BoundarySummary BoundarySummary;
 
         public void ResizeDescriptorArray()
@@ -83,8 +83,8 @@ namespace Nova.Internal.Rendering
     /// </summary>
     internal struct RotationSetSummary : IInitializable, IClearable
     {
-        public NovaList<RotationSetID, RotationSet> Sets;
-        private NovaList<RotationSet> rotationSetPool;
+        public AuraList<RotationSetID, RotationSet> Sets;
+        private AuraList<RotationSet> rotationSetPool;
 
         public int SetCount
         {
@@ -155,7 +155,7 @@ namespace Nova.Internal.Rendering
     internal static class RotationSetSummaryUtilities
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetQuadProvider(this ref NativeList<DataStoreID> dirtyBatches, ref NovaHashMap<DataStoreID, RotationSetSummary> rotationSets, ref int index, out RotationSet rotationSet, out DataStoreID batchRootID)
+        public static bool TryGetQuadProvider(this ref NativeList<DataStoreID> dirtyBatches, ref AuraHashMap<DataStoreID, RotationSetSummary> rotationSets, ref int index, out RotationSet rotationSet, out DataStoreID batchRootID)
         {
             for (int i = 0; i < dirtyBatches.Length; ++i)
             {

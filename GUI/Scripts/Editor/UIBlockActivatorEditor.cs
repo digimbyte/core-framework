@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     [CustomEditor(typeof(UIBlockActivator))]
     internal class UIBlockActivatorEditor : UnityEditor.Editor

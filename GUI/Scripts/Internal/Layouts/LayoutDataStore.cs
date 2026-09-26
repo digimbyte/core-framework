@@ -1,19 +1,19 @@
 ﻿
 //#define AGGRESSIVE_INDEX_GETTERS
 
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal struct SizeOverride
     {
@@ -56,8 +56,8 @@ namespace Nova.Internal.Layouts
         public NativeList<AutoLayout> AutoLayouts;
         public NativeList<Length2.Calculated> CalculatedSpacing;
 
-        public NovaHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
-        public NovaHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
+        public AuraHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
+        public AuraHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
         public NativeList<float3> ParentSizes;
 
         public NativeList<float3> DirectContentSizes;
@@ -108,7 +108,7 @@ namespace Nova.Internal.Layouts
         private NativeReference<bool> elementsDirtiedInPreUpdate;
         private NativeReference<int> numAccessedBeforePreEngineUpdate;
 
-        public NovaHashMap<DataStoreIndex, DataStoreID> AncestorBuffer;
+        public AuraHashMap<DataStoreIndex, DataStoreID> AncestorBuffer;
         public NativeList<LayoutPointer> AccessedLayouts;
         public NativeList<DataStoreIndex> DirtyIndices;
         public NativeReference<bool> NeedsSecondPass;
@@ -160,9 +160,9 @@ namespace Nova.Internal.Layouts
         {
             BeginUpdate();
 
-            JobHandle diffAndDirty = diffAndDirtyLayoutsRunner.NovaScheduleByRef(Elements.Count, EngineBase.EqualWorkBatchSize, dependency);
-            JobHandle filter = filterCleanElementsRunner.NovaScheduleByRef(diffAndDirty);
-            return dirtyLayoutDependenciesRunner.NovaScheduleByRef(filter);
+            JobHandle diffAndDirty = diffAndDirtyLayoutsRunner.AuraScheduleByRef(Elements.Count, EngineBase.EqualWorkBatchSize, dependency);
+            JobHandle filter = filterCleanElementsRunner.AuraScheduleByRef(diffAndDirty);
+            return dirtyLayoutDependenciesRunner.AuraScheduleByRef(filter);
         }
 
         public void BeginUpdate()
@@ -207,7 +207,7 @@ namespace Nova.Internal.Layouts
             numAccessedBeforePreEngineUpdate.Value = 0;
             elementsDirtiedInPreUpdate.Value = false;
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 Previews.EditorOnly_ClearDirtyState();
             }
@@ -390,7 +390,7 @@ namespace Nova.Internal.Layouts
 
         protected override void RemoveAtSwapBack(DataStoreID idToRemove, DataStoreIndex indexToRemove)
         {
-            if (NovaApplication.IsEditor) // this check is redundant for Remove but avoids GetTransform
+            if (AuraApplication.IsEditor) // this check is redundant for Remove but avoids GetTransform
             {
                 TransformTracker.Remove(idToRemove, GetTransform(indexToRemove));
             }
@@ -566,9 +566,9 @@ namespace Nova.Internal.Layouts
 
             AutoLayouts = new NativeList<AutoLayout>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             CalculatedSpacing = new NativeList<Length2.Calculated>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
-            FormerAutoLayoutAxes = new NovaHashMap<DataStoreIndex, Axes>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
+            FormerAutoLayoutAxes = new AuraHashMap<DataStoreIndex, Axes>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
 
-            ShrinkSizeOverrides = new NovaHashMap<DataStoreID, SizeOverride>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
+            ShrinkSizeOverrides = new AuraHashMap<DataStoreID, SizeOverride>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
 
             autoLayoutsPtr = AutoLayouts.GetRawPtr();
 
@@ -605,7 +605,7 @@ namespace Nova.Internal.Layouts
             TransformLocalScales = new NativeList<float3>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
             UsingTransformPositions = new NativeList<bool>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
 
-            AncestorBuffer = new NovaHashMap<DataStoreIndex, DataStoreID>(Constants.SomeElementsInitialCapacity / 2, Allocator.Persistent);
+            AncestorBuffer = new AuraHashMap<DataStoreIndex, DataStoreID>(Constants.SomeElementsInitialCapacity / 2, Allocator.Persistent);
             AccessedLayouts = new NativeList<LayoutPointer>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
 
             DirtyIndices = new NativeList<DataStoreIndex>(Constants.AllElementsInitialCapacity / 2, Allocator.Persistent);

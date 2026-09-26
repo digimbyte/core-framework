@@ -1,16 +1,16 @@
 ﻿
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A <see cref="UIBlock"/> with an adjustable, rounded-corner, rounded-edge cube mesh.
     /// </summary>
-    [AddComponentMenu("Nova/UIBlock 3D")]
+    [AddComponentMenu("Aura/UIBlock 3D")]
     [HelpURL("https://novaui.io/manual/UIBlock3D.html")]
     public sealed class UIBlock3D : UIBlock, IUIBlock3D
     {

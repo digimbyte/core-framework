@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Core;
+using Aura.Internal.Core;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     /// <summary>
     /// The interface to implement when an object has a set of layout properties

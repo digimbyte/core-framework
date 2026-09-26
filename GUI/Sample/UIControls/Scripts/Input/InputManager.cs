@@ -1,4 +1,4 @@
-using Nova;
+using Aura;
 using UnityEngine;
 #if !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
@@ -7,7 +7,7 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 #endif
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// Simple input manager example for the UI Controls sample.
@@ -176,14 +176,14 @@ namespace NovaSamples.UIControls
                 // Create a new Interaction.Update from the mouse ray and scroll wheel control id
                 Interaction.Update scrollInteraction = new Interaction.Update(mouseRay, ScrollWheelControlID);
 
-                // Feed the scroll update and scroll delta into Nova's Interaction APIs
+                // Feed the scroll update and scroll delta into Aura's Interaction APIs
                 Interaction.Scroll(scrollInteraction, mouseScrollDelta);
             }
 
             // Create a new Interaction.Update from the mouse ray and pointer control id
             Interaction.Update pointInteraction = new Interaction.Update(mouseRay, MousePointerControlID);
 
-            // Feed the pointer update and pressed state to Nova's Interaction APIs
+            // Feed the pointer update and pressed state to Aura's Interaction APIs
             Interaction.Point(pointInteraction, LeftMouseButtonValue);
 
             if (LeftMouseButtonUp)
@@ -235,7 +235,7 @@ namespace NovaSamples.UIControls
                 // If the touch phase hasn't ended and hasn't been canceled, then pointerDown == true.
                 bool pointerDown = touchPhase != TouchPhase.Canceled && touchPhase != TouchPhase.Ended;
 
-                // Feed the update and pressed state to Nova's Interaction APIs
+                // Feed the update and pressed state to Aura's Interaction APIs
                 Interaction.Point(update, pointerDown);
 
                 if (!pointerDown)

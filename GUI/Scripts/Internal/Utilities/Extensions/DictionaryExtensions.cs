@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class DictionaryExtensions
     {

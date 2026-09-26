@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct RenderElement<T> where T : struct
     {

@@ -778,7 +778,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 99ae1d92247264246a5deb9be56f42b2, type: 3}
 --- !u!114 &147638919
@@ -1295,7 +1295,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 88063870a52ccd74e8a7aa5063589a05, type: 3}
 --- !u!114 &433720291
@@ -1951,7 +1951,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 99ae1d92247264246a5deb9be56f42b2, type: 3}
 --- !u!114 &472737027
@@ -3347,7 +3347,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: c82b8e32dab5c5c4fbd3d949357fd308, type: 3}
 --- !u!114 &630166316
@@ -3847,12 +3847,12 @@ PrefabInstance:
     - target: {fileID: 6650393286554710490, guid: d7eec7de2079182499241476d0a63069,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 6650393286554710490, guid: d7eec7de2079182499241476d0a63069,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 6650393286554710490, guid: d7eec7de2079182499241476d0a63069,
         type: 3}
@@ -4669,7 +4669,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: c82b8e32dab5c5c4fbd3d949357fd308, type: 3}
 --- !u!114 &1027733372
@@ -4981,7 +4981,7 @@ PrefabInstance:
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
@@ -5472,7 +5472,7 @@ GameObject:
   - component: {fileID: 1125428277}
   - component: {fileID: 1125428276}
   m_Layer: 0
-  m_Name: NovaLogo
+  m_Name: AuraLogo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6710,7 +6710,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowBar, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowBar, ns: AuraSamples.UIControls, asm: Aura.UIControls}
 --- !u!114 &1353460479
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7001,7 +7001,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 88063870a52ccd74e8a7aa5063589a05, type: 3}
 --- !u!114 &1395193233
@@ -7986,7 +7986,7 @@ PrefabInstance:
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
@@ -8171,7 +8171,7 @@ PrefabInstance:
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
@@ -8337,7 +8337,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 4bfe6b4847a2e6c49879d18dfde12b83, type: 3}
 --- !u!114 &1561636337
@@ -8723,7 +8723,7 @@ PrefabInstance:
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
@@ -9614,7 +9614,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 4bfe6b4847a2e6c49879d18dfde12b83, type: 3}
 --- !u!114 &2031864176
@@ -9926,7 +9926,7 @@ PrefabInstance:
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}
       propertyPath: OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: NovaSamples.Effects.BlurEffect, Nova.UIControls
+      value: AuraSamples.Effects.BlurEffect, Aura.UIControls
       objectReference: {fileID: 0}
     - target: {fileID: 8438892594822831695, guid: cd60a284f8096c3458c9e34f4da59f66,
         type: 3}

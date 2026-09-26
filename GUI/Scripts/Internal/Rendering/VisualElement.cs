@@ -1,12 +1,12 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [Flags]
     internal enum VisualType : ushort
@@ -46,12 +46,12 @@ namespace Nova.Internal.Rendering
 
     internal static class VisualElementUtilities
     {
-        public static bool TryGetIndex(int index, ref NativeList<DataStoreID> dirtyBatches, ref NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> visualElements, out DataStoreID batchRootID, out int indexOut)
+        public static bool TryGetIndex(int index, ref NativeList<DataStoreID> dirtyBatches, ref AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> visualElements, out DataStoreID batchRootID, out int indexOut)
         {
             for (int i = 0; i < dirtyBatches.Length; ++i)
             {
                 batchRootID = dirtyBatches[i];
-                NovaList<VisualElementIndex, VisualElement> elements = visualElements[batchRootID];
+                AuraList<VisualElementIndex, VisualElement> elements = visualElements[batchRootID];
                 if (index >= elements.Length)
                 {
                     index -= elements.Length;

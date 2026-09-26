@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct RenderOrder : System.IComparable<RenderOrder>
     {
@@ -46,13 +46,13 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<BatchGroupElement> BatchGroupElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, ZLayerCounts> ZLayerCounts;
+        public AuraHashMap<DataStoreID, ZLayerCounts> ZLayerCounts;
         [ReadOnly]
         public NativeList<RenderElement<BaseRenderInfo>> BaseInfos;
         [ReadOnly]
         public NativeList<DataStoreIndex, int> OrderInZLayer;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
+        public AuraHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
 
         public RenderOrder GetRenderOrder(DataStoreIndex dataStoreIndex)
         {

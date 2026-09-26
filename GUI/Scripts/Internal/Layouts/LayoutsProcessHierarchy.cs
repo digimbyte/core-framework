@@ -1,29 +1,29 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {
         [BurstCompile]
-        internal struct CountDirtyRoots : INovaJobParallelFor
+        internal struct CountDirtyRoots : IAuraJobParallelFor
         {
             [ReadOnly]
             public NativeList<BatchGroupElement> BatchGroupElements;
             [ReadOnly]
             public NativeList<DataStoreIndex> DirtyLayoutElements;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, int> BatchRootIDToCounterIndex;
+            public AuraHashMap<DataStoreID, int> BatchRootIDToCounterIndex;
 
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
             [NativeDisableContainerSafetyRestriction]
             public NativeList<UnsafeAtomicCounter32> BatchRootDirtyCounts;
@@ -57,7 +57,7 @@ namespace Nova.Internal.Layouts
         }
 
         [BurstCompile]
-        internal struct MarkRootsDirty : INovaJob
+        internal struct MarkRootsDirty : IAuraJob
         {
             [ReadOnly]
             public NativeList<DataStoreID> AllBatchRoots;
@@ -71,14 +71,14 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, int> HierarchyRoots;
+            public AuraHashMap<DataStoreID, int> HierarchyRoots;
 
             [ReadOnly]
             public NativeList<BatchGroupElement> BatchGroupElements;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, int> BatchRootIDToCounterIndex;
+            public AuraHashMap<DataStoreID, int> BatchRootIDToCounterIndex;
 
             public NativeList<DataStoreID> DependentBatchRoots;
 

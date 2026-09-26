@@ -1,10 +1,10 @@
 ﻿
 //#define LOG_REGISTRATIONS
 //#define VALIDATED_REGISTRATIONS
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     internal abstract class DataStore<TDataStore,T> : IDataStore, IFrameDirtyable
         where TDataStore : DataStore<TDataStore, T>

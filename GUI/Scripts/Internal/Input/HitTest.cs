@@ -1,18 +1,18 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     [BurstCompile]
     internal unsafe struct HitTest<TTest,TCollidable,THit> : IJob
@@ -33,7 +33,7 @@ namespace Nova.Internal.Input
         [ReadOnly]
         public NativeList<HierarchyElement> Hierarchy;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+        public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
         private TCollidable collidableInWorldSpace;
 
@@ -66,7 +66,7 @@ namespace Nova.Internal.Input
                 DataStoreIndex parentIndex = IndicesToProcess[i];
                 HierarchyElement parentElement = Hierarchy[parentIndex];
 
-                NovaList<DataStoreIndex> children = parentElement.Children;
+                AuraList<DataStoreIndex> children = parentElement.Children;
 
                 TCollidable collidableInTestSpace;
                 if (children.Length > 0)
@@ -90,7 +90,7 @@ namespace Nova.Internal.Input
             }
         }
 
-        private int AppendOverlappingChildren(ref NovaList<DataStoreIndex> children, SpatialPartitionMask parentHitMask)
+        private int AppendOverlappingChildren(ref AuraList<DataStoreIndex> children, SpatialPartitionMask parentHitMask)
         {
             int childCount = children.Length;
 

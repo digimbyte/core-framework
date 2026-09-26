@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Editor.Utilities.Extensions
+namespace Aura.Editor.Utilities.Extensions
 {
     internal static class ObjectArrayExtensions
     {

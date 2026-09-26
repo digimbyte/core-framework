@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal enum ImageScaleMode
     {

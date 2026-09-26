@@ -1,11 +1,11 @@
 ﻿
 #define USE_HIERARCHY_JOBS
 
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
@@ -14,7 +14,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     [BurstCompile]
     internal partial class Hierarchy : IInitializable, IDisposable
@@ -25,7 +25,7 @@ namespace Nova.Internal.Hierarchy
         public ref NativeHierarchy.ReadOnly ReadOnlyHierarchy => ref readOnlyHiearchy;
         public ref NativeHierarchy HierarchyFastButUnsafe => ref hierarchy;
         public ref NativeList<HierarchyElement> Elements => ref hierarchy.Elements;
-        public ref NovaHashMap<DataStoreID, DataStoreIndex> Lookup => ref hierarchy.Lookup;
+        public ref AuraHashMap<DataStoreID, DataStoreIndex> Lookup => ref hierarchy.Lookup;
         public ref BatchGroupTracker BatchGroupTracker => ref hierarchy.BatchGroupTracker;
 
         private ArrayBuffer<DataStoreID> childIDBufferManaged = new ArrayBuffer<DataStoreID>();
@@ -386,10 +386,10 @@ namespace Nova.Internal.Hierarchy
             combineSubtreesRunner.SubRootIDs = elementIDs;
             combineSubtreesRunner.DepthSortedHierarchyToPopulate = subHierarchyToPopulate;
 
-            return combineSubtreesRunner.NovaScheduleByRef(dependency);
+            return combineSubtreesRunner.AuraScheduleByRef(dependency);
         }
 
-        private static int GetChildCount(ref NovaList<DataStoreID> parentIDs, ref NativeHierarchy hierarchy)
+        private static int GetChildCount(ref AuraList<DataStoreID> parentIDs, ref NativeHierarchy hierarchy)
         {
             int activeChildCount = 0;
 
@@ -455,7 +455,7 @@ namespace Nova.Internal.Hierarchy
 
             getDirtyBatchElementsData.ElementsToUpdate = infoToPopulate.ElementsToUpdate;
             getDirtyBatchElementsData.RootsToUpdate = infoToPopulate.RootsToUpdate;
-            return getDirtyBatchElementsData.NovaScheduleByRef(dependency);
+            return getDirtyBatchElementsData.AuraScheduleByRef(dependency);
         }
 
         public void Init()

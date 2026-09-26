@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Compat
+namespace Aura.Compat
 {
     internal class UnityVersionUtils
     {

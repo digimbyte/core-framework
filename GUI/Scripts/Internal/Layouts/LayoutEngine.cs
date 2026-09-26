@@ -2,11 +2,11 @@
 //#define RUN_JOB
 #define inline
 
-using Nova;
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
@@ -14,7 +14,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine.Jobs;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     /// <summary>
     /// The engine for processing all layout node properties
@@ -69,7 +69,7 @@ namespace Nova.Internal.Layouts
                 CalculatedLengths = LayoutDataStore.Instance.CalculatedLengths,
                 UncalculatedLengths = LayoutDataStore.Instance.LengthConfigs,
                 MinMaxes = LayoutDataStore.Instance.LengthMinMaxes,
-                PreviewSizesAvailable = NovaApplication.IsEditor,
+                PreviewSizesAvailable = AuraApplication.IsEditor,
                 PreviewSizes = LayoutDataStore.Instance.Previews.PreviewSizes,
                 Alignments = LayoutDataStore.Instance.Alignments,
                 UseRotations = LayoutDataStore.Instance.UseRotations,
@@ -118,7 +118,7 @@ namespace Nova.Internal.Layouts
 
             layoutBuildRunner = new LayoutCore.Build()
             {
-                PreviewSizesAvailable = NovaApplication.IsEditor,
+                PreviewSizesAvailable = AuraApplication.IsEditor,
                 PreviewSizes = LayoutDataStore.Instance.Previews.PreviewSizes,
                 LengthConfigs = LayoutDataStore.Instance.LengthConfigs,
                 LengthRanges = LayoutDataStore.Instance.LengthMinMaxes,
@@ -310,13 +310,13 @@ namespace Nova.Internal.Layouts
             updateHandle = UpdateTransformProperties(ref EngineCache.AllProcessedElements, updateHandle);
 
             // Update sub hierarchy bounds per element
-            JobHandle hierachyBoundsHandle = hierarchyBoundsRunner.NovaScheduleByRef(updateHandle);
+            JobHandle hierachyBoundsHandle = hierarchyBoundsRunner.AuraScheduleByRef(updateHandle);
 
             // Create spatial partitions
             PartitionHandle = CreateSpatialPartitions(ref EngineCache, hierachyBoundsHandle);
 
             // Update direct content bounds per element
-            ContentBoundsHandle = contentBoundsRunner.NovaScheduleByRef(EngineCache.AllProcessedElements.Length, EqualWorkBatchSize, updateHandle);
+            ContentBoundsHandle = contentBoundsRunner.AuraScheduleByRef(EngineCache.AllProcessedElements.Length, EqualWorkBatchSize, updateHandle);
 
             // Write values calculated by layout engine to transforms
             TransformUpdateHandle = WriteToPhysicalTransforms(updateHandle);
@@ -344,7 +344,7 @@ namespace Nova.Internal.Layouts
         {
             LayoutDataStore.Instance.CacheDirtyCount();
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 LayoutDataStore.Instance.TransformTracker.LockTransforms();
                 LayoutDataStore.Instance.Previews.EditorOnly_TryRefresh();
@@ -365,7 +365,7 @@ namespace Nova.Internal.Layouts
 
         public override void PostUpdate()
         {
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 LayoutDataStore.Instance.TransformTracker.ReleaseTransforms();
             }
@@ -461,7 +461,7 @@ namespace Nova.Internal.Layouts
         {
             JobHandle layoutUpdate = dependency;
 
-            layoutUpdate = layoutBuildRunner.NovaScheduleByRef(layoutUpdate);
+            layoutUpdate = layoutBuildRunner.AuraScheduleByRef(layoutUpdate);
 
             return layoutUpdate;
         }
@@ -488,7 +488,7 @@ namespace Nova.Internal.Layouts
             if (dirtyLayoutCount > 0)
             {
                 countDirtyBatchesRunner.BatchRootDirtyCounts = layoutCache.DirtyRootCounts;
-                diffDependencies = countDirtyBatchesRunner.NovaScheduleByRef(dirtyLayoutCount, EqualWorkBatchSize, diffDependencies);
+                diffDependencies = countDirtyBatchesRunner.AuraScheduleByRef(dirtyLayoutCount, EqualWorkBatchSize, diffDependencies);
             }
 
             markDirtyBatchesRunner.DirtyBatchRoots = engineUpdateInfo.RootsToUpdate;
@@ -496,7 +496,7 @@ namespace Nova.Internal.Layouts
             markDirtyBatchesRunner.BatchRootDirtyCounts = layoutCache.DirtyRootCounts;
             markDirtyBatchesRunner.DependentBatchRoots = layoutCache.ProcessedRootIDs;
 
-            diffDependencies = markDirtyBatchesRunner.NovaScheduleByRef(diffDependencies);
+            diffDependencies = markDirtyBatchesRunner.AuraScheduleByRef(diffDependencies);
 
             return diffDependencies;
         }
@@ -510,12 +510,12 @@ namespace Nova.Internal.Layouts
         {
             convertToTransformsRunner.DirtyElementIndices = dirtyElementIndices;
 
-            return convertToTransformsRunner.NovaScheduleByRef(dirtyElementIndices.Length, EqualWorkBatchSize, dependency);
+            return convertToTransformsRunner.AuraScheduleByRef(dirtyElementIndices.Length, EqualWorkBatchSize, dependency);
         }
 
         private JobHandle CreateSpatialPartitions(ref LayoutCache layoutCache, JobHandle dependency)
         {
-            return spatialPartitionRunner.NovaScheduleByRef(layoutCache.AllProcessedElements.Length, EqualWorkBatchSize, dependency);
+            return spatialPartitionRunner.AuraScheduleByRef(layoutCache.AllProcessedElements.Length, EqualWorkBatchSize, dependency);
         }
 
         private JobHandle WriteToPhysicalTransforms(JobHandle dependency)
@@ -529,7 +529,7 @@ namespace Nova.Internal.Layouts
             updateMatricesRunner.DirtyIndices = cache.LayoutDirtiedIndices;
             updateMatricesRunner.DirtyRootIDs = cache.MatrixDirtiedRootIDs;
 
-            return updateMatricesRunner.NovaScheduleByRef(dependency);
+            return updateMatricesRunner.AuraScheduleByRef(dependency);
         }
         #endregion
     }

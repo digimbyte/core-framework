@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Core;
 using Unity.Burst;
 using Unity.Collections;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal partial class Hierarchy
     {
         [BurstCompile]
-        internal struct SetupHierarchy : INovaJob
+        internal struct SetupHierarchy : IAuraJob
         {
             /// <summary>
             /// The list of roots from the hierachy batch groups
@@ -21,13 +21,13 @@ namespace Nova.Internal.Hierarchy
             /// The lookup table for all tracked elements
             /// </summary>
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> Lookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> Lookup;
 
             /// <summary>
             /// The combined set of roots
             /// </summary>
             [WriteOnly]
-            public NovaHashMap<DataStoreID, int> RootIndexMap;
+            public AuraHashMap<DataStoreID, int> RootIndexMap;
 
             // The total number of hierarchy elements
             public int HierarchySize;

@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
 using System;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal struct PreviewSize
     {
@@ -30,7 +30,7 @@ namespace Nova.Internal.Layouts
 
         internal class PreviewSizeManager : IDisposable
         {
-            public NovaHashMap<DataStoreID, PreviewSize> PreviewSizes;
+            public AuraHashMap<DataStoreID, PreviewSize> PreviewSizes;
             private bool previewSizesNeedRefreshing = false;
             private bool previewSizesNeedCleaning = false;
 
@@ -133,8 +133,8 @@ namespace Nova.Internal.Layouts
 
             public void Init(ref LayoutCore.DiffAndDirty diffAndDirty)
             {
-                PreviewSizes = new NovaHashMap<DataStoreID, PreviewSize>(NovaApplication.IsEditor ? 4 : 0, Allocator.Persistent);
-                previewSizesNeedRefreshing = NovaApplication.IsEditor ? true : false;
+                PreviewSizes = new AuraHashMap<DataStoreID, PreviewSize>(AuraApplication.IsEditor ? 4 : 0, Allocator.Persistent);
+                previewSizesNeedRefreshing = AuraApplication.IsEditor ? true : false;
 
                 diffAndDirty.PreviewSizes = PreviewSizes;
             }

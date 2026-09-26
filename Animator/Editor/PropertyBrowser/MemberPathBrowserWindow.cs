@@ -70,7 +70,7 @@ namespace Core.Animator
                             return ps.All(p => p.IsOptional);
                         }));
 
-                    // Include non-Unity base types (user/Nova/etc), but stop once we hit UnityEngine types.
+                    // Include non-Unity base types (user/Aura/etc), but stop once we hit UnityEngine types.
                     for (Type cur = rootType.BaseType; cur != null; cur = cur.BaseType)
                     {
                         if (string.Equals(cur.Namespace, "UnityEngine", StringComparison.Ordinal))
@@ -280,11 +280,11 @@ namespace Core.Animator
                 }
             }
 
-            // Bare Nova position axes are scalar raw-value bindings, not Length editors.
+            // Bare Aura position axes are scalar raw-value bindings, not Length editors.
             for (int i = 0; i < results.Count; i++)
             {
                 var entry = results[i];
-                if (Animate.NormalizeNovaPositionAxisPath(root, entry.path) == entry.path) continue;
+                if (Animate.NormalizeAuraPositionAxisPath(root, entry.path) == entry.path) continue;
                 entry.typeName = typeof(float).Name;
                 entry.display = $"{entry.path} : raw value ({entry.typeName})";
                 results[i] = entry;
@@ -335,7 +335,7 @@ namespace Core.Animator
         public static Type ResolveMemberType(object root, string path)
         {
             if (root == null || string.IsNullOrEmpty(path)) return null;
-            path = Animate.NormalizeNovaPositionAxisPath(root, path);
+            path = Animate.NormalizeAuraPositionAxisPath(root, path);
             Type currentType = root.GetType();
 
             foreach (var segment in path.Split('.'))
@@ -393,8 +393,8 @@ namespace Core.Animator
         public static string ResolveMemberTypeDebug(object root, string path)
         {
             var sb = new StringBuilder();
-            string resolvedPath = Animate.NormalizeNovaPositionAxisPath(root, path);
-            if (resolvedPath != path) sb.AppendLine($"Nova raw position alias: {path} -> {resolvedPath}");
+            string resolvedPath = Animate.NormalizeAuraPositionAxisPath(root, path);
+            if (resolvedPath != path) sb.AppendLine($"Aura raw position alias: {path} -> {resolvedPath}");
             path = resolvedPath;
             if (root == null)
             {

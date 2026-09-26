@@ -1,25 +1,25 @@
 ﻿
-using Nova.Editor.Serialization;
-using Nova.Editor.Tools;
-using Nova.Editor.Utilities;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Editor.Serialization;
+using Aura.Editor.Tools;
+using Aura.Editor.Utilities;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using static Nova.Editor.GUIs.NovaGUI;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.GUIs.AuraGUI;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal static class NovaRenderingEditors
+    internal static class AuraRenderingEditors
     {
         private const string Visuals = "Visuals";
         private const string Body = "Body";
 
         public static void DrawBodyVisualsUI(float minHalfSize, _UIBlock2DData uiNode2DData, _Surface surface, _BaseRenderInfo baseInfo, ref ImageSelectionType imageMode, ref UIBlock2DData.Calculated calc)
         {
-            using (Foldout bodyFoldout = NovaGUI.EditorPrefFoldoutHeader(Body, uiNode2DData.FillEnabledProp))
+            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body, uiNode2DData.FillEnabledProp))
             {
                 if (bodyFoldout)
                 {
@@ -30,14 +30,14 @@ namespace Nova.Editor.GUIs
                 }
             }
 
-            using (Foldout visualsFoldout = NovaGUI.EditorPrefFoldoutHeader(Visuals))
+            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals))
             {
                 if (visualsFoldout)
                 {
                     using var indent = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
 
-                    NovaGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
-                    NovaEditorPrefs.DisplaySidesCornerRadius = LengthCornerRadiusRollout(
+                    AuraGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
+                    AuraEditorPrefs.DisplaySidesCornerRadius = LengthCornerRadiusRollout(
                         Labels.UIBlock2D.CornerRadius,
                         uiNode2DData.CornerRadius,
                         uiNode2DData.CornerRadii,
@@ -46,11 +46,11 @@ namespace Nova.Editor.GUIs
                         calc.CornerRadii,
                         min: 0,
                         max: minHalfSize,
-                        NovaEditorPrefs.DisplaySidesCornerRadius,
+                        AuraEditorPrefs.DisplaySidesCornerRadius,
                         uiNode2DData.SerializedProperty.FindPropertyRelative("InvertedCorners"));
                     DrawRadialFillUI(uiNode2DData.RadialFill, calc.RadialFill);
                     DrawBaseInfoUI(baseInfo);
-                    NovaGUI.ToggleField(Labels.UIBlock2D.SoftenEdges, uiNode2DData.SoftenEdgesProp);
+                    AuraGUI.ToggleField(Labels.UIBlock2D.SoftenEdges, uiNode2DData.SoftenEdgesProp);
                     DrawSurfaceUI(surface, false);
                 }
             }
@@ -63,7 +63,7 @@ namespace Nova.Editor.GUIs
         /// <param name="surface"></param>
         public static void DrawBodyVisualsUI(_BaseRenderInfo baseInfo, _Surface surface, TMPProperties tmpProps)
         {
-            using (Foldout bodyFoldout = NovaGUI.EditorPrefFoldoutHeader(Body))
+            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body))
             {
                 if (bodyFoldout)
                 {
@@ -73,12 +73,12 @@ namespace Nova.Editor.GUIs
                 }
             }
 
-            using (Foldout visualsFoldout = NovaGUI.EditorPrefFoldoutHeader(Visuals))
+            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals))
             {
                 if (visualsFoldout)
                 {
                     using var indent = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
-                    NovaGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
+                    AuraGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
                     DrawBaseInfoUI(baseInfo);
                     DrawSurfaceUI(surface, false);
                 }
@@ -87,7 +87,7 @@ namespace Nova.Editor.GUIs
 
         public static void DrawBodyVisualsUI(Vector3 size, _UIBlock3DData uiNode3DData, _Surface surface, _BaseRenderInfo baseInfo, ref UIBlock3DData.Calculated calc)
         {
-            using (Foldout bodyFoldout = NovaGUI.EditorPrefFoldoutHeader(Body))
+            using (Foldout bodyFoldout = AuraGUI.EditorPrefFoldoutHeader(Body))
             {
                 if (bodyFoldout)
                 {
@@ -96,15 +96,15 @@ namespace Nova.Editor.GUIs
                 }
             }
 
-            using (Foldout visualsFoldout = NovaGUI.EditorPrefFoldoutHeader(Visuals))
+            using (Foldout visualsFoldout = AuraGUI.EditorPrefFoldoutHeader(Visuals))
             {
                 if (visualsFoldout)
                 {
                     using var indent = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
 
-                    NovaGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
+                    AuraGUI.ToggleField(Labels.Rendering.Visible, baseInfo.VisibleProp);
                     float minXY = Mathf.Min(size.x, size.y);
-                    NovaEditorPrefs.DisplaySidesCornerRadius = LengthCornerRadiusRollout(
+                    AuraEditorPrefs.DisplaySidesCornerRadius = LengthCornerRadiusRollout(
                         Labels.UIBlock3D.CornerRadius,
                         uiNode3DData.CornerRadius,
                         uiNode3DData.CornerRadii,
@@ -113,8 +113,8 @@ namespace Nova.Editor.GUIs
                         calc.CornerRadii,
                         min: 0,
                         max: 0.5f * minXY,
-                        NovaEditorPrefs.DisplaySidesCornerRadius);
-                    NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.UIBlock3D.EdgeRadius, uiNode3DData.EdgeRadius, calc.EdgeRadius, min: 0, max: 0.5f * Mathf.Min(minXY, size.z));
+                        AuraEditorPrefs.DisplaySidesCornerRadius);
+                    AuraGUI.LengthField(AuraGUI.Layout.GetControlRect(), Labels.UIBlock3D.EdgeRadius, uiNode3DData.EdgeRadius, calc.EdgeRadius, min: 0, max: 0.5f * Mathf.Min(minXY, size.z));
                     DrawSurfaceUI(surface, true);
                 }
             }
@@ -122,20 +122,20 @@ namespace Nova.Editor.GUIs
 
         public static void DrawRadialFillUI(_RadialFill radialFill, RadialFill.Calculated calc)
         {
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
             EditorGUI.BeginChangeCheck();
-            bool expand = NovaGUI.PrefixFoldout(NovaEditorPrefs.DisplayExpandedRadialFill);
+            bool expand = AuraGUI.PrefixFoldout(AuraEditorPrefs.DisplayExpandedRadialFill);
             if (EditorGUI.EndChangeCheck())
             {
-                NovaEditorPrefs.DisplayExpandedRadialFill = expand;
+                AuraEditorPrefs.DisplayExpandedRadialFill = expand;
             }
 
-            Rect toggleRect = NovaGUI.Layout.GetControlRect();
-            toggleRect.x -= Foldout.ArrowIconSize + NovaGUI.MinSpaceBetweenFields;
-            NovaGUI.ToggleField(toggleRect, Labels.RadialFill.Enabled, radialFill.EnabledProp);
+            Rect toggleRect = AuraGUI.Layout.GetControlRect();
+            toggleRect.x -= Foldout.ArrowIconSize + AuraGUI.MinSpaceBetweenFields;
+            AuraGUI.ToggleField(toggleRect, Labels.RadialFill.Enabled, radialFill.EnabledProp);
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
             if (!expand)
             {
@@ -143,25 +143,25 @@ namespace Nova.Editor.GUIs
             }
 
 
-            NovaGUI.Layout.BeginHorizontal(NovaGUI.Styles.InnerContent);
-            NovaGUI.Space(4f / 3f);
-            NovaGUI.Layout.BeginVertical();
+            AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
+            AuraGUI.Space(4f / 3f);
+            AuraGUI.Layout.BeginVertical();
 
             EditorGUI.BeginDisabledGroup(!radialFill.Enabled);
 
-            NovaGUI.Length2Field(Labels.RadialFill.Center, radialFill.Center, calc.Center, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
-            NovaGUI.SliderField(Labels.RadialFill.Rotation, radialFill.RotationProp, min: -360f, max: 360f);
-            NovaGUI.SliderField(Labels.RadialFill.FillAngle, radialFill.FillAngleProp, min: -360f, max: 360f);
+            AuraGUI.Length2Field(Labels.RadialFill.Center, radialFill.Center, calc.Center, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
+            AuraGUI.SliderField(Labels.RadialFill.Rotation, radialFill.RotationProp, min: -360f, max: 360f);
+            AuraGUI.SliderField(Labels.RadialFill.FillAngle, radialFill.FillAngleProp, min: -360f, max: 360f);
 
             EditorGUI.EndDisabledGroup();
 
-            NovaGUI.Layout.EndVertical();
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndVertical();
+            AuraGUI.Layout.EndHorizontal();
         }
 
         public static void DrawBorderUI(_Border borderData, Border.Calculated calc)
         {
-            using (Foldout foldout = NovaGUI.EditorPrefFoldoutHeader("Border", borderData.EnabledProp))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Border", borderData.EnabledProp))
             {
                 using (new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel))
                 {
@@ -170,10 +170,10 @@ namespace Nova.Editor.GUIs
                         ColorField(Labels.Border.Color, borderData.ColorProp);
 
                         // Width
-                        NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.Border.Width, borderData.Width, calc.Width, min: 0);
+                        AuraGUI.LengthField(AuraGUI.Layout.GetControlRect(), Labels.Border.Width, borderData.Width, calc.Width, min: 0);
 
                         // Direction
-                        Rect directionPosition = NovaGUI.Layout.GetControlRect();
+                        Rect directionPosition = AuraGUI.Layout.GetControlRect();
                         GUIContent label = EditorGUI.BeginProperty(directionPosition, Labels.Border.Direction, borderData.DirectionProp);
                         EditorGUI.BeginChangeCheck();
                         BorderDirection strokeDirection = (BorderDirection)EditorGUI.EnumPopup(directionPosition, label, borderData.Direction);
@@ -213,7 +213,7 @@ namespace Nova.Editor.GUIs
 
         public static void DrawShadowUI(_UIBlock2DData renderData, Shadow.Calculated calc)
         {
-            using (Foldout foldout = NovaGUI.EditorPrefFoldoutHeader("Shadow", renderData.Shadow.EnabledProp))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Shadow", renderData.Shadow.EnabledProp))
             {
                 if (!foldout)
                 {
@@ -224,7 +224,7 @@ namespace Nova.Editor.GUIs
 
 
                 _Shadow shadowData = renderData.Shadow;
-                Rect fieldRect = NovaGUI.Layout.GetControlRect();
+                Rect fieldRect = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
                 GUIContent label = EditorGUI.BeginProperty(fieldRect, Labels.Shadow.Direction, shadowData.DirectionProp);
                 ShadowDirection newDirection = (ShadowDirection)EditorGUI.EnumPopup(fieldRect, label, shadowData.Direction);
@@ -234,10 +234,10 @@ namespace Nova.Editor.GUIs
                     shadowData.Direction = newDirection;
                 }
 
-                NovaGUI.ColorField(Labels.Shadow.Color, shadowData.ColorProp);
-                NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.Shadow.Width, shadowData.Width, calc.Width);
-                NovaGUI.LengthField(NovaGUI.Layout.GetControlRect(), Labels.Shadow.Blur, shadowData.Blur, calc.Blur, min: 0);
-                NovaGUI.Length2Field(Labels.Shadow.Offset, shadowData.Offset, calc.Offset, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
+                AuraGUI.ColorField(Labels.Shadow.Color, shadowData.ColorProp);
+                AuraGUI.LengthField(AuraGUI.Layout.GetControlRect(), Labels.Shadow.Width, shadowData.Width, calc.Width);
+                AuraGUI.LengthField(AuraGUI.Layout.GetControlRect(), Labels.Shadow.Blur, shadowData.Blur, calc.Blur, min: 0);
+                AuraGUI.Length2Field(Labels.Shadow.Offset, shadowData.Offset, calc.Offset, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
             }
         }
 
@@ -245,7 +245,7 @@ namespace Nova.Editor.GUIs
         {
             using var indent = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
 
-            Rect baseInfoField = NovaGUI.Layout.GetControlRect();
+            Rect baseInfoField = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
             GUIContent propertyLabel = EditorGUI.BeginProperty(baseInfoField, Labels.Rendering.ZIndex, baseInfo.ZIndexProp);
             short newRenderLayer = (short)EditorGUI.IntField(baseInfoField, propertyLabel, baseInfo.ZIndexProp.intValue);
@@ -259,18 +259,18 @@ namespace Nova.Editor.GUIs
         public static void DrawUIBlock2DUI(_UIBlock2DData data, ref UIBlock2DData.Calculated calc)
         {
             EditorGUI.BeginChangeCheck();
-            NovaGUI.Layout.BeginVertical();
-            NovaGUI.Layout.BeginHorizontal();
-            Rect labelRect = NovaGUI.Layout.GetControlRect(GUILayout.Width(Foldout.ArrowIconSize));
-            bool expandedColor = Foldout.FoldoutToggle(labelRect, NovaEditorPrefs.DisplayExpandedColor);
+            AuraGUI.Layout.BeginVertical();
+            AuraGUI.Layout.BeginHorizontal();
+            Rect labelRect = AuraGUI.Layout.GetControlRect(GUILayout.Width(Foldout.ArrowIconSize));
+            bool expandedColor = Foldout.FoldoutToggle(labelRect, AuraEditorPrefs.DisplayExpandedColor);
             if (EditorGUI.EndChangeCheck())
             {
-                NovaEditorPrefs.DisplayExpandedColor = expandedColor;
+                AuraEditorPrefs.DisplayExpandedColor = expandedColor;
             }
 
-            NovaGUI.Space(-NovaGUI.Layout.FoldoutArrowIndentSpace);
-            NovaGUI.ColorField(Labels.UIBlock2D.Color, data.ColorProp);
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Space(-AuraGUI.Layout.FoldoutArrowIndentSpace);
+            AuraGUI.ColorField(Labels.UIBlock2D.Color, data.ColorProp);
+            AuraGUI.Layout.EndHorizontal();
 
             EditorGUILayout.Space(1);
 
@@ -279,7 +279,7 @@ namespace Nova.Editor.GUIs
                 GradientField(data.Gradient, calc.Gradient);
             }
 
-            NovaGUI.Layout.EndVertical();
+            AuraGUI.Layout.EndVertical();
         }
 
         public static void DrawImageUI(_UIBlock2DData uiNode2DData, ref ImageSelectionType imageMode)
@@ -288,21 +288,21 @@ namespace Nova.Editor.GUIs
             SerializedProperty textureProp = serializedObject.FindProperty(Names.UIBlock2D.texture);
             SerializedProperty spriteProp = serializedObject.FindProperty(Names.UIBlock2D.sprite);
 
-            bool expandedImage = NovaEditorPrefs.DisplayExpandedImage;
+            bool expandedImage = AuraEditorPrefs.DisplayExpandedImage;
 
             using (new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel))
             {
                 EditorGUI.BeginChangeCheck();
-                NovaGUI.Layout.BeginVertical();
-                NovaGUI.Layout.BeginHorizontal();
-                Rect imageFieldRect = NovaGUI.Layout.GetControlRect();
+                AuraGUI.Layout.BeginVertical();
+                AuraGUI.Layout.BeginHorizontal();
+                Rect imageFieldRect = AuraGUI.Layout.GetControlRect();
                 expandedImage = Foldout.FoldoutToggle(imageFieldRect, expandedImage);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    NovaEditorPrefs.DisplayExpandedImage = expandedImage;
+                    AuraEditorPrefs.DisplayExpandedImage = expandedImage;
                 }
 
-                imageFieldRect.xMax -= NovaGUI.ToggleToolbarFieldWidth + NovaGUI.MinSpaceBetweenFields;
+                imageFieldRect.xMax -= AuraGUI.ToggleToolbarFieldWidth + AuraGUI.MinSpaceBetweenFields;
 
                 // The texture/sprite
                 switch (imageMode)
@@ -314,7 +314,7 @@ namespace Nova.Editor.GUIs
                             {
                                 Rect warningRect = imageFieldRect;
                                 warningRect.xMin += EditorGUIUtility.labelWidth;
-                                NovaGUI.WarningIcon(warningRect, Labels.Image.SlicedWarningTooltip);
+                                AuraGUI.WarningIcon(warningRect, Labels.Image.SlicedWarningTooltip);
                             }
 
                             EditorGUI.BeginChangeCheck();
@@ -367,15 +367,15 @@ namespace Nova.Editor.GUIs
 
                 // Sprite vs Texture selector
                 Rect toolbarRect = imageFieldRect;
-                toolbarRect.x = toolbarRect.xMax + NovaGUI.MinSpaceBetweenFields;
-                toolbarRect.width = NovaGUI.ToggleToolbarFieldWidth;
+                toolbarRect.x = toolbarRect.xMax + AuraGUI.MinSpaceBetweenFields;
+                toolbarRect.width = AuraGUI.ToggleToolbarFieldWidth;
                 EditorGUI.BeginChangeCheck();
                 Rect toolbarPropertyRect = toolbarRect;
-                toolbarPropertyRect.width += NovaGUI.SingleCharacterGUIWidth;
-                ImageSelectionType newImageMode = NovaGUI.Toolbar(toolbarRect, imageMode, Labels.Image.TypeLabels);
+                toolbarPropertyRect.width += AuraGUI.SingleCharacterGUIWidth;
+                ImageSelectionType newImageMode = AuraGUI.Toolbar(toolbarRect, imageMode, Labels.Image.TypeLabels);
                 bool imageTypeChanged = EditorGUI.EndChangeCheck() && newImageMode != imageMode;
-                NovaGUI.Layout.EndHorizontal();
-                NovaGUI.Layout.EndVertical();
+                AuraGUI.Layout.EndHorizontal();
+                AuraGUI.Layout.EndVertical();
 
                 if (imageTypeChanged)
                 {
@@ -390,13 +390,13 @@ namespace Nova.Editor.GUIs
                 if (expandedImage)
                 {
                     EditorGUILayout.Space(1);
-                    NovaGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
-                    NovaGUI.Layout.BeginHorizontal(NovaGUI.Styles.InnerContent);
-                    NovaGUI.Space(1.5f);
-                    NovaGUI.Layout.BeginVertical();
+                    AuraGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+                    AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
+                    AuraGUI.Space(1.5f);
+                    AuraGUI.Layout.BeginVertical();
 
                     // Scale Mode
-                    Rect scaleModeRect = NovaGUI.Layout.GetControlRect();
+                    Rect scaleModeRect = AuraGUI.Layout.GetControlRect();
                     EditorGUI.BeginChangeCheck();
                     GUIContent scaleModeLabel = EditorGUI.BeginProperty(scaleModeRect, Labels.Image.ImageScaleMode, uiNode2DData.Image.Adjustment.scaleModeProp);
                     ImageScaleMode newScaleMode = (ImageScaleMode)EditorGUI.EnumPopup(scaleModeRect, scaleModeLabel, uiNode2DData.Image.Adjustment.scaleMode);
@@ -410,35 +410,35 @@ namespace Nova.Editor.GUIs
 
                     if (newScaleMode == ImageScaleMode.Manual)
                     {
-                        NovaGUI.Vector2Field(Labels.Image.ImageCenter, uiNode2DData.Image.Adjustment.CenterUVProp);
-                        NovaGUI.Vector2Field(Labels.Image.ImageScale, uiNode2DData.Image.Adjustment.UVScaleProp);
-                        NovaGUI.FloatField(Labels.Image.ImageRotation, uiNode2DData.Image.Adjustment.RotationProp);
+                        AuraGUI.Vector2Field(Labels.Image.ImageCenter, uiNode2DData.Image.Adjustment.CenterUVProp);
+                        AuraGUI.Vector2Field(Labels.Image.ImageScale, uiNode2DData.Image.Adjustment.UVScaleProp);
+                        AuraGUI.FloatField(Labels.Image.ImageRotation, uiNode2DData.Image.Adjustment.RotationProp);
                     }
                     else if (newScaleMode == ImageScaleMode.Sliced || newScaleMode == ImageScaleMode.Tiled)
                     {
-                        NovaGUI.FloatFieldClamped(Labels.Image.PixelsPerUnit, uiNode2DData.Image.Adjustment.PixelsPerUnitMultiplierProp, .01f, float.MaxValue);
+                        AuraGUI.FloatFieldClamped(Labels.Image.PixelsPerUnit, uiNode2DData.Image.Adjustment.PixelsPerUnitMultiplierProp, .01f, float.MaxValue);
                     }
 
                     else if (newScaleMode == ImageScaleMode.Fill)
                     {
                         // Show Fill axis selector and pixels-per-unit for Fill mode
-                        Rect fillAxisField = NovaGUI.Layout.GetControlRect();
+                        Rect fillAxisField = AuraGUI.Layout.GetControlRect();
                         EditorGUI.BeginChangeCheck();
                         GUIContent fillAxisLabel = EditorGUI.BeginProperty(fillAxisField, Labels.Image.FillAxis, uiNode2DData.Image.Adjustment.fillAxisProp);
-                        Nova.ImageFillAxis startFillAxis = uiNode2DData.Image.Adjustment.fillAxis;
-                        Nova.ImageFillAxis newFillAxis = (Nova.ImageFillAxis)EditorGUI.EnumPopup(fillAxisField, fillAxisLabel, startFillAxis);
+                        Aura.ImageFillAxis startFillAxis = uiNode2DData.Image.Adjustment.fillAxis;
+                        Aura.ImageFillAxis newFillAxis = (Aura.ImageFillAxis)EditorGUI.EnumPopup(fillAxisField, fillAxisLabel, startFillAxis);
                         EditorGUI.EndProperty();
                         if (EditorGUI.EndChangeCheck())
                         {
                             uiNode2DData.Image.Adjustment.fillAxis = newFillAxis;
                         }
 
-                        NovaGUI.FloatFieldClamped(Labels.Image.PixelsPerUnit, uiNode2DData.Image.Adjustment.PixelsPerUnitMultiplierProp, .01f, float.MaxValue);
+                        AuraGUI.FloatFieldClamped(Labels.Image.PixelsPerUnit, uiNode2DData.Image.Adjustment.PixelsPerUnitMultiplierProp, .01f, float.MaxValue);
                     }
 
-                    if (NovaSettings.PackedImagesEnabled)
+                    if (AuraSettings.PackedImagesEnabled)
                     {
-                        Rect renderModeField = NovaGUI.Layout.GetControlRect();
+                        Rect renderModeField = AuraGUI.Layout.GetControlRect();
                         EditorGUI.BeginChangeCheck();
                         GUIContent renderModeLabel = EditorGUI.BeginProperty(renderModeField, Labels.Image.ImageMode, uiNode2DData.Image.ModeProp);
                         ImagePackMode startRenderingMode = uiNode2DData.Image.Mode;
@@ -451,8 +451,8 @@ namespace Nova.Editor.GUIs
                     }
 
 
-                    NovaGUI.Layout.EndVertical();
-                    NovaGUI.Layout.EndHorizontal();
+                    AuraGUI.Layout.EndVertical();
+                    AuraGUI.Layout.EndHorizontal();
                 }
 
 
@@ -461,11 +461,11 @@ namespace Nova.Editor.GUIs
 
         private static void DrawDisabledSurfaceUI()
         {
-            NovaGUI.WarningIcon(Labels.Surface.DisabledSurfaceSRPWarning);
+            AuraGUI.WarningIcon(Labels.Surface.DisabledSurfaceSRPWarning);
 
             EditorGUI.BeginDisabledGroup(true);
 
-            Rect presetRect = NovaGUI.Layout.GetControlRect();
+            Rect presetRect = AuraGUI.Layout.GetControlRect();
             EditorGUI.EnumPopup(presetRect, Labels.Surface.SurfaceEffect, SurfacePreset.Unlit);
 
             EditorGUI.EndDisabledGroup();
@@ -479,26 +479,26 @@ namespace Nova.Editor.GUIs
                 return;
             }
 
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
             bool expandedSurface = false;
 
             if (surface.LightingModel != LightingModel.Unlit)
             {
                 EditorGUI.BeginChangeCheck();
-                Rect labelRect = NovaGUI.Layout.GetControlRect(GUILayout.Width(Foldout.ArrowIconSize));
-                expandedSurface = Foldout.FoldoutToggle(labelRect, NovaEditorPrefs.DisplayExpandedSurface);
+                Rect labelRect = AuraGUI.Layout.GetControlRect(GUILayout.Width(Foldout.ArrowIconSize));
+                expandedSurface = Foldout.FoldoutToggle(labelRect, AuraEditorPrefs.DisplayExpandedSurface);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    NovaEditorPrefs.DisplayExpandedSurface = expandedSurface;
+                    AuraEditorPrefs.DisplayExpandedSurface = expandedSurface;
                 }
 
-                NovaGUI.Space(-1f);
+                AuraGUI.Space(-1f);
             }
 
             SurfacePreset preset = SurfaceDrawer.GetApproximatePreset(surface);
 
-            Rect presetRect = NovaGUI.Layout.GetControlRect();
+            Rect presetRect = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
             bool showMixed = EditorGUI.showMixedValue;
             EditorGUI.showMixedValue = surface.SerializedProperty.hasMultipleDifferentValues;
@@ -509,18 +509,18 @@ namespace Nova.Editor.GUIs
                 SurfaceDrawer.SetPreset(preset, surface);
             }
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
             if (!expandedSurface || preset == SurfacePreset.Unlit || surface.LightingModelProp.hasMultipleDifferentValues)
             {
                 return;
             }
 
-            NovaGUI.Layout.BeginHorizontal(Styles.InnerContent);
-            NovaGUI.Space(1.5f);
-            NovaGUI.Layout.BeginVertical();
+            AuraGUI.Layout.BeginHorizontal(Styles.InnerContent);
+            AuraGUI.Space(1.5f);
+            AuraGUI.Layout.BeginVertical();
 
-            Rect fieldRect = NovaGUI.Layout.GetControlRect();
+            Rect fieldRect = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
             GUIContent lightingModelLabel = EditorGUI.BeginProperty(fieldRect, Labels.Surface.LightingModel, surface.LightingModelProp);
             LightingModel newLightingModel = (LightingModel)EditorGUI.EnumPopup(fieldRect, lightingModelLabel, surface.LightingModel);
@@ -530,7 +530,7 @@ namespace Nova.Editor.GUIs
                 SurfaceDrawer.SetLightingModel(surface, newLightingModel);
             }
 
-            Rect shadowCastRect = NovaGUI.Layout.GetControlRect();
+            Rect shadowCastRect = AuraGUI.Layout.GetControlRect();
             EditorGUI.BeginChangeCheck();
             GUIContent shadowCastingLabel = EditorGUI.BeginProperty(shadowCastRect, Labels.Surface.ShadowCasting, surface.ShadowCastingModeProp);
             ShadowCastingMode newShadowCasting = (ShadowCastingMode)EditorGUI.EnumPopup(shadowCastRect, shadowCastingLabel, surface.ShadowCastingMode);
@@ -542,7 +542,7 @@ namespace Nova.Editor.GUIs
 
             if (canReceiveShadows)
             {
-                Rect receiveShadowsRect = NovaGUI.Layout.GetControlRect();
+                Rect receiveShadowsRect = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
                 GUIContent receiveShadowsLabel = EditorGUI.BeginProperty(receiveShadowsRect, Labels.Surface.ReceiveShadows, surface.ReceiveShadowsProp);
                 bool recvShadows = EditorGUI.Toggle(receiveShadowsRect, receiveShadowsLabel, surface.ReceiveShadows);
@@ -560,47 +560,47 @@ namespace Nova.Editor.GUIs
                     // Do nothing
                     break;
                 case LightingModel.BlinnPhong:
-                    NovaGUI.SliderField(Labels.Surface.Specular, surface.param1Prop, 0, 1);
-                    NovaGUI.SliderField(Labels.Surface.Gloss, surface.param2Prop, 0, 1);
+                    AuraGUI.SliderField(Labels.Surface.Specular, surface.param1Prop, 0, 1);
+                    AuraGUI.SliderField(Labels.Surface.Gloss, surface.param2Prop, 0, 1);
                     break;
                 case LightingModel.Standard:
-                    NovaGUI.SliderField(Labels.Surface.Metallic, surface.param2Prop, 0, 1);
-                    NovaGUI.SliderField(Labels.Surface.Smoothness, surface.param1Prop, 0, 1);
+                    AuraGUI.SliderField(Labels.Surface.Metallic, surface.param2Prop, 0, 1);
+                    AuraGUI.SliderField(Labels.Surface.Smoothness, surface.param1Prop, 0, 1);
                     break;
                 case LightingModel.StandardSpecular:
-                    NovaGUI.ColorField(Labels.Surface.SpecularColor, surface.specularColorProp, false);
-                    NovaGUI.SliderField(Labels.Surface.Smoothness, surface.param1Prop, 0, 1);
+                    AuraGUI.ColorField(Labels.Surface.SpecularColor, surface.specularColorProp, false);
+                    AuraGUI.SliderField(Labels.Surface.Smoothness, surface.param1Prop, 0, 1);
                     break;
                 default:
                     break;
             }
 
-            NovaGUI.Layout.EndVertical();
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndVertical();
+            AuraGUI.Layout.EndHorizontal();
         }
 
         private static void GradientField(_RadialGradient gradientData, RadialGradient.Calculated calc)
         {
-            NovaGUI.Layout.BeginHorizontal(NovaGUI.Styles.InnerContent);
-            NovaGUI.Layout.BeginVertical();
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
+            AuraGUI.Layout.BeginVertical();
+            AuraGUI.Layout.BeginHorizontal();
 
-            NovaGUI.Space(4f / 3f);
+            AuraGUI.Space(4f / 3f);
 
             EditorGUI.BeginChangeCheck();
-            bool expandGradient = NovaGUI.PrefixFoldout(NovaEditorPrefs.DisplayExpandedGradient);
+            bool expandGradient = AuraGUI.PrefixFoldout(AuraEditorPrefs.DisplayExpandedGradient);
             if (EditorGUI.EndChangeCheck())
             {
-                NovaEditorPrefs.DisplayExpandedGradient = expandGradient;
+                AuraEditorPrefs.DisplayExpandedGradient = expandGradient;
             }
 
             EditorGUI.BeginChangeCheck();
 
-            Rect controlRect = NovaGUI.Layout.GetControlRect();
+            Rect controlRect = AuraGUI.Layout.GetControlRect();
             Rect toggleRect = controlRect;
-            toggleRect.width = NovaGUI.LabelWidth;
-            toggleRect.width += NovaGUI.ToggleBoxSize;
-            toggleRect.x -= NovaGUI.IndentSize + NovaGUI.MinSpaceBetweenFields;
+            toggleRect.width = AuraGUI.LabelWidth;
+            toggleRect.width += AuraGUI.ToggleBoxSize;
+            toggleRect.x -= AuraGUI.IndentSize + AuraGUI.MinSpaceBetweenFields;
 
             Rect colorFieldRect = controlRect;
             colorFieldRect.xMin = toggleRect.xMax;
@@ -611,7 +611,7 @@ namespace Nova.Editor.GUIs
 
             EditorGUI.BeginDisabledGroup(!gradientData.Enabled);
 
-            NovaGUI.ColorField(colorFieldRect, Labels.Gradient.Color, gradientData.ColorProp);
+            AuraGUI.ColorField(colorFieldRect, Labels.Gradient.Color, gradientData.ColorProp);
             EditorGUI.EndDisabledGroup();
 
             if (EditorGUI.EndChangeCheck() && gradientData.Enabled)
@@ -622,44 +622,44 @@ namespace Nova.Editor.GUIs
                 UnityEditor.EditorTools.ToolManager.SetActiveTool<GradientTool>();
             }
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
             if (expandGradient)
             {
-                NovaGUI.Space(2 / NovaGUI.IndentSize);
-                NovaGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
-                NovaGUI.Layout.BeginHorizontal(NovaGUI.Styles.InnerContent);
-                NovaGUI.Space(2.5f);
-                NovaGUI.Layout.BeginVertical();
+                AuraGUI.Space(2 / AuraGUI.IndentSize);
+                AuraGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+                AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
+                AuraGUI.Space(2.5f);
+                AuraGUI.Layout.BeginVertical();
                 EditorGUI.BeginDisabledGroup(!gradientData.Enabled);
 
-                NovaGUI.Length2Field(Labels.Gradient.Center, gradientData.Center, calc.Center, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
-                NovaGUI.Length2Field(Labels.Gradient.Radius, gradientData.Radius, calc.Radius, MinMax2.Positive.Min, MinMax2.Positive.Max);
-                NovaGUI.FloatField(Labels.Gradient.Rotation, gradientData.RotationProp);
+                AuraGUI.Length2Field(Labels.Gradient.Center, gradientData.Center, calc.Center, MinMax2.Unclamped.Min, MinMax2.Unclamped.Max);
+                AuraGUI.Length2Field(Labels.Gradient.Radius, gradientData.Radius, calc.Radius, MinMax2.Positive.Min, MinMax2.Positive.Max);
+                AuraGUI.FloatField(Labels.Gradient.Rotation, gradientData.RotationProp);
 
                 EditorGUI.EndDisabledGroup();
-                NovaGUI.Layout.EndVertical();
-                NovaGUI.Layout.EndHorizontal();
+                AuraGUI.Layout.EndVertical();
+                AuraGUI.Layout.EndHorizontal();
             }
 
-            NovaGUI.Layout.EndVertical();
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndVertical();
+            AuraGUI.Layout.EndHorizontal();
         }
 
         private static void TMPFields(TMPProperties tmpProps, SerializedObject blockSerializedObject)
         {
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
             EditorGUI.BeginChangeCheck();
-            bool expandTextProperties = NovaGUI.PrefixFoldout(NovaEditorPrefs.DisplayExpandedText);
-            NovaGUI.Space(-NovaGUI.Layout.FoldoutArrowIndentSpace);
+            bool expandTextProperties = AuraGUI.PrefixFoldout(AuraEditorPrefs.DisplayExpandedText);
+            AuraGUI.Space(-AuraGUI.Layout.FoldoutArrowIndentSpace);
             if (EditorGUI.EndChangeCheck())
             {
-                NovaEditorPrefs.DisplayExpandedText = expandTextProperties;
+                AuraEditorPrefs.DisplayExpandedText = expandTextProperties;
             }
 
             EditorGUI.BeginChangeCheck();
             EditorGUI.BeginChangeCheck();
-            Rect textField = NovaGUI.Layout.GetControlRect();
+            Rect textField = AuraGUI.Layout.GetControlRect();
 
             string text = null;
             using (var scope = tmpProps.TextDiffer ? MixedValueScope.Create() : default)
@@ -672,19 +672,19 @@ namespace Nova.Editor.GUIs
                 tmpProps.Text = text;
             }
 
-            EditorGUILayout.LabelField(Labels.TMP.Info, GUILayout.Width(NovaGUI.ToggleBoxSize));
-            NovaGUI.Layout.EndHorizontal();
+            EditorGUILayout.LabelField(Labels.TMP.Info, GUILayout.Width(AuraGUI.ToggleBoxSize));
+            AuraGUI.Layout.EndHorizontal();
             if (expandTextProperties)
             {
-                NovaGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
-                NovaGUI.Layout.BeginHorizontal(NovaGUI.Styles.InnerContent);
-                NovaGUI.Space(1.5f);
-                NovaGUI.Layout.BeginVertical();
+                AuraGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+                AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
+                AuraGUI.Space(1.5f);
+                AuraGUI.Layout.BeginVertical();
 
                 int previousX = tmpProps.HorizontalAlignmentDiffer ? -1000 : AlignmentFromTMPAlignment(tmpProps.HorizontalAlignment);
                 int previousY = tmpProps.VerticalAlignmentDiffer ? -1000 : AlignmentFromTMPAlignment(tmpProps.VerticalAlignment);
                 EditorGUI.BeginChangeCheck();
-                (int xAlignment, int yAlignment) = NovaLayoutEditors.AlignmentField(Labels.TMP.Alignment, previousX, previousY, Labels.TMPAlignment);
+                (int xAlignment, int yAlignment) = AuraLayoutEditors.AlignmentField(Labels.TMP.Alignment, previousX, previousY, Labels.TMPAlignment);
                 if (EditorGUI.EndChangeCheck())
                 {
                     // since we aren't 1:1 with TMP's alignment options, only write when the specific axis field is modified
@@ -700,15 +700,15 @@ namespace Nova.Editor.GUIs
                 }
 
                 EditorGUI.BeginChangeCheck();
-                Rect colorField = NovaGUI.Layout.GetControlRect();
-                Color color = NovaGUI.ColorField(colorField, Labels.TMP.Color, tmpProps.Color, tmpProps.ColorDiffer);
+                Rect colorField = AuraGUI.Layout.GetControlRect();
+                Color color = AuraGUI.ColorField(colorField, Labels.TMP.Color, tmpProps.Color, tmpProps.ColorDiffer);
                 if (EditorGUI.EndChangeCheck())
                 {
                     tmpProps.Color = color;
                 }
 
                 EditorGUI.BeginChangeCheck();
-                Rect fontField = NovaGUI.Layout.GetControlRect();
+                Rect fontField = AuraGUI.Layout.GetControlRect();
                 TMPro.TMP_FontAsset font = null;
                 using (var scope = tmpProps.FontDiffer ? MixedValueScope.Create() : default)
                 {
@@ -721,7 +721,7 @@ namespace Nova.Editor.GUIs
                 }
 
                 EditorGUI.BeginChangeCheck();
-                Rect floatField = NovaGUI.Layout.GetControlRect();
+                Rect floatField = AuraGUI.Layout.GetControlRect();
                 float fontSize = 0f;
                 using (var scope = tmpProps.FontSizeDiffer ? MixedValueScope.Create() : default)
                 {
@@ -736,7 +736,7 @@ namespace Nova.Editor.GUIs
                 // Draw TextBlock-specific fields: ContentType and Password Mask (show mask only when Password selected)
                 if (blockSerializedObject != null)
                 {
-                    NovaGUI.Space(2 / NovaGUI.IndentSize);
+                    AuraGUI.Space(2 / AuraGUI.IndentSize);
                     SerializedProperty contentTypeProp = blockSerializedObject.FindProperty("contentType");
                     SerializedProperty passwordMaskProp = blockSerializedObject.FindProperty("passwordMask");
                     SerializedProperty useNumberRangeProp = blockSerializedObject.FindProperty("useNumberRange");
@@ -746,7 +746,7 @@ namespace Nova.Editor.GUIs
                     EditorGUI.BeginChangeCheck();
                     if (contentTypeProp != null)
                     {
-                        Rect contentTypeRect = NovaGUI.Layout.GetControlRect();
+                        Rect contentTypeRect = AuraGUI.Layout.GetControlRect();
                         EditorGUI.PropertyField(contentTypeRect, contentTypeProp, new GUIContent("Content Type"));
                     }
 
@@ -760,7 +760,7 @@ namespace Nova.Editor.GUIs
 
                     if (passwordMaskProp != null && showPasswordMask)
                     {
-                        Rect maskRect = NovaGUI.Layout.GetControlRect();
+                        Rect maskRect = AuraGUI.Layout.GetControlRect();
                         EditorGUI.PropertyField(maskRect, passwordMaskProp, new GUIContent("Password Mask"));
                     }
 
@@ -768,7 +768,7 @@ namespace Nova.Editor.GUIs
                     {
                         if (useNumberRangeProp != null)
                         {
-                            Rect useRangeRect = NovaGUI.Layout.GetControlRect();
+                            Rect useRangeRect = AuraGUI.Layout.GetControlRect();
                             EditorGUI.PropertyField(useRangeRect, useNumberRangeProp, new GUIContent("Use Number Range"));
                         }
 
@@ -782,13 +782,13 @@ namespace Nova.Editor.GUIs
                         {
                             if (numberMinProp != null)
                             {
-                                Rect minRect = NovaGUI.Layout.GetControlRect();
+                                Rect minRect = AuraGUI.Layout.GetControlRect();
                                 EditorGUI.PropertyField(minRect, numberMinProp, new GUIContent("Number Min"));
                             }
 
                             if (numberMaxProp != null)
                             {
-                                Rect maxRect = NovaGUI.Layout.GetControlRect();
+                                Rect maxRect = AuraGUI.Layout.GetControlRect();
                                 EditorGUI.PropertyField(maxRect, numberMaxProp, new GUIContent("Number Max"));
                             }
                         }
@@ -799,10 +799,10 @@ namespace Nova.Editor.GUIs
                         blockSerializedObject.ApplyModifiedProperties();
                         EditModeUtils.QueueEditorUpdateNextFrame();
                     }
-                    NovaGUI.Space(1.5f);
+                    AuraGUI.Space(1.5f);
                 }
-                NovaGUI.Layout.EndVertical();
-                NovaGUI.Layout.EndHorizontal();
+                AuraGUI.Layout.EndVertical();
+                AuraGUI.Layout.EndHorizontal();
             }
 
             if (EditorGUI.EndChangeCheck())
@@ -820,7 +820,7 @@ namespace Nova.Editor.GUIs
             }
 
 
-            bool changeShader = EditorUtility.DisplayDialog("Unsupported TMP Shader", $"The provided font is using an unsupported TMP shader: [{font.material.shader.name}]. Nova currently only supports the [{Constants.TMPSupportedShaderName}] shader.\n\nWould you like to change the font over to use the supported shader?", "Yes", "No");
+            bool changeShader = EditorUtility.DisplayDialog("Unsupported TMP Shader", $"The provided font is using an unsupported TMP shader: [{font.material.shader.name}]. Aura currently only supports the [{Constants.TMPSupportedShaderName}] shader.\n\nWould you like to change the font over to use the supported shader?", "Yes", "No");
 
             if (!changeShader)
             {

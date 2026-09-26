@@ -1,4 +1,4 @@
-Shader "Hidden/NovaSamples/VisualEffects/BlurSinglePass"
+Shader "Hidden/AuraSamples/VisualEffects/BlurSinglePass"
 {
 	Properties
 	{

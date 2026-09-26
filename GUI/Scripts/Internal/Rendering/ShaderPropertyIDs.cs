@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal static class ShaderPropertyIDs
     {
@@ -56,34 +56,34 @@ namespace Nova.Internal.Rendering
             CullMode = Shader.PropertyToID("_CullMode");
 
             // Shared
-            WorldFromLocalTransform = Shader.PropertyToID("_NovaWorldFromLocal");
-            LocalFromWorldTransform = Shader.PropertyToID("_NovaLocalFromWorld");
-            TransformsAndLighting = Shader.PropertyToID("_NovaTransformsAndLighting");
-            FirstIndex = Shader.PropertyToID("_NovaFirstIndex");
-            LastIndex = Shader.PropertyToID("_NovaLastIndex");
-            ViewingFromBehind = Shader.PropertyToID("_NovaViewingFromBehind");
-            ShaderData = Shader.PropertyToID("_NovaData");
-            DataIndices = Shader.PropertyToID("_NovaDataIndices");
+            WorldFromLocalTransform = Shader.PropertyToID("_AuraWorldFromLocal");
+            LocalFromWorldTransform = Shader.PropertyToID("_AuraLocalFromWorld");
+            TransformsAndLighting = Shader.PropertyToID("_AuraTransformsAndLighting");
+            FirstIndex = Shader.PropertyToID("_AuraFirstIndex");
+            LastIndex = Shader.PropertyToID("_AuraLastIndex");
+            ViewingFromBehind = Shader.PropertyToID("_AuraViewingFromBehind");
+            ShaderData = Shader.PropertyToID("_AuraData");
+            DataIndices = Shader.PropertyToID("_AuraDataIndices");
 
             // Clip Mask
-            VisualModifierCount = Shader.PropertyToID("_NovaVisualModifierCount");
-            VisualModifersFromRoot = Shader.PropertyToID("_NovaVisualModifiersFromRoot");
-            ClipRectInfos = Shader.PropertyToID("_NovaClipRectInfos");
-            ClipMaskParams = Shader.PropertyToID("_NovaClipMaskParams");
-            ClipMaskIndex = Shader.PropertyToID("_NovaClipMaskIndex");
-            GlobalColorModifiers = Shader.PropertyToID("_NovaGlobalColorModifiers");
+            VisualModifierCount = Shader.PropertyToID("_AuraVisualModifierCount");
+            VisualModifersFromRoot = Shader.PropertyToID("_AuraVisualModifiersFromRoot");
+            ClipRectInfos = Shader.PropertyToID("_AuraClipRectInfos");
+            ClipMaskParams = Shader.PropertyToID("_AuraClipMaskParams");
+            ClipMaskIndex = Shader.PropertyToID("_AuraClipMaskIndex");
+            GlobalColorModifiers = Shader.PropertyToID("_AuraGlobalColorModifiers");
             ClipMaskTexture = Shader.PropertyToID("_ClipMaskTex");
 
             // UIBlock2D
-            SubQuadVerts = Shader.PropertyToID("_NovaSubQuadVerts");
-            EdgeSoftenWidth = Shader.PropertyToID("_NovaEdgeSoftenWidth");
+            SubQuadVerts = Shader.PropertyToID("_AuraSubQuadVerts");
+            EdgeSoftenWidth = Shader.PropertyToID("_AuraEdgeSoftenWidth");
 
             // Image/Color
-            DynamicTexture = Shader.PropertyToID("_NovaDynamicTexture");
-            StaticTexture = Shader.PropertyToID("_NovaTextureArray");
+            DynamicTexture = Shader.PropertyToID("_AuraDynamicTexture");
+            StaticTexture = Shader.PropertyToID("_AuraTextureArray");
 
             // Drop Shadow
-            PerBlockData = Shader.PropertyToID("_NovaPerBlockData");
+            PerBlockData = Shader.PropertyToID("_AuraPerBlockData");
         }
     }
 }

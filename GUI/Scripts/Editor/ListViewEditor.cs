@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [UnityEditor.CustomEditor(typeof(ListView)), UnityEditor.CanEditMultipleObjects]
     internal class ListViewEditor : UnityEditor.Editor

@@ -1,19 +1,19 @@
 ﻿
-using Nova.Editor.GUIs;
-using Nova.Editor.Serialization;
+using Aura.Editor.GUIs;
+using Aura.Editor.Serialization;
 using UnityEditor;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
-    [CustomEditor(typeof(NovaSettings))]
-    internal class NovaSettingsEditor : NovaEditor
+    [CustomEditor(typeof(AuraSettings))]
+    internal class AuraSettingsEditor : AuraEditor
     {
         private _SettingsConfig config = new _SettingsConfig();
 
         private void OnEnable()
         {
-            config.SerializedProperty = serializedObject.FindProperty(Names.NovaSettings.settings);
+            config.SerializedProperty = serializedObject.FindProperty(Names.AuraSettings.settings);
             Undo.undoRedoPerformed += RestoreUndoneRedoneProperties;
         }
 
@@ -33,28 +33,28 @@ namespace Nova.Editor
             serializedObject.UpdateIfRequiredOrScript();
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawGeneral(config);
+            AuraSettingsEditors.DrawGeneral(config);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(false);
             }
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawRendering(config);
+            AuraSettingsEditors.DrawRendering(config);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(true);
             }
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawInput(config);
+            AuraSettingsEditors.DrawInput(config);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(false);
             }
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawEditor(serializedObject);
+            AuraSettingsEditors.DrawEditor(serializedObject);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(false);
@@ -66,7 +66,7 @@ namespace Nova.Editor
             serializedObject.ApplyModifiedProperties();
             if (fireEvents)
             {
-                NovaSettings.Instance.MarkDirty(true, false);
+                AuraSettings.Instance.MarkDirty(true, false);
             }
         }
     }

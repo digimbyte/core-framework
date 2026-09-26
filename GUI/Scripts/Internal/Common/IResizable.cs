@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Internal.Common
+namespace Aura.Internal.Common
 {
     internal interface IResizable : IClearable
     {

@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A set of extension methods to schedule <see cref="IAnimationWithEvents"/>

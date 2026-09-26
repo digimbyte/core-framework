@@ -1,15 +1,15 @@
-using Nova;
+using Aura;
 using System;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// An abstract base class for different UI Control <see cref="ItemVisuals"/> types.
     /// Provides a base implementation for various visual state transitions.
     /// </summary>
     [Serializable]
-    [TypeMenuPath("Nova")]
+    [TypeMenuPath("Aura")]
     public abstract class UIControlVisuals : ItemVisuals
     {
         [Header("Visual States")]

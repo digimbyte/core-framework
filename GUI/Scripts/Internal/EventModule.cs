@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Events
+namespace Aura.Events
 {
     internal class EventModule : IEventTarget, IEventTargetProvider
     {

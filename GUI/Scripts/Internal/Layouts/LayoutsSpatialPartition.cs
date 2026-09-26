@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
 #pragma warning disable CS0660, CS0661  // Type defines operator == or operator != but does not override Object.Equals(object o)
     internal struct SpatialPartitionMask
@@ -221,7 +221,7 @@ namespace Nova.Internal.Layouts
     internal partial class LayoutCore
     {
         [BurstCompile]
-        internal struct SpatialPartition : INovaJobParallelFor
+        internal struct SpatialPartition : IAuraJobParallelFor
         {
             [WriteOnly]
             [NativeDisableParallelForRestriction]
@@ -240,7 +240,7 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
             [ReadOnly]
             public NativeList<DataStoreIndex> DirtyElementIndices;
 

@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct ShaderColor

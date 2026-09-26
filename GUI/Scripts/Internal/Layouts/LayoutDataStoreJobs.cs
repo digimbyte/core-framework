@@ -1,11 +1,11 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -14,12 +14,12 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {
         [BurstCompile]
-        public struct DiffAndDirty : INovaJobParallelFor
+        public struct DiffAndDirty : IAuraJobParallelFor
         {
             [NativeDisableParallelForRestriction]
             public NativeList<Length3> LengthConfigs;
@@ -40,7 +40,7 @@ namespace Nova.Internal.Layouts
             [NativeDisableParallelForRestriction]
             public NativeList<AutoLayout> AutoLayouts;
             [NativeDisableParallelForRestriction]
-            public unsafe NovaHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
+            public unsafe AuraHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
             [NativeDisableParallelForRestriction]
             public NativeList<quaternion> TransformRotations;
 
@@ -52,12 +52,12 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
             [ReadOnly]
             public NativeList<bool> UsingTransformPosition;
 
             [ReadOnly]
-            public NovaHashMap<DataStoreID, PreviewSize> PreviewSizes;
+            public AuraHashMap<DataStoreID, PreviewSize> PreviewSizes;
 
             public unsafe void Execute(int index)
             {
@@ -106,7 +106,7 @@ namespace Nova.Internal.Layouts
 
                 HierarchyDependency maxDependency = HierarchyDependency.Max(propertyDependents, autoLayoutDependents);
 
-                if (NovaApplication.ConstIsEditor)
+                if (AuraApplication.ConstIsEditor)
                 {
 #pragma warning disable CS0162 // Unreachable code detected
                     HierarchyElement element = Hierarchy[layoutIndex];
@@ -126,7 +126,7 @@ namespace Nova.Internal.Layouts
         }
 
         [BurstCompile]
-        public struct DirtyDependencies : INovaJob
+        public struct DirtyDependencies : IAuraJob
         {
             [ReadOnly]
             public NativeList<AutoSize3> AutoSizes;
@@ -139,7 +139,7 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
             public void Execute()
             {
@@ -187,7 +187,7 @@ namespace Nova.Internal.Layouts
 
             private int TryDirtyChildren(ref HierarchyElement parentElement)
             {
-                NovaList<DataStoreIndex> children = parentElement.Children;
+                AuraList<DataStoreIndex> children = parentElement.Children;
                 int childCount = parentElement.ChildCount;
 
                 int dirtyCount = 0;
@@ -231,7 +231,7 @@ namespace Nova.Internal.Layouts
         /// It's still pretty fast, but we shouldn't have to do that...
         /// </summary>
         [BurstCompile]
-        public unsafe struct FilterCleanElements : INovaJob
+        public unsafe struct FilterCleanElements : IAuraJob
         {
             [WriteOnly]
             public NativeList<DataStoreIndex> DirtyIndices;
@@ -291,16 +291,16 @@ namespace Nova.Internal.Layouts
             public NativeList<bool> OffsetBySize;
             public NativeList<AspectRatio> AspectRatios;
             public NativeList<AutoLayout> AutoLayouts;
-            public NovaHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
+            public AuraHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
             public NativeList<quaternion> TransformRotations;
 
             public NativeList<HierarchyElement> Hierarchy;
             public NativeList<LayoutPointer> DirtyLayouts;
             public NativeList<HierarchyDependency> DirtyDependencies;
-            public NovaHashMap<DataStoreIndex, DataStoreID> AncestorBuffer;
+            public AuraHashMap<DataStoreIndex, DataStoreID> AncestorBuffer;
 
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
             public NativeList<DataStoreIndex> Dependencies;
 
@@ -441,7 +441,7 @@ namespace Nova.Internal.Layouts
 
             public NativeList<AutoLayout> AutoLayouts;
             public NativeList<Length2.Calculated> CalculatedSpacing;
-            public NovaHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
+            public AuraHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
             public NativeList<float3> ParentSizes;
 
             public NativeList<float3> DirectContentSizes;
@@ -601,10 +601,10 @@ namespace Nova.Internal.Layouts
 
             public NativeList<AutoLayout> AutoLayouts;
             public NativeList<Length2.Calculated> CalculatedSpacing;
-            public NovaHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
+            public AuraHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
             public NativeList<float3> ParentSizes;
 
-            public NovaHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
+            public AuraHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
 
             public NativeList<float3> DirectContentSizes;
             public NativeList<float3> DirectContentOffsets;

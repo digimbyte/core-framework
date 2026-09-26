@@ -1,20 +1,20 @@
 ﻿
-using Nova.Compat;
-using Nova.Editor.Serialization;
-using Nova.Editor.Tools;
-using Nova.Editor.Utilities;
-using Nova.Extensions;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Editor.Serialization;
+using Aura.Editor.Tools;
+using Aura.Editor.Utilities;
+using Aura.Extensions;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal static class NovaLayoutEditors
+    internal static class AuraLayoutEditors
     {
         private static readonly GUIContent RowSpacingLabel = new GUIContent("Row Spacing", "Gap inserted between rows (wrap direction). When Cross Axis is enabled, set this equal to Column Spacing for a uniform grid.");
         private static readonly GUIContent ColumnSpacingLabel = new GUIContent("Column Spacing", "Gap inserted between items within each row (cross axis direction). When Cross Axis is enabled, set this equal to Row Spacing for a uniform grid.");
@@ -36,16 +36,16 @@ namespace Nova.Editor.GUIs
                 expandWeightProperty.serializedObject.ApplyModifiedProperties();
             }
 
-            float labelWidth = NovaGUI.LabelWidth;
-            NovaGUI.Layout.BeginHorizontal();
-            NovaGUI.PrefixLabel(Labels.Size.ExpandWeight, expandWeightProperty);
-            NovaGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect z);
-            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            float labelWidth = AuraGUI.LabelWidth;
+            AuraGUI.Layout.BeginHorizontal();
+            AuraGUI.PrefixLabel(Labels.Size.ExpandWeight, expandWeightProperty);
+            AuraGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect z);
+            AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
             EditorGUI.BeginChangeCheck();
             expandWeightProperty.vector2IntValue = new Vector2Int(EditorGUI.IntField(x, Labels.X, expandWeightProperty.vector2IntValue.x), expandWeightProperty.vector2IntValue.y);
             expandWeightProperty.vector2IntValue = new Vector2Int(expandWeightProperty.vector2IntValue.x, EditorGUI.IntField(y, Labels.Y, expandWeightProperty.vector2IntValue.y));
-            NovaGUI.Layout.EndHorizontal();
-            NovaGUI.LabelWidth = labelWidth;
+            AuraGUI.Layout.EndHorizontal();
+            AuraGUI.LabelWidth = labelWidth;
             if (EditorGUI.EndChangeCheck())
             {
                 v = expandWeightProperty.vector2IntValue;
@@ -60,11 +60,11 @@ namespace Nova.Editor.GUIs
 
         private static void DrawAspectRatioField(SerializedProperty property, bool zField)
         {
-            float labelWidth = NovaGUI.LabelWidth;
-            NovaGUI.Layout.BeginHorizontal();
-            NovaGUI.PrefixLabel(new GUIContent("Aspect Ratio"), property);
-            NovaGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
-            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            float labelWidth = AuraGUI.LabelWidth;
+            AuraGUI.Layout.BeginHorizontal();
+            AuraGUI.PrefixLabel(new GUIContent("Aspect Ratio"), property);
+            AuraGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
+            AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
             Vector3 value = property.vector3Value;
             value.x = EditorGUI.FloatField(x, Labels.X, value.x);
             value.y = EditorGUI.FloatField(y, Labels.Y, value.y);
@@ -73,8 +73,8 @@ namespace Nova.Editor.GUIs
                 value.z = EditorGUI.FloatField(z, Labels.Z, value.z);
             }
             property.vector3Value = value;
-            NovaGUI.Layout.EndHorizontal();
-            NovaGUI.LabelWidth = labelWidth;
+            AuraGUI.Layout.EndHorizontal();
+            AuraGUI.LabelWidth = labelWidth;
         }
 
         private static bool ScreenSpaceControlsSize(UIBlock uiBlock)
@@ -106,7 +106,7 @@ namespace Nova.Editor.GUIs
 
         public static void DrawSizeUI(_Layout layout, UIBlock uiBlock, SerializedProperty previewSize)
         {
-            using (Foldout foldout = NovaGUI.EditorPrefFoldoutHeader("Size"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Size"))
             {
                 if (!foldout)
                 {
@@ -119,7 +119,7 @@ namespace Nova.Editor.GUIs
 
                     EditorGUI.BeginDisabledGroup(screenSpaceControlsSize);
 
-                    NovaGUI.AspectRatioField(layout, uiBlock, NovaGUI.ShowZAxisValues(uiBlock) ? Labels.LockAspectToolbarLabels3D : Labels.LockAspectToolbarLabels2D);
+                    AuraGUI.AspectRatioField(layout, uiBlock, AuraGUI.ShowZAxisValues(uiBlock) ? Labels.LockAspectToolbarLabels3D : Labels.LockAspectToolbarLabels2D);
 
                     if (uiBlock.Parent != null && !(uiBlock.Parent is TextBlock))
                     {
@@ -130,7 +130,7 @@ namespace Nova.Editor.GUIs
 
                     _AutoSize3 autoSize = new _AutoSize3() { SerializedProperty = layout.AutoSizeProp };
                     EditorGUI.BeginChangeCheck();
-                    AutoSizeField(autoSize, aspectLocked, NovaGUI.ShowZAxisValues(uiBlock));
+                    AutoSizeField(autoSize, aspectLocked, AuraGUI.ShowZAxisValues(uiBlock));
                     if (EditorGUI.EndChangeCheck())
                     {
                         ThreeD<AutoSize> auto = new ThreeD<AutoSize>((AutoSize)autoSize.X, (AutoSize)autoSize.Y, (AutoSize)autoSize.Z);
@@ -157,13 +157,13 @@ namespace Nova.Editor.GUIs
                     EditorGUI.BeginChangeCheck();
                     ThreeD<LengthType> prevTypes = new ThreeD<LengthType>(layout.Size.X.Type, layout.Size.Y.Type, layout.Size.Z.Type);
 
-                    bool show = NovaGUI.Length3Field(Labels.Size.Label, layout.Size, layout.SizeMinMax, uiBlock.CalculatedSize, sizeDisabled, NovaGUI.ShowZAxisValues(uiBlock), NovaEditorPrefs.DisplayMinMaxSize);
+                    bool show = AuraGUI.Length3Field(Labels.Size.Label, layout.Size, layout.SizeMinMax, uiBlock.CalculatedSize, sizeDisabled, AuraGUI.ShowZAxisValues(uiBlock), AuraEditorPrefs.DisplayMinMaxSize);
 
                     EditorGUI.EndDisabledGroup();
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        NovaEditorPrefs.DisplayMinMaxSize = show;
+                        AuraEditorPrefs.DisplayMinMaxSize = show;
 
                         if (layout.SerializedProperty.serializedObject.targetObjects.Length == 1)
                         {
@@ -190,7 +190,7 @@ namespace Nova.Editor.GUIs
                         }
                     }
 
-                    NovaGUI.ToggleField(Labels.Size.RotateSize, layout.RotateSizeProp);
+                    AuraGUI.ToggleField(Labels.Size.RotateSize, layout.RotateSizeProp);
                 }
             }
         }
@@ -211,14 +211,14 @@ namespace Nova.Editor.GUIs
 
             for (int i = 0; i < targets.Length; ++i)
             {
-                float rawLength = NovaGUI.CalculatedLengthFromPropertyPath(targets[i] as UIBlock, length.SerializedProperty.propertyPath, type);
-                NovaGUI.SetRawLength(targets[i], length.RawProp.propertyPath, rawLength);
+                float rawLength = AuraGUI.CalculatedLengthFromPropertyPath(targets[i] as UIBlock, length.SerializedProperty.propertyPath, type);
+                AuraGUI.SetRawLength(targets[i], length.RawProp.propertyPath, rawLength);
             }
         }
 
         public static void DrawPositionUI(_Layout layout, UIBlock uiBlock)
         {
-            using (Foldout foldout = NovaGUI.EditorPrefFoldoutHeader("Position"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Position"))
             {
                 if (!foldout)
                 {
@@ -238,13 +238,13 @@ namespace Nova.Editor.GUIs
                                                          parentLayoutAxis == Axis.Y.Index() || parentCrossAxis == Axis.Y.Index(),
                                                          parentLayoutAxis == Axis.Z.Index() || parentCrossAxis == Axis.Z.Index());
 
-                AlignmentField(layout.Alignment, disabled, NovaGUI.ShowZAxisValues(uiBlock));
+                AlignmentField(layout.Alignment, disabled, AuraGUI.ShowZAxisValues(uiBlock));
 
                 EditorGUI.BeginChangeCheck();
-                bool show = NovaGUI.Length3Field(Labels.Position.Label, layout.Position, layout.PositionMinMax, uiBlock.CalculatedPosition, disabled, NovaGUI.ShowZAxisValues(uiBlock), NovaEditorPrefs.DisplayMinMaxPosition);
+                bool show = AuraGUI.Length3Field(Labels.Position.Label, layout.Position, layout.PositionMinMax, uiBlock.CalculatedPosition, disabled, AuraGUI.ShowZAxisValues(uiBlock), AuraEditorPrefs.DisplayMinMaxPosition);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    NovaEditorPrefs.DisplayMinMaxPosition = show;
+                    AuraEditorPrefs.DisplayMinMaxPosition = show;
 
                     if (!UnityEditor.EditorTools.ToolManager.IsActiveTool(UIBlockTool.Instance))
                     {
@@ -255,7 +255,7 @@ namespace Nova.Editor.GUIs
                 SerializedProperty offsetBySize = layout.SerializedProperty.FindPropertyRelative("OffsetBySize");
                 if (offsetBySize != null)
                 {
-                    NovaGUI.ToggleField(Labels.Position.OffsetBySize, offsetBySize);
+                    AuraGUI.ToggleField(Labels.Position.OffsetBySize, offsetBySize);
                 }
 
                 EditorGUI.EndDisabledGroup();
@@ -264,17 +264,17 @@ namespace Nova.Editor.GUIs
 
         public static void AlignmentField(_Alignment alignment, ThreeD<bool> disabled, bool zField)
         {
-            float labelWidth = NovaGUI.LabelWidth;
+            float labelWidth = AuraGUI.LabelWidth;
 
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
             EditorGUI.BeginDisabledGroup(false);
-            NovaGUI.PrefixLabel(Labels.Position.Alignment, alignment.SerializedProperty);
+            AuraGUI.PrefixLabel(Labels.Position.Alignment, alignment.SerializedProperty);
             EditorGUI.EndDisabledGroup();
 
-            NovaGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
+            AuraGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
 
-            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
             EditorGUI.BeginDisabledGroup(disabled.X);
             AlignmentField(x, Labels.X, alignment.XProp, Labels.Alignment[0]);
             EditorGUI.EndDisabledGroup();
@@ -289,29 +289,29 @@ namespace Nova.Editor.GUIs
                 EditorGUI.EndDisabledGroup();
             }
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
-            NovaGUI.LabelWidth = labelWidth;
+            AuraGUI.LabelWidth = labelWidth;
         }
 
         public static (int, int) AlignmentField(GUIContent label, int xAlignment, int yAlignment, GUIContent[][] axisIcons)
         {
-            float labelWidth = NovaGUI.LabelWidth;
+            float labelWidth = AuraGUI.LabelWidth;
 
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
-            NovaGUI.PrefixLabel(label);
+            AuraGUI.PrefixLabel(label);
 
-            NovaGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect z);
+            AuraGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect z);
 
-            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
 
             xAlignment = AlignmentField(x, Labels.X, axisIcons[0], xAlignment);
             yAlignment = AlignmentField(y, Labels.Y, axisIcons[1], yAlignment);
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
-            NovaGUI.LabelWidth = labelWidth;
+            AuraGUI.LabelWidth = labelWidth;
 
             return (xAlignment, yAlignment);
         }
@@ -322,7 +322,7 @@ namespace Nova.Editor.GUIs
             if (label != null)
             {
                 EditorGUI.PrefixLabel(position, propertyLabel);
-                float labeWidth = EditorStyles.label.CalcSize(propertyLabel).x + NovaGUI.MinSpaceBetweenFields;
+                float labeWidth = EditorStyles.label.CalcSize(propertyLabel).x + AuraGUI.MinSpaceBetweenFields;
                 position.x += labeWidth;
                 position.width -= labeWidth;
             }
@@ -330,7 +330,7 @@ namespace Nova.Editor.GUIs
             int aligmentValue = property.hasMultipleDifferentValues ? -1000 : property.intValue + 1;
 
             EditorGUI.BeginChangeCheck();
-            int selected = NovaGUI.Toolbar(position, aligmentValue, axisIcons) - 1;
+            int selected = AuraGUI.Toolbar(position, aligmentValue, axisIcons) - 1;
             if (EditorGUI.EndChangeCheck())
             {
                 property.intValue = selected;
@@ -344,35 +344,35 @@ namespace Nova.Editor.GUIs
             if (label != null)
             {
                 EditorGUI.PrefixLabel(position, label);
-                float labeWidth = EditorStyles.label.CalcSize(label).x + NovaGUI.MinSpaceBetweenFields;
+                float labeWidth = EditorStyles.label.CalcSize(label).x + AuraGUI.MinSpaceBetweenFields;
                 position.x += labeWidth;
                 position.width -= labeWidth;
             }
 
-            int selected = NovaGUI.Toolbar(position, alignment + 1, axisIcons) - 1;
+            int selected = AuraGUI.Toolbar(position, alignment + 1, axisIcons) - 1;
 
             return selected;
         }
 
         public static void AutoSizeField(_AutoSize3 autosize, ThreeD<bool> aspectLocked, bool zField)
         {
-            float labelWidth = NovaGUI.LabelWidth;
+            float labelWidth = AuraGUI.LabelWidth;
 
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
-            NovaGUI.PrefixLabel(Labels.Size.AutoSize, autosize.SerializedProperty);
+            AuraGUI.PrefixLabel(Labels.Size.AutoSize, autosize.SerializedProperty);
 
-            NovaGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
+            AuraGUI.Layout.GetXYZFieldRects(zField, out Rect x, out Rect y, out Rect z);
 
             bool lockAspectX = aspectLocked.X;
             bool lockAspectY = aspectLocked.Y;
             bool lockAspectZ = aspectLocked.Z;
 
-            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
             EditorGUI.BeginDisabledGroup(!lockAspectX && (lockAspectY || lockAspectZ));
             AutoSizeField(x, Axis.X.Index(), Labels.X, autosize.XProp);
             EditorGUI.EndDisabledGroup();
-            NovaGUI.LabelWidth = NovaGUI.SingleCharacterGUIWidth;
+            AuraGUI.LabelWidth = AuraGUI.SingleCharacterGUIWidth;
             EditorGUI.BeginDisabledGroup(!lockAspectY && (lockAspectX || lockAspectZ));
             AutoSizeField(y, Axis.Y.Index(), Labels.Y, autosize.YProp);
             EditorGUI.EndDisabledGroup();
@@ -384,10 +384,10 @@ namespace Nova.Editor.GUIs
                 EditorGUI.EndDisabledGroup();
             }
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
 
-            NovaGUI.LabelWidth = labelWidth;
+            AuraGUI.LabelWidth = labelWidth;
         }
 
         public static void AutoSizeField(Rect position, int axis, GUIContent label, SerializedProperty property)
@@ -396,13 +396,13 @@ namespace Nova.Editor.GUIs
             GUIContent propertyLabel = EditorGUI.BeginProperty(position, label, property);
             EditorGUI.PrefixLabel(position, label);
 
-            float labeWidth = EditorStyles.label.CalcSize(propertyLabel).x + NovaGUI.MinSpaceBetweenFields;
+            float labeWidth = EditorStyles.label.CalcSize(propertyLabel).x + AuraGUI.MinSpaceBetweenFields;
             position.x += labeWidth;
             position.width -= labeWidth;
 
             int autoSizeValue = property.hasMultipleDifferentValues ? -1000 : property.intValue - 1;
 
-            int autosize = NovaGUI.Toolbar(position, autoSizeValue, Labels.AutoSize[axis], position.width * 0.5f, toggleToDeselect: true) + 1;
+            int autosize = AuraGUI.Toolbar(position, autoSizeValue, Labels.AutoSize[axis], position.width * 0.5f, toggleToDeselect: true) + 1;
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
             {
@@ -412,7 +412,7 @@ namespace Nova.Editor.GUIs
 
         public static void DrawPaddingMarginUI(_Layout layout, UIBlock uiBlock)
         {
-            using (Foldout foldout = NovaGUI.EditorPrefFoldoutHeader("Padding & Margin"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Padding & Margin"))
             {
                 if (!foldout)
                 {
@@ -422,11 +422,11 @@ namespace Nova.Editor.GUIs
                 using (new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel))
                 {
                     EditorGUI.BeginChangeCheck();
-                    (bool showPaddingSides, bool showPaddingRange) = NovaGUI.LengthBoundsField(Labels.PaddingAndMargin.Padding, layout.Padding, layout.PaddingMinMax, uiBlock.CalculatedPadding, NovaGUI.ShowZAxisValues(uiBlock), NovaEditorPrefs.DisplaySidesPadding, NovaEditorPrefs.DisplayMinMaxPadding);
+                    (bool showPaddingSides, bool showPaddingRange) = AuraGUI.LengthBoundsField(Labels.PaddingAndMargin.Padding, layout.Padding, layout.PaddingMinMax, uiBlock.CalculatedPadding, AuraGUI.ShowZAxisValues(uiBlock), AuraEditorPrefs.DisplaySidesPadding, AuraEditorPrefs.DisplayMinMaxPadding);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        NovaEditorPrefs.DisplaySidesPadding = showPaddingSides;
-                        NovaEditorPrefs.DisplayMinMaxPadding = showPaddingRange;
+                        AuraEditorPrefs.DisplaySidesPadding = showPaddingSides;
+                        AuraEditorPrefs.DisplayMinMaxPadding = showPaddingRange;
 
                         if (!UnityEditor.EditorTools.ToolManager.IsActiveTool(Tools.UITool.Instance))
                         {
@@ -435,11 +435,11 @@ namespace Nova.Editor.GUIs
                     }
 
                     EditorGUI.BeginChangeCheck();
-                    (bool showMarginSides, bool showMarginRange) = NovaGUI.LengthBoundsField(Labels.PaddingAndMargin.Margin, layout.Margin, layout.MarginMinMax, uiBlock.CalculatedMargin, NovaGUI.ShowZAxisValues(uiBlock), NovaEditorPrefs.DisplaySidesMargin, NovaEditorPrefs.DisplayMinMaxMargin);
+                    (bool showMarginSides, bool showMarginRange) = AuraGUI.LengthBoundsField(Labels.PaddingAndMargin.Margin, layout.Margin, layout.MarginMinMax, uiBlock.CalculatedMargin, AuraGUI.ShowZAxisValues(uiBlock), AuraEditorPrefs.DisplaySidesMargin, AuraEditorPrefs.DisplayMinMaxMargin);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        NovaEditorPrefs.DisplaySidesMargin = showMarginSides;
-                        NovaEditorPrefs.DisplayMinMaxMargin = showMarginRange;
+                        AuraEditorPrefs.DisplaySidesMargin = showMarginSides;
+                        AuraEditorPrefs.DisplayMinMaxMargin = showMarginRange;
 
                         if (!UnityEditor.EditorTools.ToolManager.IsActiveTool(Tools.UITool.Instance))
                         {
@@ -455,7 +455,7 @@ namespace Nova.Editor.GUIs
             EditorGUI.BeginChangeCheck();
 
             bool wasEnabled = autoLayout.AxisProp.hasMultipleDifferentValues ? false : autoLayout.AxisProp.boolValue;
-            using Foldout foldout = NovaGUI.EditorPrefFoldoutHeader("Auto Layout", autoLayout.AxisProp);
+            using Foldout foldout = AuraGUI.EditorPrefFoldoutHeader("Auto Layout", autoLayout.AxisProp);
 
             if (EditorGUI.EndChangeCheck() && wasEnabled != autoLayout.AxisProp.boolValue)
             {
@@ -486,12 +486,12 @@ namespace Nova.Editor.GUIs
             {
                 EditorGUI.BeginChangeCheck();
 
-                (bool showAutoRange, bool showCrossRange) = AutoLayoutField(uiBlock, autoLayout, NovaEditorPrefs.DisplayMinMaxAutoLayout, NovaEditorPrefs.DisplayMinMaxCrossLayout);
+                (bool showAutoRange, bool showCrossRange) = AutoLayoutField(uiBlock, autoLayout, AuraEditorPrefs.DisplayMinMaxAutoLayout, AuraEditorPrefs.DisplayMinMaxCrossLayout);
 
                 if (EditorGUI.EndChangeCheck())
                 {
-                    NovaEditorPrefs.DisplayMinMaxAutoLayout = showAutoRange;
-                    NovaEditorPrefs.DisplayMinMaxCrossLayout = showCrossRange;
+                    AuraEditorPrefs.DisplayMinMaxAutoLayout = showAutoRange;
+                    AuraEditorPrefs.DisplayMinMaxCrossLayout = showCrossRange;
                 }
             }
         }
@@ -507,13 +507,13 @@ namespace Nova.Editor.GUIs
                 Axis oldCrossAxis = crossLayout.Axis;
 
                 GUIContent primaryAxisLabel = Labels.AutoLayout.PrimaryAxis;
-                Rect labelRect = NovaGUI.Layout.GetControlRect();
+                Rect labelRect = AuraGUI.Layout.GetControlRect();
                 labelRect = labelRect.Center(EditorStyles.boldLabel.CalcSize(primaryAxisLabel).x);
                 EditorGUI.LabelField(labelRect, primaryAxisLabel, EditorStyles.boldLabel);
 
                 AutoLayoutToolbar(autoLayout.AxisProp, autoLayout.alignmentProp, autoLayout.ReverseOrderProp, out bool axisChanged);
                 expandedLength = AutoLayoutSpacing(uiBlock, autoLayout.Spacing, autoLayout.SpacingMinMax, autoLayout.AutoSpaceProp, uiBlock.CalculatedSpacing, expandedLength, crossAxisEnabled ? RowSpacingLabel : null);
-                NovaGUI.FloatField(Labels.AutoLayout.Offset, autoLayout.OffsetProp);
+                AuraGUI.FloatField(Labels.AutoLayout.Offset, autoLayout.OffsetProp);
 
                 if (axisChanged && crossAxisEnabled)
                 {
@@ -540,7 +540,7 @@ namespace Nova.Editor.GUIs
             bool hasListView = uiBlock.TryGetComponent(out ListView _);
             EditorGUI.BeginDisabledGroup(hasListView);
 
-            Rect labelRect = NovaGUI.Layout.GetControlRect();
+            Rect labelRect = AuraGUI.Layout.GetControlRect();
             GUIContent crossAxisLabel = hasListView ? Labels.AutoLayout.CrossAxisDisabled : Labels.AutoLayout.CrossAxis;
             crossAxisLabel = EditorGUI.BeginProperty(labelRect, crossAxisLabel, crossLayout.SerializedProperty);
             
@@ -551,8 +551,8 @@ namespace Nova.Editor.GUIs
             bool wasEnabled = crossLayout.AxisProp.hasMultipleDifferentValues ? false : crossLayout.AxisProp.boolValue;
 
             Rect controlRect = labelRect;
-            controlRect.x = controlRect.xMax + NovaGUI.MinSpaceBetweenFields;
-            controlRect.width = NovaGUI.ToggleBoxSize;
+            controlRect.x = controlRect.xMax + AuraGUI.MinSpaceBetweenFields;
+            controlRect.width = AuraGUI.ToggleBoxSize;
 
             GUIContent toggleLabel = EditorGUI.BeginProperty(controlRect, GUIContent.none, crossLayout.AxisProp);
             bool isEnabled = EditorGUI.Toggle(controlRect, toggleLabel, wasEnabled);
@@ -579,7 +579,7 @@ namespace Nova.Editor.GUIs
                 AutoLayoutToolbar(crossLayout.AxisProp, crossLayout.alignmentProp, crossLayout.ReverseOrderProp, out _, primaryAxis);
                 expandedCrossLength = AutoLayoutSpacing(uiBlock, crossLayout.Spacing, crossLayout.SpacingMinMax, crossLayout.AutoSpaceProp, uiBlock.CalculatedCrossSpacing, expandedCrossLength, ColumnSpacingLabel);
 
-                Rect expandToGridPosition = NovaGUI.Layout.GetControlRect();
+                Rect expandToGridPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
                 GUIContent expandToGridLabel = EditorGUI.BeginProperty(expandToGridPosition, Labels.AutoLayout.ExpandToGrid, crossLayout.ExpandToGridProp);
                 bool expandToGrid = EditorGUI.Toggle(expandToGridPosition, expandToGridLabel, crossLayout.ExpandToGrid);
@@ -589,7 +589,7 @@ namespace Nova.Editor.GUIs
                     crossLayout.ExpandToGrid = expandToGrid;
                 }
 
-                Rect columnsPosition = NovaGUI.Layout.GetControlRect();
+                Rect columnsPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
                 GUIContent columnsLabel = EditorGUI.BeginProperty(columnsPosition, new GUIContent("Columns", "Items per row. 0 = unlimited (size-based wrapping)."), crossLayout.ColumnsProp);
                 int columns = Mathf.Max(0, EditorGUI.IntField(columnsPosition, columnsLabel, crossLayout.Columns));
@@ -599,7 +599,7 @@ namespace Nova.Editor.GUIs
                     crossLayout.Columns = columns;
                 }
 
-                Rect rowsPosition = NovaGUI.Layout.GetControlRect();
+                Rect rowsPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
                 GUIContent rowsLabel = EditorGUI.BeginProperty(rowsPosition, new GUIContent("Rows", "Max number of rows. 0 = unlimited. Total items = Rows × Columns."), crossLayout.RowsProp);
                 int rows = Mathf.Max(0, EditorGUI.IntField(rowsPosition, rowsLabel, crossLayout.Rows));
@@ -609,7 +609,7 @@ namespace Nova.Editor.GUIs
                     crossLayout.Rows = rows;
                 }
 
-                Rect resizeChildrenPosition = NovaGUI.Layout.GetControlRect();
+                Rect resizeChildrenPosition = AuraGUI.Layout.GetControlRect();
                 EditorGUI.BeginChangeCheck();
                 GUIContent resizeChildrenLabel = EditorGUI.BeginProperty(resizeChildrenPosition, new GUIContent("Resize Children", "Resize children to fill available space evenly. When Rows or Columns are set, space is divided uniformly."), crossLayout.ResizeChildrenProp);
                 bool resizeChildren = EditorGUI.Toggle(resizeChildrenPosition, resizeChildrenLabel, crossLayout.ResizeChildren);
@@ -658,19 +658,19 @@ namespace Nova.Editor.GUIs
 
         private static void AutoLayoutToolbar(SerializedProperty axisProp, SerializedProperty alignmentProp, SerializedProperty orderProp, out bool axisChanged, Axis disabledAxis = Axis.None)
         {
-            float toolbarHeight = EditorGUIUtility.singleLineHeight + (3 * NovaGUI.MinSpaceBetweenFields);
+            float toolbarHeight = EditorGUIUtility.singleLineHeight + (3 * AuraGUI.MinSpaceBetweenFields);
 
             axisChanged = false;
-            float fieldWidth = NovaGUI.FieldWidth;
+            float fieldWidth = AuraGUI.FieldWidth;
             float toolbarButtonWidth = fieldWidth / 8f;
 
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
             GUILayout.FlexibleSpace();
 
-            Rect axisPosition = NovaGUI.Layout.GetControlRect(hasLabel: false, height: toolbarHeight, GUILayout.Width(3 * toolbarButtonWidth));
-            Rect alignPosition = NovaGUI.Layout.GetControlRect(hasLabel: false, height: toolbarHeight, GUILayout.Width(3 * toolbarButtonWidth));
-            Rect orderPosition = NovaGUI.Layout.GetControlRect(hasLabel: false, height: toolbarHeight, GUILayout.Width(2 * toolbarButtonWidth));
+            Rect axisPosition = AuraGUI.Layout.GetControlRect(hasLabel: false, height: toolbarHeight, GUILayout.Width(3 * toolbarButtonWidth));
+            Rect alignPosition = AuraGUI.Layout.GetControlRect(hasLabel: false, height: toolbarHeight, GUILayout.Width(3 * toolbarButtonWidth));
+            Rect orderPosition = AuraGUI.Layout.GetControlRect(hasLabel: false, height: toolbarHeight, GUILayout.Width(2 * toolbarButtonWidth));
 
             EditorGUI.BeginChangeCheck();
 
@@ -679,7 +679,7 @@ namespace Nova.Editor.GUIs
             EditorGUI.BeginProperty(axisPropertyRect, GUIContent.none, axisProp);
             int axisIndex = axisProp.intValue - 1;
             axisIndex = axisIndex >= 0 ? axisIndex : 0;
-            int layoutAxis = NovaGUI.Toolbar(axisPosition, axisIndex, Labels.AxisToolbarLabels, toolbarButtonWidth, disabledIndex: disabledAxis.Index());
+            int layoutAxis = AuraGUI.Toolbar(axisPosition, axisIndex, Labels.AxisToolbarLabels, toolbarButtonWidth, disabledIndex: disabledAxis.Index());
             EditorGUI.EndProperty();
             if (EditorGUI.EndChangeCheck())
             {
@@ -690,17 +690,17 @@ namespace Nova.Editor.GUIs
             }
 
             Rect alignPropertyRect = alignPosition;
-            alignPropertyRect.y -= NovaGUI.MinSpaceBetweenFields;
-            alignPropertyRect.height += 2 * NovaGUI.MinSpaceBetweenFields;
+            alignPropertyRect.y -= AuraGUI.MinSpaceBetweenFields;
+            alignPropertyRect.height += 2 * AuraGUI.MinSpaceBetweenFields;
             EditorGUI.BeginProperty(alignPropertyRect, GUIContent.none, alignmentProp);
             AlignmentField(alignPosition, null, alignmentProp, Labels.Alignment[axisIndex]);
             EditorGUI.EndProperty();
 
             Rect orderPropertyRect = orderPosition;
-            orderPropertyRect.xMax = NovaGUI.ViewWidth;
+            orderPropertyRect.xMax = AuraGUI.ViewWidth;
             EditorGUI.BeginProperty(orderPropertyRect, GUIContent.none, orderProp);
             EditorGUI.BeginChangeCheck();
-            int order = NovaGUI.Toolbar(orderPosition, orderProp.boolValue ? 1 : 0, Labels.Order[axisIndex], toolbarButtonWidth);
+            int order = AuraGUI.Toolbar(orderPosition, orderProp.boolValue ? 1 : 0, Labels.Order[axisIndex], toolbarButtonWidth);
             EditorGUI.EndProperty();
 
             if (EditorGUI.EndChangeCheck())
@@ -710,33 +710,33 @@ namespace Nova.Editor.GUIs
 
             GUILayout.FlexibleSpace();
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
         }
 
         private static bool AutoLayoutSpacing(MonoBehaviour target, _Length spacing, _MinMax spacingMinMax, SerializedProperty autospaceProp, Length.Calculated calc, bool expandedLength, GUIContent label = null)
         {
             GUIContent spacingLabel = label ?? Labels.AutoLayout.Spacing;
-            float labelWidth = NovaGUI.LabelWidth;
+            float labelWidth = AuraGUI.LabelWidth;
 
             bool lengthDisabled = autospaceProp.boolValue;
 
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
 
-            expandedLength = NovaGUI.PrefixFoldout(expandedLength);
+            expandedLength = AuraGUI.PrefixFoldout(expandedLength);
 
-            NovaGUI.Space(-NovaGUI.Layout.FoldoutArrowIndentSpace);
+            AuraGUI.Space(-AuraGUI.Layout.FoldoutArrowIndentSpace);
 
             float autospaceLabelWidth = EditorStyles.label.CalcSize(Labels.AutoLayout.AutoSpace).x;
-            float autospaceFieldWidth = autospaceLabelWidth + NovaGUI.MinSpaceBetweenFields + NovaGUI.ToggleBoxSize;
-            float lengthLabelWidth = NovaGUI.PrefixLabelWidth + autospaceLabelWidth - NovaGUI.MinSpaceBetweenFields;
+            float autospaceFieldWidth = autospaceLabelWidth + AuraGUI.MinSpaceBetweenFields + AuraGUI.ToggleBoxSize;
+            float lengthLabelWidth = AuraGUI.PrefixLabelWidth + autospaceLabelWidth - AuraGUI.MinSpaceBetweenFields;
 
             EditorGUI.BeginDisabledGroup(lengthDisabled);
-            NovaGUI.LabelWidth = lengthLabelWidth;
-            Rect lengthPosition = NovaGUI.Layout.GetControlRect();
-            lengthPosition.width -= NovaGUI.ToggleBoxSize;
+            AuraGUI.LabelWidth = lengthLabelWidth;
+            Rect lengthPosition = AuraGUI.Layout.GetControlRect();
+            lengthPosition.width -= AuraGUI.ToggleBoxSize;
 
             // total hack, but using another labelfield is shifting the text around. 
-            NovaGUI.LengthField(lengthPosition, spacingLabel, spacing, calc, spacingMinMax.Min, spacingMinMax.Max);
+            AuraGUI.LengthField(lengthPosition, spacingLabel, spacing, calc, spacingMinMax.Min, spacingMinMax.Max);
 
             EditorGUI.EndDisabledGroup();
 
@@ -746,8 +746,8 @@ namespace Nova.Editor.GUIs
                 labelStyle.Draw(lengthPosition, spacingLabel, false, false, false, false);
             }
 
-            NovaGUI.LabelWidth = autospaceFieldWidth - NovaGUI.ToggleBoxSize;
-            Rect autospacePosition = NovaGUI.Layout.GetControlRect(GUILayout.Width(autospaceFieldWidth));
+            AuraGUI.LabelWidth = autospaceFieldWidth - AuraGUI.ToggleBoxSize;
+            Rect autospacePosition = AuraGUI.Layout.GetControlRect(GUILayout.Width(autospaceFieldWidth));
 
             bool hasListView = target.TryGetComponent<ListView>(out _);
 
@@ -764,19 +764,19 @@ namespace Nova.Editor.GUIs
 
             EditorGUI.EndDisabledGroup();
 
-            NovaGUI.LabelWidth = labelWidth;
+            AuraGUI.LabelWidth = labelWidth;
 
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
 
             if (expandedLength)
             {
                 EditorGUILayout.Space(1);
-                NovaGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
-                NovaGUI.Layout.BeginHorizontal(NovaGUI.Styles.InnerContent);
-                NovaGUI.LabelWidth = NovaGUI.PrefixLabelWidth + autospaceLabelWidth + NovaGUI.ToggleBoxSize - NovaGUI.MinSpaceBetweenFields;
-                NovaGUI.LengthRangeField(GUIContent.none, spacing, spacingMinMax, calc, spacing.Type == LengthType.Value);
-                NovaGUI.LabelWidth = labelWidth;
-                NovaGUI.Layout.EndHorizontal();
+                AuraGUI.Styles.DrawSeparator(GUILayoutUtility.GetLastRect());
+                AuraGUI.Layout.BeginHorizontal(AuraGUI.Styles.InnerContent);
+                AuraGUI.LabelWidth = AuraGUI.PrefixLabelWidth + autospaceLabelWidth + AuraGUI.ToggleBoxSize - AuraGUI.MinSpaceBetweenFields;
+                AuraGUI.LengthRangeField(GUIContent.none, spacing, spacingMinMax, calc, spacing.Type == LengthType.Value);
+                AuraGUI.LabelWidth = labelWidth;
+                AuraGUI.Layout.EndHorizontal();
             }
 
             return expandedLength;
@@ -924,7 +924,7 @@ namespace Nova.Editor.GUIs
             string plural = multiple ? "s" : string.Empty;
             string message = $"The {list} {axes} {are} set to {conflicts}, while its parent is set to Shrink in the same direction{plural}. These properties conflict and could lead to undesired behavior.";
 
-            NovaGUI.WarningIcon(message);
+            AuraGUI.WarningIcon(message);
         }
     }
 }

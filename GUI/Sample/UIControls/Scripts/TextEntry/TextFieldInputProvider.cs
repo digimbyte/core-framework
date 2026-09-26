@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// Base class for classes that provide input to <see cref="TextField"/>.

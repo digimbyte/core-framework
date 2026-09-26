@@ -1,13 +1,13 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomPropertyDrawer(typeof(MinMax))]
-    internal class MinMaxDrawer : NovaPropertyDrawer<_MinMax>
+    internal class MinMaxDrawer : AuraPropertyDrawer<_MinMax>
     {
         protected override void OnGUI(Rect position, GUIContent label)
         {
@@ -16,7 +16,7 @@ namespace Nova.Editor.GUIs
             position.ShiftAndResizeLabel();
 
             float labelWidth = EditorGUIUtility.labelWidth;
-            EditorGUIUtility.labelWidth = NovaGUI.SingleCharacterGUIWidth * 3;
+            EditorGUIUtility.labelWidth = AuraGUI.SingleCharacterGUIWidth * 3;
 
             position.Split(out Rect minRect, out Rect maxRect);
             int oldIndex = EditorGUI.indentLevel;
@@ -35,7 +35,7 @@ namespace Nova.Editor.GUIs
             float currentValue = prop.floatValue;
             bool enabled = !float.IsInfinity(currentValue);
 
-            rect.Split(NovaGUI.ToggleBoxSize, out Rect toggleRect, out Rect fieldRect);
+            rect.Split(AuraGUI.ToggleBoxSize, out Rect toggleRect, out Rect fieldRect);
             bool newEnabled = EditorGUI.ToggleLeft(toggleRect, GUIContent.none, enabled);
             rect.ShiftAndResize(rect.width);
 

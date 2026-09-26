@@ -1,12 +1,12 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     internal enum HandleManipulation { Started, Updated, Stopped, None };
 

@@ -1,19 +1,19 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Collections;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal struct ProxyContainer
     {
         public const int ExistingDistribution = -1;
 
-        public NovaList<DataStoreID> ProxyIDs;
+        public AuraList<DataStoreID> ProxyIDs;
         public int DesiredChildrenPerProxy;
     }
 
@@ -24,20 +24,20 @@ namespace Nova.Internal.Hierarchy
             public NativeList<HierarchyElement> Elements;
             public NativeDedupedList<DataStoreID> RootIDs;
             public NativeList<int> SiblingPriorities;
-            public NovaHashMap<DataStoreID, ProxyContainer> VirtualProxies;
-            public NovaHashMap<DataStoreID, DataStoreIndex> Lookup;
+            public AuraHashMap<DataStoreID, ProxyContainer> VirtualProxies;
+            public AuraHashMap<DataStoreID, DataStoreIndex> Lookup;
             public BatchGroupTracker BatchGroupTracker;
 
-            private NativeList<NovaList<DataStoreIndex>> IndexListPool;
+            private NativeList<AuraList<DataStoreIndex>> IndexListPool;
 
             public struct ReadOnly
             {
                 [ReadOnly]
                 public NativeList<HierarchyElement> Elements;
                 [ReadOnly]
-                public NovaHashMap<DataStoreID, ProxyContainer> VirtualProxies;
+                public AuraHashMap<DataStoreID, ProxyContainer> VirtualProxies;
                 [ReadOnly]
-                public NovaHashMap<DataStoreID, DataStoreIndex> Lookup;
+                public AuraHashMap<DataStoreID, DataStoreIndex> Lookup;
                 public BatchGroupTracker.ReadOnly BatchGroupTracker;
 
                 public DataStoreID GetParentID(DataStoreID childID, bool includeVirtualProxies = false)
@@ -183,7 +183,7 @@ namespace Nova.Internal.Hierarchy
                 return Elements.ElementAt(childIndex).ParentID;
             }
 
-            public static bool IsDescendantOf(ref NativeList<HierarchyElement> elements, ref NovaHashMap<DataStoreID, DataStoreIndex> lookup, DataStoreIndex descendantIndex, DataStoreID ancestorID, out DataStoreID childID)
+            public static bool IsDescendantOf(ref NativeList<HierarchyElement> elements, ref AuraHashMap<DataStoreID, DataStoreIndex> lookup, DataStoreIndex descendantIndex, DataStoreID ancestorID, out DataStoreID childID)
             {
                 HierarchyElement child = elements[descendantIndex];
 
@@ -208,14 +208,14 @@ namespace Nova.Internal.Hierarchy
                 return false;
             }
 
-            public NovaList<DataStoreIndex> GetIndexList()
+            public AuraList<DataStoreIndex> GetIndexList()
             {
                 if (IndexListPool.Length == 0)
                 {
-                    return new NovaList<DataStoreIndex>(0, Allocator.Persistent);
+                    return new AuraList<DataStoreIndex>(0, Allocator.Persistent);
                 }
 
-                NovaList<DataStoreIndex> list = IndexListPool.Last();
+                AuraList<DataStoreIndex> list = IndexListPool.Last();
                 IndexListPool.RemoveLast();
 
                 list.Clear();
@@ -223,19 +223,19 @@ namespace Nova.Internal.Hierarchy
                 return list;
             }
 
-            public void ReturnIndexList(ref NovaList<DataStoreIndex> list)
+            public void ReturnIndexList(ref AuraList<DataStoreIndex> list)
             {
                 IndexListPool.Add(list);
             }
 
             public void Init()
             {
-                IndexListPool = new NativeList<NovaList<DataStoreIndex>>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
+                IndexListPool = new NativeList<AuraList<DataStoreIndex>>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
                 Elements = new NativeList<HierarchyElement>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
                 SiblingPriorities = new NativeList<int>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
                 RootIDs = NativeDedupedList<DataStoreID>.Create(Constants.SomeElementsInitialCapacity);
-                Lookup = new NovaHashMap<DataStoreID, DataStoreIndex>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
-                VirtualProxies = new NovaHashMap<DataStoreID, ProxyContainer>(Constants.FewElementsInitialCapacity, Allocator.Persistent);
+                Lookup = new AuraHashMap<DataStoreID, DataStoreIndex>(Constants.AllElementsInitialCapacity, Allocator.Persistent);
+                VirtualProxies = new AuraHashMap<DataStoreID, ProxyContainer>(Constants.FewElementsInitialCapacity, Allocator.Persistent);
                 BatchGroupTracker.Init();
             }
 

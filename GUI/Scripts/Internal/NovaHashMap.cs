@@ -4,9 +4,9 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
-    internal struct NovaHashMap<K,V> : IDisposable
+    internal struct AuraHashMap<K,V> : IDisposable
         where K : unmanaged, IEquatable<K>
         where V : unmanaged
     {
@@ -53,7 +53,7 @@ namespace Nova.Compat
             map.Dispose();
         }
 
-        public NovaHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public AuraHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
 #if COLLECTIONS_1_3_OR_NEWER
             map = new NativeParallelHashMap<K, V>(capacity, allocator);

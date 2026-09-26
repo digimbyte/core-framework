@@ -3,9 +3,9 @@ using System;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
-    internal interface INovaSettings
+    internal interface IAuraSettings
     {
         event Action OnRenderSettingsChanged;
 
@@ -15,13 +15,13 @@ namespace Nova.Internal
         bool PackedImagesEnabled { get; }
     }
 
-    internal class NovaSettings
+    internal class AuraSettings
     {
         public static event Action OnInitRequested = null;
 
-        private static INovaSettings instance = null;
+        private static IAuraSettings instance = null;
 
-        private static readonly SharedStatic<SettingsConfig> config = SharedStatic<SettingsConfig>.GetOrCreate<NovaSettings>();
+        private static readonly SharedStatic<SettingsConfig> config = SharedStatic<SettingsConfig>.GetOrCreate<AuraSettings>();
 
         public static void Dispose()
         {
@@ -29,7 +29,7 @@ namespace Nova.Internal
             OnInitRequested = null;
         }
 
-        public static void Init(INovaSettings settings)
+        public static void Init(IAuraSettings settings)
         {
             instance = settings;
             instance.OnRenderSettingsChanged += _onRenderSettingsChanged;
@@ -71,7 +71,7 @@ namespace Nova.Internal
 
         public static bool Initialized => Instance != null;
 
-        private static INovaSettings Instance
+        private static IAuraSettings Instance
         {
             get
             {

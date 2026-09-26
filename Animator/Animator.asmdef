@@ -3,7 +3,7 @@
     "rootNamespace": "Core",
     "references": [
         "Unity.TextMeshPro",
-        "Nova"
+        "Aura"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

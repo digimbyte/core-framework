@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class ListExtensions
     {
@@ -52,7 +52,7 @@ namespace Nova.Internal.Utilities.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetFromPoolOrInit<K, V>(this List<NovaHashMap<K, V>> pool, ref NovaHashMap<K, V> map)
+        public static void GetFromPoolOrInit<K, V>(this List<AuraHashMap<K, V>> pool, ref AuraHashMap<K, V> map)
             where K : unmanaged, IEquatable<K>
             where V : unmanaged
         {
@@ -95,7 +95,7 @@ namespace Nova.Internal.Utilities.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReturnToPool<K, V>(this List<NovaHashMap<K, V>> pool, ref NovaHashMap<K, V> map)
+        public static void ReturnToPool<K, V>(this List<AuraHashMap<K, V>> pool, ref AuraHashMap<K, V> map)
             where K : unmanaged, IEquatable<K>
             where V : unmanaged
         {

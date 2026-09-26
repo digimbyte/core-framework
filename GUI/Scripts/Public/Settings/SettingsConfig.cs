@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Lighting models (as a mask) to include in builds.
     /// </summary>
-    /// <seealso cref="NovaSettings.UIBlock2DLightingModels"/>
-    /// <seealso cref="NovaSettings.UIBlock3DLightingModels"/>
-    /// <seealso cref="NovaSettings.TextBlockLightingModels"/>
+    /// <seealso cref="AuraSettings.UIBlock2DLightingModels"/>
+    /// <seealso cref="AuraSettings.UIBlock3DLightingModels"/>
+    /// <seealso cref="AuraSettings.TextBlockLightingModels"/>
     [Flags]
     public enum LightingModelBuildFlag : int
     {
@@ -63,7 +63,7 @@ namespace Nova
     /// <summary>
     /// Warnings which can be disabled or enabled.
     /// </summary>
-    /// <seealso cref="NovaSettings.LogFlags"/>
+    /// <seealso cref="AuraSettings.LogFlags"/>
     [Flags]
     public enum LogFlags : int
     {
@@ -83,8 +83,8 @@ namespace Nova
         UnsupportedTextShader = Internal.LogFlags.UnsupportedTextShader,
         /// <summary>
         /// Log when a <see cref="UIBlock"/> uses a <see cref="LightingModel"/> which has not been marked 
-        /// to be included in builds via <see cref="NovaSettings.UIBlock2DLightingModels"/>, 
-        /// <see cref="NovaSettings.UIBlock3DLightingModels"/>, or <see cref="NovaSettings.TextBlockLightingModels"/> 
+        /// to be included in builds via <see cref="AuraSettings.UIBlock2DLightingModels"/>, 
+        /// <see cref="AuraSettings.UIBlock3DLightingModels"/>, or <see cref="AuraSettings.TextBlockLightingModels"/> 
         /// (depending on <see cref="UIBlock"/> type).
         /// </summary>
         LightingModelNotIncludedInBuild = Internal.LogFlags.LightingModelNotIncludedInBuild,

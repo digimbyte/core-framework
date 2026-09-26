@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Nova;
+using Aura;
 
 namespace Core.Animator
 {
@@ -15,7 +15,7 @@ namespace Core.Animator
     ///   Reveal (alpha 1 → 0): lerp to 0, disable GameObject once fully transparent.
     ///
     /// A private <c>_fadeAlpha</c> field owns the canonical alpha value so we never read
-    /// from a potentially-stale disabled Nova object.
+    /// from a potentially-stale disabled Aura object.
     ///
     /// Hold Space or Escape for <see cref="skipHoldDuration"/> seconds → jump to the last slide.
     /// </summary>
@@ -85,7 +85,7 @@ namespace Core.Animator
 
         // ── Runtime state ────────────────────────────────────────────────────────────
 
-        // Canonical alpha — never read from the (potentially disabled) Nova block.
+        // Canonical alpha — never read from the (potentially disabled) Aura block.
         private float _fadeAlpha = 1f;
 
         private Coroutine _playCoroutine;
@@ -356,7 +356,7 @@ namespace Core.Animator
 
         /// <summary>
         /// Lerps <see cref="_fadeAlpha"/> toward <paramref name="target"/> at <see cref="fadeSpeed"/>
-        /// alpha/sec.  Enables the overlay before starting (always required for Nova to render),
+        /// alpha/sec.  Enables the overlay before starting (always required for Aura to render),
         /// and disables it once fully transparent.  Snaps to the exact target when within
         /// <see cref="snapThreshold"/> to avoid infinite-drift artefacts.
         /// </summary>
@@ -375,7 +375,7 @@ namespace Core.Animator
                 yield break;
             }
 
-            // Enable FIRST — Nova's rendering store must be active before we write Color.
+            // Enable FIRST — Aura's rendering store must be active before we write Color.
             SetFadeActive(true);
 
             float start    = _fadeAlpha;

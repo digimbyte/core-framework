@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class UnsafeListExtensions
     {

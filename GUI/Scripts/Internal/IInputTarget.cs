@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal interface IInputTarget
     {

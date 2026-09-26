@@ -1,8 +1,8 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using Unity.Collections;
 using UnityEngine;
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     // NOTE: This purposefully is inconvenient to convert to an int.
      // These attributes are infuriating. That's why this is a string.
@@ -298,7 +298,7 @@ namespace Nova.Internal.Core
     internal struct NativeIndexIDMapper : IDisposable
     {
         private NativeList<DataStoreID> IndexToID;
-        private NovaHashMap<DataStoreID, DataStoreIndex> IDToIndex;
+        private AuraHashMap<DataStoreID, DataStoreIndex> IDToIndex;
 
         public bool Contains(DataStoreID id)
         {
@@ -353,7 +353,7 @@ namespace Nova.Internal.Core
             return new NativeIndexIDMapper()
             {
                 IndexToID = new NativeList<DataStoreID>(Constants.AllElementsInitialCapacity, Allocator.Persistent),
-                IDToIndex = new NovaHashMap<DataStoreID, DataStoreIndex>(Constants.AllElementsInitialCapacity, Allocator.Persistent)
+                IDToIndex = new AuraHashMap<DataStoreID, DataStoreIndex>(Constants.AllElementsInitialCapacity, Allocator.Persistent)
             };
         }
     }

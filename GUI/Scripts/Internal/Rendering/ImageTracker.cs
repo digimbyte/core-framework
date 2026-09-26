@@ -1,8 +1,8 @@
 ﻿
 //#define VERBOSE
-using Nova.Compat;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -12,7 +12,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal class ImageTracker : IDisposable
     {
@@ -464,17 +464,17 @@ namespace Nova.Internal.Rendering
             {
                 // First time the event is firing
                 initializedPackedImageSetting = true;
-                packedImagesSupported = NovaSettings.Config.PackedImagesEnabled;
+                packedImagesSupported = AuraSettings.Config.PackedImagesEnabled;
                 return;
             }
 
-            if (NovaSettings.Config.PackedImagesEnabled == packedImagesSupported)
+            if (AuraSettings.Config.PackedImagesEnabled == packedImagesSupported)
             {
                 // Didn't change
                 return;
             }
 
-            packedImagesSupported = NovaSettings.PackedImagesEnabled;
+            packedImagesSupported = AuraSettings.PackedImagesEnabled;
 
             if (packedImagesSupported)
             {
@@ -506,14 +506,14 @@ namespace Nova.Internal.Rendering
             }
 
             this.dataStore = imageDataStore;
-            runner = new ImageTrackingRunner(ref imageDataStore, NovaApplication.IsEditor);
+            runner = new ImageTrackingRunner(ref imageDataStore, AuraApplication.IsEditor);
 
-            NovaSettings.OnRenderSettingsChanged += HandleSettingsChanged;
+            AuraSettings.OnRenderSettingsChanged += HandleSettingsChanged;
 
-            if (NovaSettings.Initialized)
+            if (AuraSettings.Initialized)
             {
                 initializedPackedImageSetting = true;
-                packedImagesSupported = NovaSettings.Config.PackedImagesEnabled;
+                packedImagesSupported = AuraSettings.Config.PackedImagesEnabled;
             }
         }
 
@@ -521,7 +521,7 @@ namespace Nova.Internal.Rendering
         {
             runner.Dispose();
 
-            NovaSettings.OnRenderSettingsChanged -= HandleSettingsChanged;
+            AuraSettings.OnRenderSettingsChanged -= HandleSettingsChanged;
 
             foreach (var pack in texturePacks.Values)
             {

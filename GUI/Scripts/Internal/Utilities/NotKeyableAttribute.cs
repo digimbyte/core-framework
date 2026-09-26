@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     /// <summary>
     /// Wrapper around Unity's NotKeyable attribute so we don't force users to import

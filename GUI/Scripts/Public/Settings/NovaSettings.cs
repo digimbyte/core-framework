@@ -1,26 +1,26 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal;
+using Aura.Compat;
+using Aura.Internal;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
-    /// Access point for Nova settings.
+    /// Access point for Aura settings.
     /// </summary>
     [ExcludeFromPreset]
-    public sealed class NovaSettings : ScriptableObject, INovaSettings
+    public sealed class AuraSettings : ScriptableObject, IAuraSettings
     {
         internal static event Action OnRenderSettingsChanged;
 
         [SerializeField]
         private SettingsConfig settings = SettingsConfig.Default;
 
-        #region INovaSettings
-        event Action INovaSettings.OnRenderSettingsChanged
+        #region IAuraSettings
+        event Action IAuraSettings.OnRenderSettingsChanged
         {
             add
             {
@@ -32,16 +32,16 @@ namespace Nova
             }
         }
 
-        float INovaSettings.EdgeSoftenWidth => EdgeSoftenWidth;
-        int INovaSettings.UIBlock3DEdgeDivisions => UIBlock3DEdgeDivisions;
-        int INovaSettings.UIBlock3DCornerDivisions => UIBlock3DCornerDivisions;
+        float IAuraSettings.EdgeSoftenWidth => EdgeSoftenWidth;
+        int IAuraSettings.UIBlock3DEdgeDivisions => UIBlock3DEdgeDivisions;
+        int IAuraSettings.UIBlock3DCornerDivisions => UIBlock3DCornerDivisions;
 
-        bool INovaSettings.PackedImagesEnabled => PackedImagesEnabled;
+        bool IAuraSettings.PackedImagesEnabled => PackedImagesEnabled;
         #endregion
 
         #region Pass Thru
         /// <summary>
-        /// Enables or disables specific warnings that may be logged by Nova.
+        /// Enables or disables specific warnings that may be logged by Aura.
         /// </summary>
         public static LogFlags LogFlags
         {
@@ -73,7 +73,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// How to copy <see cref="ImagePackMode.Packed">Packed</see> images. See <see cref="Nova.PackedImageCopyMode"/> for more info.
+        /// How to copy <see cref="ImagePackMode.Packed">Packed</see> images. See <see cref="Aura.PackedImageCopyMode"/> for more info.
         /// </summary>
         public static PackedImageCopyMode PackedImageCopyMode
         {
@@ -210,38 +210,38 @@ namespace Nova
 
         #region Controls
         /// <summary>
-        /// The Nova button control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura button control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock ButtonPrefab = null;
         /// <summary>
-        /// The Nova toggle control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura toggle control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock TogglePrefab = null;
         /// <summary>
-        /// The Nova slider control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura slider control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock SliderPrefab = null;
         /// <summary>
-        /// The Nova dropdown control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura dropdown control prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock DropdownPrefab = null;
         /// <summary>
-        /// The Nova text field prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura text field prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock TextFieldPrefab = null;
         /// <summary>
-        /// The Nova scroll view prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura scroll view prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock ScrollViewPrefab = null;
         /// <summary>
-        /// The Nova UI root prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
+        /// The Aura UI root prefab to instantiate in editor from the GameObject menu (and right-click in hierarchy window).
         /// </summary>
         public UIBlock UIRootPrefab = null;
         #endregion
 
         internal void MarkDirty(bool fireEvent, bool markDirty = true)
         {
-            Internal.NovaSettings.Config = UnsafeUtility.As<SettingsConfig, Internal.SettingsConfig>(ref _instance.settings);
+            Internal.AuraSettings.Config = UnsafeUtility.As<SettingsConfig, Internal.SettingsConfig>(ref _instance.settings);
 
             if (fireEvent)
             {
@@ -250,21 +250,21 @@ namespace Nova
 
             if (markDirty)
             {
-                NovaApplication.MarkDirty(this);
+                AuraApplication.MarkDirty(this);
             }
         }
 
         #region Singleton
         internal static bool Initialized => _instance == null ? TryInitialize() : true;
 
-        private static NovaSettings _instance = null;
-        internal static NovaSettings Instance
+        private static AuraSettings _instance = null;
+        internal static AuraSettings Instance
         {
             get
             {
                 if (_instance == null && !TryInitialize())
                 {
-                    throw new Exception("Failed to load Nova settings. Please ensure Nova was imported correctly.");
+                    throw new Exception("Failed to load Aura settings. Please ensure Aura was imported correctly.");
                 }
                 return _instance;
             }
@@ -273,7 +273,7 @@ namespace Nova
         private static bool TryInitialize()
         {
             // This only finds assets that have already been loaded
-            NovaSettings[] settings = Resources.FindObjectsOfTypeAll<NovaSettings>();
+            AuraSettings[] settings = Resources.FindObjectsOfTypeAll<AuraSettings>();
             if (settings.Length != 0)
             {
                 _instance = settings[0];
@@ -281,7 +281,7 @@ namespace Nova
             else
             {
                 // Hasn't been loaded yet, so we need to load it
-                _instance = Resources.Load<NovaSettings>("NovaSettings");
+                _instance = Resources.Load<AuraSettings>("AuraSettings");
             }
 
             if (_instance != null)

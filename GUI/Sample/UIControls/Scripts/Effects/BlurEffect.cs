@@ -1,9 +1,9 @@
-using Nova;
+using Aura;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace NovaSamples.Effects
+namespace AuraSamples.Effects
 {
     /// <summary>
     /// The automated cadence to perform a target action

@@ -1,15 +1,15 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
     internal struct DataStoreRunner
@@ -22,7 +22,7 @@ namespace Nova.Internal.Rendering
         public RenderRootDataStore RootData;
         public RenderingDirtyState DirtyState;
 
-        public NovaHashMap<DataStoreID, NovaList<DataStoreID>> ContainedSortGroups;
+        public AuraHashMap<DataStoreID, AuraList<DataStoreID>> ContainedSortGroups;
 
         #region Element Operations
         public bool IsHierarchyRoot;
@@ -179,7 +179,7 @@ namespace Nova.Internal.Rendering
         {
             PreUpdateData.DirtyState.DirtyBatchRoots.Add(rootID);
 
-            if (!ContainedSortGroups.TryGetValue(rootID, out NovaList<DataStoreID> childRoots))
+            if (!ContainedSortGroups.TryGetValue(rootID, out AuraList<DataStoreID> childRoots))
             {
                 return;
             }

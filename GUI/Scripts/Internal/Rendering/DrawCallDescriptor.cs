@@ -3,7 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 using UnityEngine.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// A description for one or more draw calls. This helps with knowing 

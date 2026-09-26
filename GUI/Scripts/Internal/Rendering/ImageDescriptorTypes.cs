@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct SpriteBorder : IEquatable<SpriteBorder>
     {
@@ -92,7 +92,7 @@ namespace Nova.Internal.Rendering
     }
 
     /// <summary>
-    /// Describes an image, which is a Nova concept. E.g., a Sprite is an image, and multiple
+    /// Describes an image, which is a Aura concept. E.g., a Sprite is an image, and multiple
     /// sprites might map back to the same texture even though they are different "Images"
     /// </summary>
     internal struct ImageDescriptor : IEquatable<ImageDescriptor>

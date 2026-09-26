@@ -1,12 +1,12 @@
 ﻿
 //#define LOG_COMPARISON_COUNT
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
@@ -15,7 +15,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal static partial class CameraSorting
     {
@@ -32,27 +32,27 @@ namespace Nova.Internal.Rendering
             /// </summary>
             public NativeList<DataStoreID> BatchRootsToRender;
 
-            public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+            public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
             public NativeList<float4x4> LocalFromWorldMatrices;
             public NativeList<float4x4> WorldFromLocalMatrices;
-            public NovaHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
-            public NovaHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
-            public NovaHashMap<DataStoreID, NovaList<CoplanarSetID, CoplanarSet>> CoplanarSets;
-            public NovaHashMap<DataStoreID, SortGroupHierarchyInfo> SortGroupHierarchyInfo;
-            public NovaHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
-            public NovaHashMap<DataStoreID, NovaList<EntityId>> ScreenSpaceAdditionalCameras;
+            public AuraHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
+            public AuraHashMap<DataStoreID, SortGroupInfo> SortGroupInfos;
+            public AuraHashMap<DataStoreID, AuraList<CoplanarSetID, CoplanarSet>> CoplanarSets;
+            public AuraHashMap<DataStoreID, SortGroupHierarchyInfo> SortGroupHierarchyInfo;
+            public AuraHashMap<DataStoreID, EntityId> ScreenSpaceCameraTargets;
+            public AuraHashMap<DataStoreID, AuraList<EntityId>> ScreenSpaceAdditionalCameras;
 
-            private NovaHashMap<DataStoreID, NovaList<DrawCallID, ProcessedDrawCall>> ProcessedDrawCalls;
-            private NovaHashMap<DataStoreID, NovaList<CoplanarSetID, CoplanarSetLocation>> CoplanarSetInfo;
+            private AuraHashMap<DataStoreID, AuraList<DrawCallID, ProcessedDrawCall>> ProcessedDrawCalls;
+            private AuraHashMap<DataStoreID, AuraList<CoplanarSetID, CoplanarSetLocation>> CoplanarSetInfo;
 
-            private NativeList<NovaList<DrawCallID, ProcessedDrawCall>> drawCallBoundsPool;
-            private NativeList<NovaList<CoplanarSetID, CoplanarSetLocation>> coplanarSetInfoPool;
+            private NativeList<AuraList<DrawCallID, ProcessedDrawCall>> drawCallBoundsPool;
+            private NativeList<AuraList<CoplanarSetID, CoplanarSetLocation>> coplanarSetInfoPool;
 
             private NativeList<CoplanarSetIdentifier> transparentCoplanarSets;
             private RenderOrderDependencies renderOrderDependencies;
             private NativeList<CoplanarSetIdentifier> processingQueue;
-            private NovaHashMap<CoplanarSetIdentifier, byte> processedCoplanarSets;
-            private NovaHashMap<CoplanarSetIdentifier, byte> addedDependencies;
+            private AuraHashMap<CoplanarSetIdentifier, byte> processedCoplanarSets;
+            private AuraHashMap<CoplanarSetIdentifier, byte> addedDependencies;
             private NativeList<CoplanarSetIdentifier> minSortedCoplanarSets;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,7 +118,7 @@ namespace Nova.Internal.Rendering
                         return true;
                     }
 
-                    if (!ScreenSpaceAdditionalCameras.TryGetValue(hierarhcyInfo.HierarchyRoot, out NovaList<EntityId> additionalCameras))
+                    if (!ScreenSpaceAdditionalCameras.TryGetValue(hierarhcyInfo.HierarchyRoot, out AuraList<EntityId> additionalCameras))
                     {
                         return false;
                     }
@@ -147,9 +147,9 @@ namespace Nova.Internal.Rendering
                         continue;
                     }
 
-                    NovaList<DrawCallID, ProcessedDrawCall> drawCallBounds = ProcessedDrawCalls.GetAndResize(batchRootID, drawCallSummary.DrawCallCount);
-                    NovaList<CoplanarSetID, CoplanarSetLocation> perCameraSetInfos = CoplanarSetInfo[batchRootID];
-                    NovaList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets[batchRootID];
+                    AuraList<DrawCallID, ProcessedDrawCall> drawCallBounds = ProcessedDrawCalls.GetAndResize(batchRootID, drawCallSummary.DrawCallCount);
+                    AuraList<CoplanarSetID, CoplanarSetLocation> perCameraSetInfos = CoplanarSetInfo[batchRootID];
+                    AuraList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets[batchRootID];
                     for (int j = 0; j < drawCallSummary.DrawCalls.Length; ++j)
                     {
                         ref DrawCall drawCall = ref drawCallSummary.DrawCalls.ElementAt(j);
@@ -226,7 +226,7 @@ namespace Nova.Internal.Rendering
                     }
 
                     // Ensure all of the dependencies have been processed
-                    bool hasItemsToRenderOver = renderOrderDependencies.TryGetDependencies(currentSet, out NovaList<CoplanarSetIdentifier> dependencies);
+                    bool hasItemsToRenderOver = renderOrderDependencies.TryGetDependencies(currentSet, out AuraList<CoplanarSetIdentifier> dependencies);
                     if (hasItemsToRenderOver && !addedDependencies.ContainsKey(currentSet))
                     {
                         bool canProcess = true;
@@ -539,13 +539,13 @@ namespace Nova.Internal.Rendering
             private void AddCoplanarSets(DataStoreID batchRootID)
             {
                 // Get the coplanar sets in the batch group
-                if (!CoplanarSets.TryGetValue(batchRootID, out NovaList<CoplanarSetID, CoplanarSet> coplanarSets))
+                if (!CoplanarSets.TryGetValue(batchRootID, out AuraList<CoplanarSetID, CoplanarSet> coplanarSets))
                 {
                     return;
                 }
 
-                NovaList<CoplanarSetID, CoplanarSetLocation> perCameraInfos = CoplanarSetInfo.GetAndResize(batchRootID, coplanarSets.Length);
-                NovaList<CoplanarSetID, CoplanarSet> renderCounts = CoplanarSets[batchRootID];
+                AuraList<CoplanarSetID, CoplanarSetLocation> perCameraInfos = CoplanarSetInfo.GetAndResize(batchRootID, coplanarSets.Length);
+                AuraList<CoplanarSetID, CoplanarSet> renderCounts = CoplanarSets[batchRootID];
 
                 for (int i = 0; i < coplanarSets.Length; ++i)
                 {
@@ -579,7 +579,7 @@ namespace Nova.Internal.Rendering
                         continue;
                     }
 
-                    NovaPlane plane = NovaPlane.Create(ref cameraFromSet);
+                    AuraPlane plane = AuraPlane.Create(ref cameraFromSet);
 
                     perCameraInfo.WorldSpaceSize = AABB.Transform2D(ref worldFromSet, ref coplanarSet.CoplanarSpaceRenderBounds).GetSize();
 
@@ -615,7 +615,7 @@ namespace Nova.Internal.Rendering
 
             private struct MinDistanceSorter : IComparer<CoplanarSetIdentifier>
             {
-                public NovaHashMap<DataStoreID, NovaList<CoplanarSetID, CoplanarSetLocation>> PerCameraSetInfo;
+                public AuraHashMap<DataStoreID, AuraList<CoplanarSetID, CoplanarSetLocation>> PerCameraSetInfo;
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public int Compare(CoplanarSetIdentifier x, CoplanarSetIdentifier y)
@@ -640,7 +640,7 @@ namespace Nova.Internal.Rendering
             /// <param name="batchGroupID"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public NovaList<DrawCallID, ProcessedDrawCall> GetDrawCallBounds(DataStoreID batchGroupID) => ProcessedDrawCalls[batchGroupID];
+            public AuraList<DrawCallID, ProcessedDrawCall> GetDrawCallBounds(DataStoreID batchGroupID) => ProcessedDrawCalls[batchGroupID];
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void AddBatchGroup(DataStoreID batchRootID)
@@ -652,12 +652,12 @@ namespace Nova.Internal.Rendering
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void RemoveBatchGroup(DataStoreID batchRootID)
             {
-                if (ProcessedDrawCalls.TryGetAndRemove(batchRootID, out NovaList<DrawCallID, ProcessedDrawCall> drawCallBounds))
+                if (ProcessedDrawCalls.TryGetAndRemove(batchRootID, out AuraList<DrawCallID, ProcessedDrawCall> drawCallBounds))
                 {
                     drawCallBoundsPool.ReturnToPool(ref drawCallBounds);
                 }
 
-                if (CoplanarSetInfo.TryGetAndRemove(batchRootID, out NovaList<CoplanarSetID, CoplanarSetLocation> coplanarSetInfo))
+                if (CoplanarSetInfo.TryGetAndRemove(batchRootID, out AuraList<CoplanarSetID, CoplanarSetLocation> coplanarSetInfo))
                 {
                     coplanarSetInfoPool.ReturnToPool(ref coplanarSetInfo);
                 }

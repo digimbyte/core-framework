@@ -1,17 +1,17 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
 using Unity.Collections;
 using Unity.Jobs;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal class HierarchyEngine : EngineBaseGeneric<HierarchyEngine>
     {
         // Maps a root ID to an index in the BatchGroupTracker's list of batch roots.
         // Only valid in the process of an engine update.
-        public NovaHashMap<DataStoreID, int> TrackedRootIDs;
+        public AuraHashMap<DataStoreID, int> TrackedRootIDs;
         public JobHandle HierarchyUpdateHandle;
 
         private bool ShouldRunUpdate => HierarchyDataStore.Instance.IsDirty;
@@ -28,7 +28,7 @@ namespace Nova.Internal.Hierarchy
         {
             Instance = this;
 
-            TrackedRootIDs = new NovaHashMap<DataStoreID, int>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
+            TrackedRootIDs = new AuraHashMap<DataStoreID, int>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
 
             #region Init Job Structs
             setupRunner = new Hierarchy.SetupHierarchy()
@@ -59,7 +59,7 @@ namespace Nova.Internal.Hierarchy
 
             // Setup
             setupRunner.HierarchySize = HierarchyDataStore.Instance.Elements.Count;
-            engineUpdateInfo.EngineSequenceCompleteHandle = setupRunner.NovaScheduleByRef();
+            engineUpdateInfo.EngineSequenceCompleteHandle = setupRunner.AuraScheduleByRef();
 
             // Get Dirty Elements
             engineUpdateInfo.EngineSequenceCompleteHandle = HierarchyDataStore.Instance.PopulateWithDirtyBatchElements(ref engineUpdateInfo, engineUpdateInfo.EngineSequenceCompleteHandle);

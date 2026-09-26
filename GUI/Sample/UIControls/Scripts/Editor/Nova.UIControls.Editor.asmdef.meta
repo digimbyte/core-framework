@@ -8,7 +8,7 @@ AssemblyDefinitionImporter:
 AssetOrigin:
   serializedVersion: 1
   productId: 226304
-  packageName: Nova
+  packageName: Aura
   packageVersion: 2.1.3
-  assetPath: Assets/Nova/Sample/UIControls/Scripts/Editor/Nova.UIControls.Editor.asmdef
+  assetPath: Assets/Aura/Sample/UIControls/Scripts/Editor/Aura.UIControls.Editor.asmdef
   uploadId: 631462

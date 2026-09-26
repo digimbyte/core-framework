@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
-    internal partial struct SubQuadShaderDataJob : INovaJobParallelFor
+    internal partial struct SubQuadShaderDataJob : IAuraJobParallelFor
     {
         private interface IBoundsConverter
         {

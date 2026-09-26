@@ -1,16 +1,16 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     internal struct StructuredSphere
     {
@@ -32,7 +32,7 @@ namespace Nova.Internal.Input
         [ReadOnly]
         public NativeList<Length3.Calculated> LengthProperties;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+        public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
         [ReadOnly]
         public NativeList<float3> Sizes;

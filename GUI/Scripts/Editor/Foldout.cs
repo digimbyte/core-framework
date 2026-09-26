@@ -1,10 +1,10 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     internal struct Foldout : IDisposable
     {
@@ -26,7 +26,7 @@ namespace Nova.Editor.GUIs
         {
             if (isHeaderGroup)
             {
-                NovaGUI.Layout.EndVertical();
+                AuraGUI.Layout.EndVertical();
 
                 if (disableableGroup)
                 {
@@ -39,30 +39,30 @@ namespace Nova.Editor.GUIs
                     Rect controlRect = GUILayoutUtility.GetLastRect();
                     controlRect.yMax -= 1;
 
-                    NovaGUI.Styles.DrawSeparator(controlRect, afterControl: false);
+                    AuraGUI.Styles.DrawSeparator(controlRect, afterControl: false);
                 }
             }
         }
 
         public static Foldout DoHeaderGroup(bool foldout, string label, Action<Rect> dropdownMenu = null)
         {
-            Rect headerRect = NovaGUI.Layout.GetControlRect();
+            Rect headerRect = AuraGUI.Layout.GetControlRect();
 
             foldout = FoldoutHeaderField(headerRect, 0, foldout, label, dropdownMenu);
 
-            NovaGUI.Layout.BeginVertical(foldout ? NovaGUI.Styles.InnerContent : GUIStyle.none);
+            AuraGUI.Layout.BeginVertical(foldout ? AuraGUI.Styles.InnerContent : GUIStyle.none);
 
             return new Foldout(foldout, isHeaderGroup: true);
         }
 
         public static Foldout DoHeaderGroup(bool foldout, string label, SerializedProperty toggleProperty, Action<Rect> dropdownMenu = null)
         {
-            Rect headerRect = NovaGUI.Layout.GetControlRect();
+            Rect headerRect = AuraGUI.Layout.GetControlRect();
 
             foldout = FoldoutHeaderField(headerRect, HeaderExtraControlWidth, foldout, label, dropdownMenu);
 
             Rect togglePosition = GUILayoutUtility.GetLastRect();
-            togglePosition.width = NovaGUI.ToggleBoxSize;
+            togglePosition.width = AuraGUI.ToggleBoxSize;
             togglePosition.x = headerRect.xMax - HeaderExtraControlWidth;
 
             GUIContent propertyLabel = EditorGUI.BeginProperty(togglePosition, GUIContent.none, toggleProperty);
@@ -76,7 +76,7 @@ namespace Nova.Editor.GUIs
             }
             EditorGUI.EndProperty();
 
-            NovaGUI.Layout.BeginVertical(foldout ? NovaGUI.Styles.InnerContent : GUIStyle.none);
+            AuraGUI.Layout.BeginVertical(foldout ? AuraGUI.Styles.InnerContent : GUIStyle.none);
             EditorGUI.BeginDisabledGroup(!isOn);
 
             return new Foldout(foldout, isHeaderGroup: true, disableableGroup: true);
@@ -88,7 +88,7 @@ namespace Nova.Editor.GUIs
             foldoutRect.x -= ArrowIconSize;
             foldoutRect.width = ArrowIconSize;
 
-            return GUI.Toggle(foldoutRect, open, string.Empty, NovaGUI.Styles.FoldoutToggle);
+            return GUI.Toggle(foldoutRect, open, string.Empty, AuraGUI.Styles.FoldoutToggle);
         }
 
         public static bool InProjectSettings = false; // Hack to make the dropdown arrows work in project settings
@@ -102,8 +102,8 @@ namespace Nova.Editor.GUIs
             EventType currentEvent = Event.current.type;
 
             Rect menuButtonRect = headerRect;
-            menuButtonRect.width = NovaGUI.IconSize;
-            menuButtonRect.height = NovaGUI.IconSize;
+            menuButtonRect.width = AuraGUI.IconSize;
+            menuButtonRect.height = AuraGUI.IconSize;
             menuButtonRect.x = headerRect.width + 2;
             menuButtonRect.y += 0.5f;
 
@@ -125,11 +125,11 @@ namespace Nova.Editor.GUIs
             bool hover = headerRect.Contains(Event.current.mousePosition);
             if (repaint)
             {
-                NovaGUI.Styles.SectionHeaderBackground.Draw(headerRect, false, false, false, false);
+                AuraGUI.Styles.SectionHeaderBackground.Draw(headerRect, false, false, false, false);
                 GUI.backgroundColor = hover ? Color.white : Color.clear;
             }
 
-            foldout = EditorGUI.BeginFoldoutHeaderGroup(headerRect, foldout, label, NovaGUI.Styles.SectionHeaderStyle);
+            foldout = EditorGUI.BeginFoldoutHeaderGroup(headerRect, foldout, label, AuraGUI.Styles.SectionHeaderStyle);
             EditorGUI.EndFoldoutHeaderGroup();
 
             if (repaint)
@@ -156,13 +156,13 @@ namespace Nova.Editor.GUIs
 
             if (dropdownMenu != null)
             {
-                if (GUI.Button(menuButtonRect, NovaGUI.Styles.MenuIcon, NovaGUI.Styles.MenuIconStyle))
+                if (GUI.Button(menuButtonRect, AuraGUI.Styles.MenuIcon, AuraGUI.Styles.MenuIconStyle))
                 {
                     dropdownMenu.Invoke(menuButtonRect);
                 }
             }
 
-            NovaGUI.Styles.DrawSeparator(headerRect);
+            AuraGUI.Styles.DrawSeparator(headerRect);
 
             return foldout;
         }

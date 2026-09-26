@@ -1,18 +1,18 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct RootFromBlockMatrixJob : INovaJobParallelFor
+    internal struct RootFromBlockMatrixJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatchRoots;
@@ -21,7 +21,7 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<BatchGroupElement> BatchGroupElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [NativeDisableContainerSafetyRestriction]
         public NativeList<float4x4> LocalFromWorldMatrices;
         [ReadOnly]

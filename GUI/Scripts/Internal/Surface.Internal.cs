@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Rendering;
+using Aura.Internal.Rendering;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
 
     internal enum LightingModel

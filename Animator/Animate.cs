@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using Nova;
+using Aura;
 using Sirenix.OdinInspector;
 
 namespace Core.Animator
@@ -371,7 +371,7 @@ namespace Core.Animator
             private bool UsesMaterialProperty => type == TweenType.RendererColor || type == TweenType.MaterialFloat;
             private bool IsSiblingOrder => type == TweenType.SiblingOrder;
 
-            private string Det => NormalizeNovaPositionAxisPath(targetComponent, propertyName) != propertyName
+            private string Det => NormalizeAuraPositionAxisPath(targetComponent, propertyName) != propertyName
                 ? nameof(Single) : string.IsNullOrEmpty(detectedPropertyType) ? string.Empty : detectedPropertyType;
 
             // Matches RuntimeType.Name and member-browser strings: Boolean, System.Boolean (case/culture tolerant for "Boolean").
@@ -1598,8 +1598,8 @@ namespace Core.Animator
                         resolvedPath = resolvedPath.Substring(0, resolvedPath.Length - backingSuffix.Length);
 
 
-                    // Nova UIBlock: Size / Position / Alignment fast paths (partial: Nova UI helpers).
-                    if (TryNovaUIBlockCustomPropertyFastPath(e, comp, resolvedPath, out var novaCoroutine))
+                    // Aura UIBlock: Size / Position / Alignment fast paths (partial: Aura UI helpers).
+                    if (TryAuraUIBlockCustomPropertyFastPath(e, comp, resolvedPath, out var novaCoroutine))
                         return novaCoroutine;
 
                     if (TryResolveMember(memberRoot, resolvedPath, out var owner, out var memberInfo, out var memberType))
@@ -1621,7 +1621,7 @@ namespace Core.Animator
                             Func<float> getter;
                             Action<float> setter;
                             
-                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size" && (marker.originalOwner is Nova.UIBlock uiBlock || marker.originalOwner is Nova.UIBlock2D uiBlock2D || marker.originalOwner is Nova.UIBlock3D uiBlock3D))
+                            if (owner is RefStructMarker marker && marker.refProperty.Name == "Size" && (marker.originalOwner is Aura.UIBlock uiBlock || marker.originalOwner is Aura.UIBlock2D uiBlock2D || marker.originalOwner is Aura.UIBlock3D uiBlock3D))
                             {
                                 // Create closures that properly handle ref struct get/set
                                 getter = () =>
@@ -1650,11 +1650,11 @@ namespace Core.Animator
                                     }
                                 };
                             }
-                            else if (owner is RefStructMarker novaRb && novaRb.originalOwner is UIBlock ubNovaRb &&
-                                     TryBindNovaUIBlockGetterOnlyLeafFloat(novaRb, ubNovaRb, memberInfo, memberType, out var gfNova, out var sfNova))
+                            else if (owner is RefStructMarker novaRb && novaRb.originalOwner is UIBlock ubAuraRb &&
+                                     TryBindAuraUIBlockGetterOnlyLeafFloat(novaRb, ubAuraRb, memberInfo, memberType, out var gfAura, out var sfAura))
                             {
-                                getter = gfNova;
-                                setter = sfNova;
+                                getter = gfAura;
+                                setter = sfAura;
                             }
                             else
                             {
@@ -1742,9 +1742,9 @@ namespace Core.Animator
                             }
                             else if (owner is RefStructMarker marker && marker.refProperty.Name == "Size")
                             {
-                                var ui = marker.originalOwner as Nova.UIBlock;
-                                var ui2 = marker.originalOwner as Nova.UIBlock2D;
-                                var ui3 = marker.originalOwner as Nova.UIBlock3D;
+                                var ui = marker.originalOwner as Aura.UIBlock;
+                                var ui2 = marker.originalOwner as Aura.UIBlock2D;
+                                var ui3 = marker.originalOwner as Aura.UIBlock3D;
 
                                 if (ui != null || ui2 != null || ui3 != null)
                                 {
@@ -1818,8 +1818,8 @@ namespace Core.Animator
                                 }
                             }
 
-                            else if (owner is RefStructMarker novaV3 && novaV3.originalOwner is UIBlock ubNovaV3 &&
-                                     TryBindNovaUIBlockGetterOnlyLeafVector3(novaV3, ubNovaV3, memberInfo, out var gNv3, out var sNv3))
+                            else if (owner is RefStructMarker novaV3 && novaV3.originalOwner is UIBlock ubAuraV3 &&
+                                     TryBindAuraUIBlockGetterOnlyLeafVector3(novaV3, ubAuraV3, memberInfo, out var gNv3, out var sNv3))
                             {
                                 getter = gNv3;
                                 setter = sNv3;
@@ -1896,10 +1896,10 @@ namespace Core.Animator
                             Action<Color> setter;
                             
                             if (owner is RefStructMarker colMarker && colMarker.originalOwner is UIBlock ubCol &&
-                                TryBindNovaUIBlockGetterOnlyLeafColor(colMarker, ubCol, memberInfo, out var gNovaCol, out var sNovaCol))
+                                TryBindAuraUIBlockGetterOnlyLeafColor(colMarker, ubCol, memberInfo, out var gAuraCol, out var sAuraCol))
                             {
-                                getter = gNovaCol;
-                                setter = sNovaCol;
+                                getter = gAuraCol;
+                                setter = sAuraCol;
                             }
                             else if (owner is RefStructMarker marker)
                             {
@@ -1949,10 +1949,10 @@ namespace Core.Animator
                             Action<Quaternion> setter;
                             
                             if (owner is RefStructMarker quatMarker && quatMarker.originalOwner is UIBlock ubQt &&
-                                TryBindNovaUIBlockGetterOnlyLeafQuaternion(quatMarker, ubQt, memberInfo, out var gNovaQt, out var sNovaQt))
+                                TryBindAuraUIBlockGetterOnlyLeafQuaternion(quatMarker, ubQt, memberInfo, out var gAuraQt, out var sAuraQt))
                             {
-                                getter = gNovaQt;
-                                setter = sNovaQt;
+                                getter = gAuraQt;
+                                setter = sAuraQt;
                             }
                             else if (owner is RefStructMarker marker)
                             {

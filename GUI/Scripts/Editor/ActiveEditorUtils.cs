@@ -3,7 +3,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     internal static class ActiveEditorUtils
     {

@@ -1,7 +1,7 @@
 ﻿
 using System.Runtime.InteropServices;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct ValuePair<T1,T2> where T1 : unmanaged where T2 : unmanaged

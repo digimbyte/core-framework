@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     internal static class SerializeReferenceUtil
     {
@@ -47,10 +47,10 @@ namespace Nova.Editor.GUIs
         {
             Rect typeSelectionField = position;
 
-            float labelWidth = Mathf.Max(EditorStyles.boldLabel.CalcSize(label).x, NovaGUI.LabelWidth);
+            float labelWidth = Mathf.Max(EditorStyles.boldLabel.CalcSize(label).x, AuraGUI.LabelWidth);
 
-            typeSelectionField.x += labelWidth + NovaGUI.MinSpaceBetweenFields;
-            typeSelectionField.width = position.width - labelWidth - NovaGUI.MinSpaceBetweenFields;
+            typeSelectionField.x += labelWidth + AuraGUI.MinSpaceBetweenFields;
+            typeSelectionField.width = position.width - labelWidth - AuraGUI.MinSpaceBetweenFields;
             typeSelectionField.height = EditorGUIUtility.singleLineHeight;
 
             using (new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel))

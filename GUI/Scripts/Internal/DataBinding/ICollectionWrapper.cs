@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Internal.DataBinding
+namespace Aura.Internal.DataBinding
 {
     internal class ListWrapper<TData> : ListWrapper
     {

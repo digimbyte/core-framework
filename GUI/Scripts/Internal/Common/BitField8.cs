@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Common
+namespace Aura.Internal.Common
 {
     internal struct BitField8
     {

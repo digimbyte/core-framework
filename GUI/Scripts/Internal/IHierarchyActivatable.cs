@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal interface IHierarchyActivatable
     {

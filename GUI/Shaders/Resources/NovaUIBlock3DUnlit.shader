@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaUIBlock3DUnlit"
+Shader "Hidden/Aura/AuraUIBlock3DUnlit"
 {
     Properties
     {
@@ -32,8 +32,8 @@ Shader "Hidden/Nova/NovaUIBlock3DUnlit"
             CGPROGRAM
 
             // 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
             #pragma instancing_options assumeuniformscaling

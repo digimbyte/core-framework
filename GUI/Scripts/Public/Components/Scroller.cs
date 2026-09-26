@@ -1,15 +1,15 @@
 ﻿
 //#define DEBUG_SCROLL
-using Nova.Events;
-using Nova.Internal;
-using Nova.Internal.Input.Scrolling;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Events;
+using Aura.Internal;
+using Aura.Internal.Input.Scrolling;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     internal interface IScroller : IInteractable, IScrollBoundsProvider { }
 
@@ -28,7 +28,7 @@ namespace Nova
     /// <seealso cref="Gesture.OnMove"/>
     /// <seealso cref="Gesture.OnScroll"/>
     /// <seealso cref="Gesture.OnCancel"/>
-    [AddComponentMenu("Nova/Scroller")]
+    [AddComponentMenu("Aura/Scroller")]
     [HelpURL("https://novaui.io/manual/Scroller.html")]
     public sealed class Scroller : GestureRecognizer, IScroller
     {
@@ -140,7 +140,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The <see cref="Nova.UIBlock"/> scrollbar root
+        /// The <see cref="Aura.UIBlock"/> scrollbar root
         /// </summary>
         public UIBlock ScrollbarVisual => scrollbarVisual;
 

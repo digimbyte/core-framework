@@ -1,25 +1,25 @@
 ﻿
-using Nova.Internal.Core;
+using Aura.Internal.Core;
 
-namespace Nova
+namespace Aura
 {
-    internal class NovaSettingsSystem : System<NovaSettingsSystem>
+    internal class AuraSettingsSystem : System<AuraSettingsSystem>
     {
         protected override void Dispose()
         {
-            Internal.NovaSettings.Dispose();
+            Internal.AuraSettings.Dispose();
         }
 
         protected override void Init()
         {
-            Internal.NovaSettings.OnInitRequested += LazyInit;
+            Internal.AuraSettings.OnInitRequested += LazyInit;
         }
 
         private static void LazyInit()
         {
-            if (NovaSettings.Initialized)
+            if (AuraSettings.Initialized)
             {
-                Internal.NovaSettings.Init(NovaSettings.Instance);
+                Internal.AuraSettings.Init(AuraSettings.Instance);
             }
         }
     }

@@ -1,13 +1,13 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomPropertyDrawer(typeof(ImageAdjustment))]
-    internal class ImageAdjustmentDrawer : NovaPropertyDrawer<_ImageAdjustment>
+    internal class ImageAdjustmentDrawer : AuraPropertyDrawer<_ImageAdjustment>
     {
         protected override float GetPropertyHeight(GUIContent label)
         {

@@ -1,7 +1,7 @@
 ﻿
-using Nova.Internal.Animations;
+using Aura.Internal.Animations;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A set of <see cref="AnimationHandle"/> extension methods for additional scheduling and state management

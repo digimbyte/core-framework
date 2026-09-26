@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -13,15 +13,15 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal unsafe struct ShaderDataJob : INovaJobParallelFor
+    internal unsafe struct ShaderDataJob : IAuraJobParallelFor
     {
         public bool DirtyEverything;
 
         [ReadOnly]
-        public NovaHashMap<DataStoreIndex, int> DirtiedByRendering;
+        public AuraHashMap<DataStoreIndex, int> DirtiedByRendering;
         [ReadOnly]
         public NativeList<HierarchyDependency> DirtyDependencies;
         [ReadOnly]
@@ -53,7 +53,7 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public ImageDataProvider ImageDataProvider;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, byte> HiddenElements;
+        public AuraHashMap<DataStoreID, byte> HiddenElements;
 
         [NativeDisableParallelForRestriction]
         public ComputeBufferAccess<UIBlock2DShaderData> UIBlock2DShaderData;
@@ -92,7 +92,7 @@ namespace Nova.Internal.Rendering
                 return;
             }
 
-            if (NovaApplication.ConstIsEditor && HiddenElements.ContainsKey(dataStoreID))
+            if (AuraApplication.ConstIsEditor && HiddenElements.ContainsKey(dataStoreID))
             {
                 return;
             }
@@ -184,7 +184,7 @@ namespace Nova.Internal.Rendering
                 return;
             }
 
-            NovaList<ComputeBufferIndex> shaderIndices = ComputeBufferIndices.Text[baseInfo.RenderIndex];
+            AuraList<ComputeBufferIndex> shaderIndices = ComputeBufferIndices.Text[baseInfo.RenderIndex];
             if (quadCount != shaderIndices.Length)
             {
                 Debug.LogError("Text vert count didn't match shader indices length");
@@ -207,7 +207,7 @@ namespace Nova.Internal.Rendering
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateTextScale(ref RenderElement<BaseRenderInfo> baseInfo, float delta)
         {
-            NovaList<ComputeBufferIndex> shaderIndices = ComputeBufferIndices.Text[baseInfo.RenderIndex];
+            AuraList<ComputeBufferIndex> shaderIndices = ComputeBufferIndices.Text[baseInfo.RenderIndex];
             for (int i = 0; i < shaderIndices.Length; ++i)
             {
                 ref PerCharacterTextShaderData vertData = ref TextPerVertShaderData.ElementAt(shaderIndices[i]);

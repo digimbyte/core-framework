@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
+Shader "Hidden/Aura/AuraUIBlock2DStandardTransparent"
 {
     Properties
     {
@@ -17,9 +17,9 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
         [HideInInspector]
         _CullMode ("CullMode", Float) = 2
         [HideInInspector]
-        _NovaTextureArray ("NovaTextureArray", 2DArray) = "" { }
+        _AuraTextureArray ("AuraTextureArray", 2DArray) = "" { }
         [HideInInspector]
-        _NovaDynamicTexture ("NovaDynamicTexture", 2D) = "white" { }
+        _AuraDynamicTexture ("AuraDynamicTexture", 2D) = "white" { }
         [HideInInspector]
         _ClipMaskTex ("ClipMaskTex", 2D) = "white" { }
         [HideInInspector]
@@ -51,8 +51,8 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
 			// 
 
             // compile directives
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -84,7 +84,13 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
 
             #define NOVA_STANDARD_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE            #pragma multi_compile_local __ NOVA_INNER_SHADOW            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER            #pragma multi_compile_local __ NOVA_RADIAL_FILL            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../UIBlock2D.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE
+            #pragma multi_compile_local __ NOVA_INNER_SHADOW
+            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../UIBlock2D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -101,8 +107,8 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
             ZWrite Off
             Blend [_AdditiveLightingSrcBlend] [_AdditiveLightingDstBlend]
             ZTest [_ZTest]
-            
-            CGPROGRAM
+            Aura
+            CGPROGRAMAura
             #define _ALPHABLEND_ON 1
 
 			// 
@@ -136,7 +142,13 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
 
             #define NOVA_STANDARD_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE            #pragma multi_compile_local __ NOVA_INNER_SHADOW            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER            #pragma multi_compile_local __ NOVA_RADIAL_FILL            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../UIBlock2D.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE
+            #pragma multi_compile_local __ NOVA_INNER_SHADOW
+            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../UIBlock2D.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -145,8 +157,8 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
 
         }
 
-        // ---- shadow caster pass:
-        Pass
+        // ---- shadow castAuraass:
+        PassAura
         {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
@@ -182,7 +194,13 @@ Shader "Hidden/Nova/NovaUIBlock2DStandardTransparent"
 
             #define NOVA_STANDARD_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE            #pragma multi_compile_local __ NOVA_INNER_SHADOW            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER            #pragma multi_compile_local __ NOVA_RADIAL_FILL            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../UIBlock2D.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE
+            #pragma multi_compile_local __ NOVA_INNER_SHADOW
+            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../UIBlock2D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

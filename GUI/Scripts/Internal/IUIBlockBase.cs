@@ -1,7 +1,7 @@
 ﻿
-using Nova.Internal.Layouts;
+using Aura.Internal.Layouts;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal interface IUIBlockBase : ILayoutBlock { }
 }

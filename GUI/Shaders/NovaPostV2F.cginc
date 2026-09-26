@@ -2,7 +2,7 @@
 #define NOVA_POST_V2F_INCLUDED
 
 ////////////////////////// UNITY LIGHTING LOGIC //////////////////////////////
-void NovaDoLitVert(inout v2f o, float3 worldPos, float3 worldNormal, appdata_full v)
+void AuraDoLitVert(inout v2f o, float3 worldPos, float3 worldNormal, appdata_full v)
 {
     #if defined(NOVA_FORWARD_BASE_PASS)
         // TODO: lmap
@@ -55,7 +55,7 @@ void NovaDoLitVert(inout v2f o, float3 worldPos, float3 worldNormal, appdata_ful
 }
 
 #if defined(NOVA_LIT)
-    fixed4 NovaDoLightingCalculations(v2f i, fixed4 color)
+    fixed4 AuraDoLightingCalculations(v2f i, fixed4 color)
     {
         #if defined(NOVA_PREMUL_COLORS)
             // The lighting functions expect the color to not be premultiplied
@@ -64,8 +64,8 @@ void NovaDoLitVert(inout v2f o, float3 worldPos, float3 worldNormal, appdata_ful
 
         float3 worldPos = GetWorldPos(i);
         half3 worldNormal = normalize(GetWorldNormal(i));
-        SurfaceOutputType surf = NovaInitSurfType(worldNormal);
-        NovaSetSurfParams(surf, color, i);
+        SurfaceOutputType surf = AuraInitSurfType(worldNormal);
+        AuraSetSurfParams(surf, color, i);
 
         #if defined(NOVA_FORWARD_BASE_PASS)
             UNITY_LIGHT_ATTENUATION(atten, i, worldPos)

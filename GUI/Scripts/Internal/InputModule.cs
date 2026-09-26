@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal class InputModule<T> : IInputTarget where T : MonoBehaviour, IUIBlock
     {

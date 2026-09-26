@@ -1,21 +1,21 @@
 
-using Nova.Events;
-using Nova.Internal;
-using Nova.Internal.Input.Scrolling;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Events;
+using Aura.Internal;
+using Aura.Internal.Input.Scrolling;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Two-axis scroll: the only <see cref="Layout"/> <b>written</b> at runtime is <see cref="content"/> — <see cref="UIBlock.Layout"/>.<see cref="Layout.Position"/> on X and/or Y.
     /// Scroll extent vs the viewport uses laid-out footprint (<see cref="UIBlock.LayoutSize"/>, then <see cref="UIBlock.CalculatedSize"/>) so the range stays invariant under elastic overscroll; <see cref="UIBlock.ContentSize"/> is only a last resort (child aggregate can grow with bounce displacement). Compared against <see cref="UIBlock.PaddedSize"/>.
     /// The viewport is <see cref="content"/>’s parent <see cref="UIBlock"/> (often Mask) unless <see cref="scrollViewportOverride"/> is set.
     /// </summary>
-    [AddComponentMenu("Nova/Scroll Block")]
+    [AddComponentMenu("Aura/Scroll Block")]
     [HelpURL("https://novaui.io/manual/Scroller.html")]
     public sealed class ScrollBlock : GestureRecognizer, IInteractable
     {
@@ -43,15 +43,15 @@ namespace Nova
         [SerializeField]
         private UIBlock scrollViewportOverride;
 
-        [Tooltip("Reserved for Scroll Block–only bounce tuning. Nova’s ScrollBehavior does not expose per-axis elastic padding; bounce overscroll uses Nova’s fixed elastic band (see Nova ScrollBehavior). Values are not applied at runtime.")]
+        [Tooltip("Reserved for Scroll Block–only bounce tuning. Aura’s ScrollBehavior does not expose per-axis elastic padding; bounce overscroll uses Aura’s fixed elastic band (see Aura ScrollBehavior). Values are not applied at runtime.")]
         [SerializeField]
         private Length maxElasticOverscrollBeyondBoundsX = new Length { Raw = 0.2f, Type = LengthType.Percent };
 
-        [Tooltip("Reserved for Scroll Block–only bounce tuning. Nova’s ScrollBehavior does not expose per-axis elastic padding; bounce overscroll uses Nova’s fixed elastic band (see Nova ScrollBehavior). Values are not applied at runtime.")]
+        [Tooltip("Reserved for Scroll Block–only bounce tuning. Aura’s ScrollBehavior does not expose per-axis elastic padding; bounce overscroll uses Aura’s fixed elastic band (see Aura ScrollBehavior). Values are not applied at runtime.")]
         [SerializeField]
         private Length maxElasticOverscrollBeyondBoundsY = new Length { Raw = 0.2f, Type = LengthType.Percent };
 
-        [Tooltip("Unused; kept for serialized assets. Scroll Block follows Nova ScrollBehavior for bounce/clamp only — no separate recovery pass.")]
+        [Tooltip("Unused; kept for serialized assets. Scroll Block follows Aura ScrollBehavior for bounce/clamp only — no separate recovery pass.")]
         [SerializeField]
         private float overscrollStrictRecoverSpeed = 14f;
 
@@ -59,7 +59,7 @@ namespace Nova
         [SerializeField]
         private float overscrollStrictRecoverMaxSeconds = 0.45f;
 
-        [Tooltip("Narrows the strict scroll interval (Nova basis min/max) inward in layout-offset units. Same family as ListView/Scroller using ContentSize vs padded viewport — a small buffer absorbs float drift at the end stops.")]
+        [Tooltip("Narrows the strict scroll interval (Aura basis min/max) inward in layout-offset units. Same family as ListView/Scroller using ContentSize vs padded viewport — a small buffer absorbs float drift at the end stops.")]
         [SerializeField]
         private float strictScrollClampBuffer = 0f;
 
@@ -73,11 +73,11 @@ namespace Nova
         [SerializeField]
         private bool vectorScrolling = true;
 
-        [Tooltip("When true, pointer drag on the horizontal thumb runs Nova drag and scrolls content. The thumb’s Interactable is set to Draggable on X for that axis (same idea as Scroller + Draggable Scrollbar).")]
+        [Tooltip("When true, pointer drag on the horizontal thumb runs Aura drag and scrolls content. The thumb’s Interactable is set to Draggable on X for that axis (same idea as Scroller + Draggable Scrollbar).")]
         [SerializeField]
         private bool draggableHorizontalScrollbar = true;
 
-        [Tooltip("When true, pointer drag on the vertical thumb runs Nova drag and scrolls content. The thumb’s Interactable is set to Draggable on Y for that axis.")]
+        [Tooltip("When true, pointer drag on the vertical thumb runs Aura drag and scrolls content. The thumb’s Interactable is set to Draggable on Y for that axis.")]
         [SerializeField]
         private bool draggableVerticalScrollbar = true;
 
@@ -466,8 +466,9 @@ namespace Nova
 
         private void LateUpdate()
         {
-            // Promote extents from live layout before scroll math when the cache is still zero — gesture freeze / dirty layout otherwise never fills stable, and transient LayoutSize=0 corrupts bounds.
-            BootstrapStableScrollExtentsWhenUnset();
+            // Layout sizes are from the completed Aura pass and do not include
+            // scroll displacement. Refresh before both physics and thumb sizing.
+            MaybeRefreshStableScrollExtentsFromLiveLayout();
 
             bool clampElastic = OverscrollEffect == OverscrollEffect.Clamp;
             BehaviorX.ClampToBounds = clampElastic;
@@ -516,10 +517,15 @@ namespace Nova
             ScrollAxisTo(0, nx, snapshotBasisX);
             ScrollAxisTo(1, ny, snapshotBasisY);
 
-            if (UIBlock.LayoutIsDirty || ScrollViewport.LayoutIsDirty || ScrollbarContentDirty())
+            if (UIBlock.LayoutIsDirty || ScrollViewport.LayoutIsDirty || ScrollbarContentDirty() ||
+                previousScrollHorizontal != ScrollHorizontal || previousScrollVertical != ScrollVertical ||
+                previousViewportSize != ScrollViewport.PaddedSize)
             {
                 SyncScrollbar(0, horizontalScrollbar);
                 SyncScrollbar(1, verticalScrollbar);
+                previousScrollHorizontal = ScrollHorizontal;
+                previousScrollVertical = ScrollVertical;
+                previousViewportSize = ScrollViewport.PaddedSize;
             }
 
             ReportCorruptedScrollMetricsIfNeeded();
@@ -528,8 +534,6 @@ namespace Nova
             totalScrollThisFrameX = 0;
             totalScrollThisFrameY = 0;
 
-            // Run after scroll math so extent does not change mid-frame (Clamp release / layout settle used to spike bounds).
-            MaybeRefreshStableScrollExtentsFromLiveLayout();
         }
 
         #endregion
@@ -564,7 +568,7 @@ namespace Nova
             float stable = axisIndex == 0 ? stableScrollContentExtentX : stableScrollContentExtentY;
             float live = ReadLiveScrollExtentAlongAxis(content, axisIndex);
 
-            // Live extent can read 0 while Nova recomputes (dirty content); keep last stable extent so bounds / basis do not see a fake zero footprint.
+            // Live extent can read 0 while Aura recomputes (dirty content); keep last stable extent so bounds / basis do not see a fake zero footprint.
             if (live <= 1e-6f && stable > 1e-6f)
             {
                 return stable;
@@ -657,7 +661,8 @@ namespace Nova
         }
 
         /// <summary>
-        /// Copies live invariant footprint into stable extents when idle and layout has settled. Skips refresh during bounce elastic stretch so the cache is not polluted. Updating extent before <see cref="LateUpdate"/> scroll steps made bounds jump on finger release (Clamp) while Nova was still recomputing layout.
+        /// Refreshes invariant content extents from the latest completed layout,
+        /// including while scrolling or rebounding after content changes.
         /// </summary>
         private void MaybeRefreshStableScrollExtentsFromLiveLayout()
         {
@@ -666,28 +671,19 @@ namespace Nova
                 return;
             }
 
-            if (ShouldFreezeStableScrollExtents())
+            if (!LayoutDataStore.Instance.HasReceivedFullEngineUpdate(content) ||
+                !LayoutDataStore.Instance.HasReceivedFullEngineUpdate(ScrollViewport))
             {
                 return;
-            }
-
-            if (!IsLayoutSettledForStableExtentRefresh())
-            {
-                return;
-            }
-
-            if (OverscrollEffect == OverscrollEffect.Bounce)
-            {
-                if (AxisBasisPastStrictRange(0) || AxisBasisPastStrictRange(1))
-                {
-                    return;
-                }
             }
 
             float liveX = ReadLiveScrollExtentAlongAxis(content, 0);
             float liveY = ReadLiveScrollExtentAlongAxis(content, 1);
             bool changed = math.abs(liveX - stableScrollContentExtentX) > 1e-4f ||
-                           math.abs(liveY - stableScrollContentExtentY) > 1e-4f;
+                           math.abs(liveY - stableScrollContentExtentY) > 1e-4f ||
+                           previousViewportSize != ScrollViewport.PaddedSize ||
+                           previousScrollHorizontal != ScrollHorizontal ||
+                           previousScrollVertical != ScrollVertical;
 
             stableScrollContentExtentX = liveX;
             stableScrollContentExtentY = liveY;
@@ -695,6 +691,11 @@ namespace Nova
             if (changed)
             {
                 RefreshBasis();
+                // AutoUpdate keeps the old simulation (or resting position)
+                // when finite bounds change. Restart release physics against
+                // the new bounds so displaced content can rebound into view.
+                if (decelerateX) BehaviorX.End(BehaviorX.GetSimulationVelocity(currentTime), currentTime);
+                if (decelerateY) BehaviorY.End(BehaviorY.GetSimulationVelocity(currentTime), currentTime);
             }
         }
 
@@ -879,7 +880,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// Pulls strict min/max toward each other so the native clamp range sits slightly inside Nova’s ContentSize vs viewport edge (ListView/Scroller-style robustness).
+        /// Pulls strict min/max toward each other so the native clamp range sits slightly inside Aura’s ContentSize vs viewport edge (ListView/Scroller-style robustness).
         /// </summary>
         private void ApplyStrictScrollClampBuffer(ref double2 minMax, int axisIndex)
         {
@@ -930,7 +931,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// Configured <see cref="Layout.Position"/> on <see cref="content"/> — the same values <see cref="ScrollAxisTo"/> updates. Matches Nova’s <see cref="Scroller"/> using <see cref="AutoLayout.Offset"/> rather than lagging calculated layout output.
+        /// Configured <see cref="Layout.Position"/> on <see cref="content"/> — the same values <see cref="ScrollAxisTo"/> updates. Matches Aura’s <see cref="Scroller"/> using <see cref="AutoLayout.Offset"/> rather than lagging calculated layout output.
         /// </summary>
         private float ReadContentScrollDriveLayoutOffset(int axisIndex)
         {
@@ -944,7 +945,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// Maps authored layout <see cref="Layout.Position"/> on an axis to Nova’s alignment‑1 scroll basis (same path as <see cref="Scroller.RefreshBasis"/>).
+        /// Maps authored layout <see cref="Layout.Position"/> on an axis to Aura’s alignment‑1 scroll basis (same path as <see cref="Scroller.RefreshBasis"/>).
         /// </summary>
         private float LayoutPositionToScrollBasis(int axisIndex, float layoutPositionOnAxis)
         {
@@ -995,7 +996,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// Same sign convention as <see cref="AutoLayout.AlignmentPositiveDirection"/> on Nova’s single-axis <see cref="Scroller"/> — unified scroll delta maps onto <see cref="Layout.Position"/> values.
+        /// Same sign convention as <see cref="AutoLayout.AlignmentPositiveDirection"/> on Aura’s single-axis <see cref="Scroller"/> — unified scroll delta maps onto <see cref="Layout.Position"/> values.
         /// </summary>
         private static int AxisScrollAlignmentPositiveDirection(int alignment)
         {
@@ -1097,7 +1098,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// Nova only emits <see cref="Gesture.OnDrag"/> (and non-zero <see cref="Gesture.OnDrag.DragDeltaWorldSpace"/>) when the thumb’s
+        /// Aura only emits <see cref="Gesture.OnDrag"/> (and non-zero <see cref="Gesture.OnDrag.DragDeltaWorldSpace"/>) when the thumb’s
         /// <see cref="Interactable"/>.<see cref="Interactable.Draggable"/> is true on that axis. Vertical list thumbs often ship with Y only; horizontal needs X.
         /// </summary>
         private static void EnsureScrollbarThumbDraggableForAxis(UIBlock thumb, int axisIndex)
@@ -1235,6 +1236,9 @@ namespace Nova
         private float previousContentExtentY;
         private float previousScrollViewportCenterX;
         private float previousScrollViewportCenterY;
+        private bool previousScrollHorizontal;
+        private bool previousScrollVertical;
+        private Vector3 previousViewportSize;
 
         private void SyncScrollbar(int axisIndex, UIBlock scrollbar)
         {

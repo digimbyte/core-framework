@@ -9,18 +9,18 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
-    [JobProducerType(typeof(INovaJobExtensions.JobProducer<>))]
-    internal interface INovaJob : IJob { }
+    [JobProducerType(typeof(IAuraJobExtensions.JobProducer<>))]
+    internal interface IAuraJob : IJob { }
 
-    [JobProducerType(typeof(INovaJobParallelForExtensions.JobParallelForProducer<>))]
-    internal interface INovaJobParallelFor : IJobParallelFor
+    [JobProducerType(typeof(IAuraJobParallelForExtensions.JobParallelForProducer<>))]
+    internal interface IAuraJobParallelFor : IJobParallelFor
     { }
 
-    internal static class INovaJobExtensions
+    internal static class IAuraJobExtensions
     {
-        public static unsafe void RunByRef<T>(this ref T jobData) where T : struct, INovaJob
+        public static unsafe void RunByRef<T>(this ref T jobData) where T : struct, IAuraJob
         {
             JobsUtility.JobScheduleParameters scheduleParams = JobProducer<T>.RunParams;
             scheduleParams.JobDataPtr = new IntPtr(UnsafeUtility.AddressOf(ref jobData));
@@ -28,7 +28,7 @@ namespace Nova.Compat
             JobsUtility.Schedule(ref scheduleParams);
         }
 
-        public static unsafe JobHandle NovaScheduleByRef<T>(this ref T jobData, JobHandle dependsOn = default) where T : struct, INovaJob
+        public static unsafe JobHandle AuraScheduleByRef<T>(this ref T jobData, JobHandle dependsOn = default) where T : struct, IAuraJob
         {
             JobsUtility.JobScheduleParameters scheduleParams = JobProducer<T>.ScheduleParams;
             scheduleParams.JobDataPtr = new IntPtr(UnsafeUtility.AddressOf(ref jobData));
@@ -38,7 +38,7 @@ namespace Nova.Compat
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct JobProducer<T> where T : struct, INovaJob
+        public unsafe struct JobProducer<T> where T : struct, IAuraJob
         {
             public static readonly JobsUtility.JobScheduleParameters RunParams = new JobsUtility.JobScheduleParameters(null, ReflectionData, default, ScheduleMode.Run);
             public static readonly JobsUtility.JobScheduleParameters ScheduleParams = new JobsUtility.JobScheduleParameters(null, ReflectionData, default, ScheduleMode.Single);
@@ -68,9 +68,9 @@ namespace Nova.Compat
         }
     }
 
-    internal static class INovaJobParallelForExtensions
+    internal static class IAuraJobParallelForExtensions
     {
-        public static unsafe JobHandle NovaScheduleByRef<T>(this ref T jobData, int arrayLength, int innerloopBatchCount, JobHandle dependsOn = default) where T : struct, INovaJobParallelFor
+        public static unsafe JobHandle AuraScheduleByRef<T>(this ref T jobData, int arrayLength, int innerloopBatchCount, JobHandle dependsOn = default) where T : struct, IAuraJobParallelFor
         {
 
             JobsUtility.JobScheduleParameters scheduleParams = JobParallelForProducer<T>.ParallelScheduleParams;
@@ -79,7 +79,7 @@ namespace Nova.Compat
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, innerloopBatchCount);
         }
 
-        public static unsafe JobHandle ScheduleByRef<T>(this ref T jobData, int* arrayLength, int innerloopBatchCount, JobHandle dependsOn = default) where T : struct, INovaJobParallelFor
+        public static unsafe JobHandle ScheduleByRef<T>(this ref T jobData, int* arrayLength, int innerloopBatchCount, JobHandle dependsOn = default) where T : struct, IAuraJobParallelFor
         {
             JobsUtility.JobScheduleParameters scheduleParams = JobParallelForProducer<T>.ParallelScheduleParams;
             scheduleParams.JobDataPtr = new IntPtr(UnsafeUtility.AddressOf(ref jobData));
@@ -91,7 +91,7 @@ namespace Nova.Compat
         }
 
         public static unsafe JobHandle ScheduleByRef<T,U>(this ref T jobData, NativeList<U> list, int innerloopBatchCount, JobHandle dependsOn = default) 
-            where T : struct, INovaJobParallelFor
+            where T : struct, IAuraJobParallelFor
             where U : unmanaged
         {
             JobsUtility.JobScheduleParameters scheduleParams = JobParallelForProducer<T>.ParallelScheduleParams;
@@ -113,7 +113,7 @@ namespace Nova.Compat
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct JobParallelForProducer<T> where T : struct, INovaJobParallelFor
+        public unsafe struct JobParallelForProducer<T> where T : struct, IAuraJobParallelFor
         {
             public static readonly JobsUtility.JobScheduleParameters ParallelScheduleParams = new JobsUtility.JobScheduleParameters(null, ParallelReflectionData, default, ScheduleMode.Parallel);
 

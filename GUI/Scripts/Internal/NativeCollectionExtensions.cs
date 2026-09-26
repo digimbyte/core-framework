@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
     /// <summary>
     /// We need these in compat because the API changes to return T* (instead of void*)

@@ -1,12 +1,12 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Core;
 using System;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.LowLevel;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal class EngineManager : System<EngineManager>
     {
@@ -109,7 +109,7 @@ namespace Nova.Internal
 
                 if (!TryInsertEngineUpdate(ref currentSystem))
                 {
-                    Debug.LogError("Nova failed to insert engine update and will not work properly");
+                    Debug.LogError("Aura failed to insert engine update and will not work properly");
                     return;
                 }
                 PlayerLoop.SetPlayerLoop(currentSystem);
@@ -118,7 +118,7 @@ namespace Nova.Internal
             }
             catch (Exception e)
             {
-                Debug.LogError($"Nova initialization failed with {e}");
+                Debug.LogError($"Aura initialization failed with {e}");
             }
         }
 
@@ -143,7 +143,7 @@ namespace Nova.Internal
                     PlayerLoopSystem[] newPreUpdateSystems = new PlayerLoopSystem[preupdateSystems.Length + 1];
                     newPreUpdateSystems[0] = new PlayerLoopSystem()
                     {
-                        type = typeof(NovaEngine.NovaNavigation),
+                        type = typeof(AuraEngine.AuraNavigation),
                         updateDelegate = Input.InputEngine.PreUpdate
                     };
 
@@ -166,7 +166,7 @@ namespace Nova.Internal
                 // insert animation system first, we just want to run after user code and before other Unity systems (e.g. Canvas)
                 newLoops[0] = new PlayerLoopSystem()
                 {
-                    type = typeof(NovaEngine.NovaAnimator),
+                    type = typeof(AuraEngine.AuraAnimator),
                     updateDelegate = Animations.AnimationEngine.Instance.Update
                 };
 
@@ -180,10 +180,10 @@ namespace Nova.Internal
                     // Copy the elements before
                     Array.Copy(subSystemList, sourceIndex: 0, newLoops, destinationIndex: 1, j + 1);
 
-                    // Insert the Nova update
+                    // Insert the Aura update
                     newLoops[j + 2] = new PlayerLoopSystem()
                     {
-                        type = typeof(NovaEngine),
+                        type = typeof(AuraEngine),
                         updateDelegate = Update
                     };
 
@@ -200,7 +200,7 @@ namespace Nova.Internal
                 // Insert last if we didn't find the Canvas update
                 newLoops[newLoops.Length - 1] = new PlayerLoopSystem()
                 {
-                    type = typeof(NovaEngine),
+                    type = typeof(AuraEngine),
                     updateDelegate = Update
                 };
 
@@ -243,7 +243,7 @@ namespace Nova.Internal
                     {
                         PlayerLoopSystem subsytem = preupdateSystems[j];
 
-                        bool isNavigationSystem = subsytem.type == typeof(NovaEngine.NovaNavigation);
+                        bool isNavigationSystem = subsytem.type == typeof(AuraEngine.AuraNavigation);
 
                         // we expect this to be here, but we don't exactly know how many elements will be between them
                         if (!isNavigationSystem)
@@ -271,8 +271,8 @@ namespace Nova.Internal
                 {
                     PlayerLoopSystem subsytem = subSystemList[j];
 
-                    bool isEngine = subsytem.type == typeof(NovaEngine);
-                    bool isAnimationSystem = subsytem.type == typeof(NovaEngine.NovaAnimator);
+                    bool isEngine = subsytem.type == typeof(AuraEngine);
+                    bool isAnimationSystem = subsytem.type == typeof(AuraEngine.AuraAnimator);
 
                     // we expect both these to be here, but we don't exactly know how many elements will be between them
                     if (!isEngine && !isAnimationSystem)
@@ -309,7 +309,7 @@ namespace Nova.Internal
                 return;
             }
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 EditorOnly_OnBeforeEngineUpdate?.Invoke();
             }
@@ -338,7 +338,7 @@ namespace Nova.Internal
                 catch (Exception e)
                 {
                     inFailureState = true;
-                    Debug.LogError($"NovaEngine CleanUp failed with {e}");
+                    Debug.LogError($"AuraEngine CleanUp failed with {e}");
                 }
                 finally
                 {
@@ -359,7 +359,7 @@ namespace Nova.Internal
                 catch (Exception e)
                 {
                     inFailureState = true;
-                    Debug.LogError($"NovaEngine Update failed with {e}");
+                    Debug.LogError($"AuraEngine Update failed with {e}");
                 }
             }
 
@@ -376,7 +376,7 @@ namespace Nova.Internal
                 catch (Exception e)
                 {
                     inFailureState = true;
-                    Debug.LogError($"NovaEngine Update failed with {e}");
+                    Debug.LogError($"AuraEngine Update failed with {e}");
                 }
             }
 
@@ -394,13 +394,13 @@ namespace Nova.Internal
                 catch (Exception e)
                 {
                     inFailureState = true;
-                    Debug.LogError($"NovaEngine CompleteUpdate failed with {e}");
+                    Debug.LogError($"AuraEngine CompleteUpdate failed with {e}");
                 }
             }
 
             isUpdating = false;
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 EditorOnly_OnAfterEngineUpdate?.Invoke();
             }
@@ -416,7 +416,7 @@ namespace Nova.Internal
                 catch (Exception e)
                 {
                     inFailureState = true;
-                    Debug.LogError($"NovaEngine PostUpdate failed with {e}");
+                    Debug.LogError($"AuraEngine PostUpdate failed with {e}");
                 }
             }
         }

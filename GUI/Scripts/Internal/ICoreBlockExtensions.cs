@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities.Extensions;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal static class ICoreBlockExtensions
     {
@@ -307,7 +307,7 @@ namespace Nova.Internal
         /// Internal Parent getter, includes virtual parent blocks. The public <see cref="Parent"/> only points to parents in Unity's Transform hierarchy.
         /// </summary>
         public static IUIBlock GetParentBlock(this IUIBlock uiBlock) => HierarchyDataStore.Instance.GetHierarchyParent(uiBlock.UniqueID) as IUIBlock;
-        public static NovaList<DataStoreIndex> GetChildIndices(this IUIBlock uiBlock) => HierarchyDataStore.Instance.GetChildIndices(uiBlock.Index);
+        public static AuraList<DataStoreIndex> GetChildIndices(this IUIBlock uiBlock) => HierarchyDataStore.Instance.GetChildIndices(uiBlock.Index);
         public static int GetChildIndex(this IUIBlock uiBlock, IUIBlock child)
         {
             if (child == null)
@@ -315,7 +315,7 @@ namespace Nova.Internal
                 return -1;
             }
 
-            NovaList<DataStoreIndex> children = uiBlock.GetChildIndices();
+            AuraList<DataStoreIndex> children = uiBlock.GetChildIndices();
 
             if (children.TryGetIndexOf(child.Index, out int index))
             {
@@ -332,7 +332,7 @@ namespace Nova.Internal
                 return null;
             }
 
-            NovaList<DataStoreIndex> children = uiBlock.GetChildIndices();
+            AuraList<DataStoreIndex> children = uiBlock.GetChildIndices();
 
             if (index >= children.Length)
             {

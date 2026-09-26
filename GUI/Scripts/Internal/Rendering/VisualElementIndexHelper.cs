@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using Unity.Collections;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// Helper for turning an index over all major dirty elements into a DataStoreIndex and matching Batch Root id
@@ -15,14 +15,14 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
 
         public bool TryGetIndex(int index, out DataStoreID batchRootID, out VisualElementIndex visualElementIndex)
         {
             for (int i = 0; i < DirtyBatches.Length; ++i)
             {
                 batchRootID = DirtyBatches[i];
-                NovaList<VisualElementIndex, VisualElement> elements = VisualElements[batchRootID];
+                AuraList<VisualElementIndex, VisualElement> elements = VisualElements[batchRootID];
                 if (index >= elements.Length)
                 {
                     index -= elements.Length;

@@ -1818,7 +1818,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: SliderVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: SliderVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 6650393285430913776}

@@ -1,21 +1,21 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct AccentDataStore<T> : IInitializable where T : unmanaged
     {
-        public NovaComputeBuffer<T, T> ComputeBuffer;
-        public NovaHashMap<RenderIndex, ComputeBufferIndex> Indices;
-        public NativeList<ComputeBufferIndex, NovaList<VisualElementIndex>> OverlappingElements;
+        public AuraComputeBuffer<T, T> ComputeBuffer;
+        public AuraHashMap<RenderIndex, ComputeBufferIndex> Indices;
+        public NativeList<ComputeBufferIndex, AuraList<VisualElementIndex>> OverlappingElements;
         public NativeList<ComputeBufferIndex, AccentBounds> Bounds;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,11 +93,11 @@ namespace Nova.Internal.Rendering
         public NativeList<RenderIndex, UIBlock2DData> BlockData;
 
         public NativeList<RenderIndex, SubQuadData> SubQuadData;
-        public NovaComputeBuffer<UIBlock2DShaderData, UIBlock2DShaderData> ShaderData;
+        public AuraComputeBuffer<UIBlock2DShaderData, UIBlock2DShaderData> ShaderData;
         public NativeList<RenderIndex, ComputeBufferIndex> ComputeBufferIndices;
 
         public AccentDataStore<PerInstanceDropShadowShaderData> Shadow;
-        public NovaComputeBuffer<AllQuadsDropShadowShaderData, PerQuadDropShadowShaderData> ShadowQuadShaderData;
+        public AuraComputeBuffer<AllQuadsDropShadowShaderData, PerQuadDropShadowShaderData> ShadowQuadShaderData;
 
         private NativeList<RenderIndex, DataStoreIndex> dataStoreIndices;
         private NativeList<RenderIndex, AccessIndex> accessIndices;

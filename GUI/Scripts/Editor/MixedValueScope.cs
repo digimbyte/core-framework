@@ -2,7 +2,7 @@
 using System;
 using UnityEditor;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     internal struct MixedValueScope : IDisposable
     {

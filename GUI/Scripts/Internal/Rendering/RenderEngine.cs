@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
@@ -18,7 +18,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using static UnityEngine.Camera;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct RenderEngineUpdateCounts
     {
@@ -82,23 +82,23 @@ namespace Nova.Internal.Rendering
         private NativeList<DataStoreID> allDirtyRoots;
         private NativeList<DataStoreIndex> potentialCoplanarSetRoots;
         private NativeList<DataStoreIndex> potentialRotationSetRoots;
-        private NovaHashMap<DataStoreID, CoplanarSetID> coplanarSetRoots;
-        private NovaHashMap<DataStoreID, RotationSetID> rotationSetRoots;
-        public NovaHashMap<DataStoreID, SortGroupHierarchyInfo> SortGroupHierarchyInfo;
+        private AuraHashMap<DataStoreID, CoplanarSetID> coplanarSetRoots;
+        private AuraHashMap<DataStoreID, RotationSetID> rotationSetRoots;
+        public AuraHashMap<DataStoreID, SortGroupHierarchyInfo> SortGroupHierarchyInfo;
         private NativeList<DataStoreID> sortGroupProcessingQueue;
         private NativeList<VisualModifierID> updatedVisualModifiers;
         private NativeList<DataStoreID> batchRootsInPrefabStage;
         /// <summary>
         /// Since children of screen space sort groups inherit the roots renderqueue setting
         /// </summary>
-        private NovaHashMap<DataStoreID, SortGroupInfo> processedSortGroupInfos;
+        private AuraHashMap<DataStoreID, SortGroupInfo> processedSortGroupInfos;
 
         private static readonly ProfilerMarker textRebuildMarker = new ProfilerMarker("TMP Mesh Building");
 
         public bool EditorOnly_TexturesHaveBeenReprocessed { get; set; } = false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public NovaList<DrawCallID, CameraSorting.ProcessedDrawCall> GetDrawCallBounds(DataStoreID batchGroupID) => cameraSorter.GetDrawCallBounds(batchGroupID);
+        public AuraList<DrawCallID, CameraSorting.ProcessedDrawCall> GetDrawCallBounds(DataStoreID batchGroupID) => cameraSorter.GetDrawCallBounds(batchGroupID);
 
         public RenderOrderCalculator HierarchyRenderOrderCalculator => new RenderOrderCalculator()
         {
@@ -141,7 +141,7 @@ namespace Nova.Internal.Rendering
             MaterialCache.EnsureMaterials();
 
 #pragma warning disable CS0162 // Unreachable code detected
-            if (NovaApplication.ConstIsEditor)
+            if (AuraApplication.ConstIsEditor)
             {
                 if (EditorOnly_TexturesHaveBeenReprocessed)
                 {
@@ -282,7 +282,7 @@ namespace Nova.Internal.Rendering
             UpdateComputeBuffer(DataStore.TextBlockData.PerCharShaderData, ShaderPropertyIDs.ShaderData, ComputeBufferUpdateType.Text);
         }
 
-        private void UpdateComputeBuffer<TCPU, TGPU>(NovaComputeBuffer<TCPU, TGPU> buffer, int shaderPropertyID, ComputeBufferUpdateType updateType)
+        private void UpdateComputeBuffer<TCPU, TGPU>(AuraComputeBuffer<TCPU, TGPU> buffer, int shaderPropertyID, ComputeBufferUpdateType updateType)
             where TCPU : unmanaged
             where TGPU : unmanaged
         {
@@ -302,7 +302,7 @@ namespace Nova.Internal.Rendering
             DataStore.ImageTracker.PreUpdate();
 
 #pragma warning disable CS0162 // Unreachable code detected
-            if (NovaApplication.ConstIsEditor)
+            if (AuraApplication.ConstIsEditor)
             {
                 // The user can change the color space in project settings, but (as far as I can tell)
                 // there are no events or indication that that has happened, so we unfortunately need to check every frame
@@ -322,7 +322,7 @@ namespace Nova.Internal.Rendering
         {
             if (LayoutEngine.Instance.ShouldRunLayoutUpdate)
             {
-                TextBlockSizeChangeDetectionJob.NovaScheduleByRef(engineUpdateInfo.EngineSequenceCompleteHandle).Complete();
+                TextBlockSizeChangeDetectionJob.AuraScheduleByRef(engineUpdateInfo.EngineSequenceCompleteHandle).Complete();
             }
         }
 
@@ -356,16 +356,16 @@ namespace Nova.Internal.Rendering
             RootFromBlockMatrixJob.PotentialRotationSetRoots = potentialRotationSetRoots.AsParallelWriter();
 
 
-            JobHandle getDirtyRootsJob = GetAllDirtyBatchRootsJob.NovaScheduleByRef(engineUpdateInfo.EngineSequenceCompleteHandle);
+            JobHandle getDirtyRootsJob = GetAllDirtyBatchRootsJob.AuraScheduleByRef(engineUpdateInfo.EngineSequenceCompleteHandle);
 
-            JobHandle rootFromNodeJob = RootFromBlockMatrixJob.NovaScheduleByRef(Hierarchy.Length, 64, getDirtyRootsJob);
-            JobHandle renderSetFilterJob = RenderSetFilterJob.NovaScheduleByRef(rootFromNodeJob);
+            JobHandle rootFromNodeJob = RootFromBlockMatrixJob.AuraScheduleByRef(Hierarchy.Length, 64, getDirtyRootsJob);
+            JobHandle renderSetFilterJob = RenderSetFilterJob.AuraScheduleByRef(rootFromNodeJob);
 
-            JobHandle worldSpaceBoundsJob = WorldBoundsJob.NovaScheduleByRef(Hierarchy.Length, 32, rootFromNodeJob);
-            JobHandle shaderDataJob = ShaderDataJob.NovaScheduleByRef(Hierarchy.Length, 32, rootFromNodeJob);
+            JobHandle worldSpaceBoundsJob = WorldBoundsJob.AuraScheduleByRef(Hierarchy.Length, 32, rootFromNodeJob);
+            JobHandle shaderDataJob = ShaderDataJob.AuraScheduleByRef(Hierarchy.Length, 32, rootFromNodeJob);
 
             JobHandle renderOrderJob = RenderOrderJob.ScheduleByRef(allDirtyRoots, 1, renderSetFilterJob);
-            JobHandle visualElementCountJob = VisualElementCountJob.NovaScheduleByRef(renderOrderJob);
+            JobHandle visualElementCountJob = VisualElementCountJob.AuraScheduleByRef(renderOrderJob);
 
             JobHandle quadGenJob = QuadGenerationJob.ScheduleByRef(&updateCountsPtr->QuadProviderCount, 64, visualElementCountJob);
             JobHandle quadProcessJob = QuadProcessJob.ScheduleByRef(&updateCountsPtr->RotationSetCount, 1, quadGenJob);
@@ -379,7 +379,7 @@ namespace Nova.Internal.Rendering
 
             FinalizeJob.CurrentMaterialCount = MaterialCache.NextMaterialIndex;
             FinalizeJob.CurrentShaderCount = MaterialCache.NextShaderIndex;
-            JobHandle finalizeJob = FinalizeJob.NovaScheduleByRef(renderOrderJob);
+            JobHandle finalizeJob = FinalizeJob.AuraScheduleByRef(renderOrderJob);
 
             JobHandle combinedHandle = JobHandle.CombineDependencies(subQuadShaderDataJob, shaderDataJob, finalizeJob);
 
@@ -431,7 +431,7 @@ namespace Nova.Internal.Rendering
             try
             {
 #pragma warning disable CS0162 // Unreachable code detected
-                if (NovaApplication.ConstIsEditor)
+                if (AuraApplication.ConstIsEditor)
                 {
                     switch (cam.cameraType)
                     {
@@ -468,14 +468,14 @@ namespace Nova.Internal.Rendering
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"Nova RenderCamera failed with: {e}");
+                Debug.LogError($"Aura RenderCamera failed with: {e}");
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private NativeList<DataStoreID> GetBatchRootsToRender(Camera camera)
         {
-            if (!NovaApplication.IsEditor)
+            if (!AuraApplication.IsEditor)
             {
                 return HierarchyDataStore.Instance.BatchGroupTracker.BatchRootIDs;
             }
@@ -560,10 +560,10 @@ namespace Nova.Internal.Rendering
                 subQuadProcessingData.ElementAt(i).Init();
             }
 
-            NovaSettings.OnRenderSettingsChanged += DirtyEverything;
+            AuraSettings.OnRenderSettingsChanged += DirtyEverything;
 
 #pragma warning disable CS0162 // Unreachable code detected
-            if (NovaApplication.ConstIsEditor)
+            if (AuraApplication.ConstIsEditor)
             {
                 batchRootsInPrefabStage.Init();
             }
@@ -632,9 +632,9 @@ namespace Nova.Internal.Rendering
             RenderPipelineManager.beginCameraRendering -= BeginCameraRenderHandler;
             Camera.onPreCull -= PrecullHandler;
 
-            NovaSettings.OnRenderSettingsChanged -= DirtyEverything;
+            AuraSettings.OnRenderSettingsChanged -= DirtyEverything;
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 batchRootsInPrefabStage.Dispose();
             }

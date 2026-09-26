@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {
@@ -20,7 +20,7 @@ namespace Nova.Internal.Layouts
         {
             public bool PreviewSizesAvailable;
             [NativeDisableParallelForRestriction]
-            public NovaHashMap<DataStoreID, PreviewSize> PreviewSizes;
+            public AuraHashMap<DataStoreID, PreviewSize> PreviewSizes;
             [NativeDisableParallelForRestriction]
             public NativeList<Length3> LengthConfigs;
             [NativeDisableParallelForRestriction]
@@ -47,7 +47,7 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
             [ReadOnly]
             public NativeList<TransformProxy> TransformProxies;

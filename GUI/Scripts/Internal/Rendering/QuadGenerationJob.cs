@@ -1,23 +1,23 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// Generates a <see cref="QuadBoundsDescriptor"/> for every quad provider
     /// </summary>
     [BurstCompile]
-    internal struct QuadGenerationJob : INovaJobParallelFor
+    internal struct QuadGenerationJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
@@ -30,12 +30,12 @@ namespace Nova.Internal.Rendering
         [NativeDisableContainerSafetyRestriction]
         public NativeList<RenderIndex, UIBlock2DData> BlockData;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
         public ImageDataProvider ImageDataProvider;
 
         [ReadOnly]
-        public NovaHashMap<DataStoreID, RotationSetSummary> RotationSets;
+        public AuraHashMap<DataStoreID, RotationSetSummary> RotationSets;
         [NativeDisableParallelForRestriction]
         public NativeList<RenderIndex, SubQuadData> SubQuadData;
 

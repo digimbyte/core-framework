@@ -1,7 +1,7 @@
 ﻿
-using Nova.Internal.Rendering;
+using Aura.Internal.Rendering;
 
-namespace Nova
+namespace Aura
 {
     internal interface IUIBlock3D : IRenderBlock<Internal.UIBlock3DData> { }
 }

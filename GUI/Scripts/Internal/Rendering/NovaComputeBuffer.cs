@@ -1,9 +1,9 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,7 +11,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct ComputeBufferReadOnlyAccess<V>
         where V : unmanaged
@@ -69,7 +69,7 @@ namespace Nova.Internal.Rendering
         }
     }
 
-    internal struct NovaComputeBuffer<TCPU,TGPU> : ICapacityInitializable
+    internal struct AuraComputeBuffer<TCPU,TGPU> : ICapacityInitializable
         where TCPU : unmanaged
         where TGPU : unmanaged
     {
@@ -147,7 +147,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void GetFreeIndices(ref NovaList<ComputeBufferIndex> dest, int count)
+        public unsafe void GetFreeIndices(ref AuraList<ComputeBufferIndex> dest, int count)
         {
             EnsureDirty();
             if (FreeIndices.Length > 0)
@@ -174,7 +174,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void FreeRange(NovaList<ComputeBufferIndex> indices, int startIndex, int count)
+        public unsafe void FreeRange(AuraList<ComputeBufferIndex> indices, int startIndex, int count)
         {
             FreeIndices.AddRange(indices.Ptr + startIndex, count);
         }
@@ -206,9 +206,9 @@ namespace Nova.Internal.Rendering
 
         }
 
-        public static implicit operator ShaderBuffer(NovaComputeBuffer<TCPU, TGPU> nova) => nova.ShaderBuffer;
+        public static implicit operator ShaderBuffer(AuraComputeBuffer<TCPU, TGPU> nova) => nova.ShaderBuffer;
 
-        // In order to make NovaComputeBuffer job safe, we need to not actually store the compute buffer in
+        // In order to make AuraComputeBuffer job safe, we need to not actually store the compute buffer in
         // the struct instance
         #region Static
         private static List<int> freeComputeBufferIndices = new List<int>(Constants.SomeElementsInitialCapacity);

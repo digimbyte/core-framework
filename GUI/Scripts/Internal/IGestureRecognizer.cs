@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal enum GestureState
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A data structure used to store the state of a dropdown UI control.

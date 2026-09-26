@@ -1,24 +1,24 @@
 ﻿
-using Nova.Compat;
-using Nova.Editor.Serialization;
-using Nova.Editor.Tools;
-using Nova.Extensions;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Editor.Serialization;
+using Aura.Editor.Tools;
+using Aura.Extensions;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditorInternal;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CanEditMultipleObjects]
-    internal abstract class BlockEditor<TBlock> : NovaEditor<TBlock>
+    internal abstract class BlockEditor<TBlock> : AuraEditor<TBlock>
         where TBlock : UIBlock
     {
         protected abstract void DoGui(TBlock uiBlock);
@@ -101,7 +101,7 @@ namespace Nova.Editor.GUIs
 
             UpdateSerializedObjects();
 
-            NovaGUI.EditingSingleObject = !serializedObject.isEditingMultipleObjects;
+            AuraGUI.EditingSingleObject = !serializedObject.isEditingMultipleObjects;
 
             EditorGUI.BeginChangeCheck();
 
@@ -141,14 +141,14 @@ namespace Nova.Editor.GUIs
 
         private static void DrawToolbarUI(TBlock uiBlock, SerializedProperty previewSize)
         {
-            using (Foldout foldout = NovaGUI.EditorPrefFoldoutHeader(NovaEditorPrefs.UIBlockToolsKey, displayName: "Tools"))
+            using (Foldout foldout = AuraGUI.EditorPrefFoldoutHeader(AuraEditorPrefs.UIBlockToolsKey, displayName: "Tools"))
             {
                 if (!foldout)
                 {
                     return;
                 }
 
-                NovaGUI.Layout.BeginHorizontal();
+                AuraGUI.Layout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EditorToolbar(GetEditorTools(uiBlock));
 
@@ -156,31 +156,31 @@ namespace Nova.Editor.GUIs
 
                 GUILayout.FlexibleSpace();
 
-                bool show3D = NovaGUI.ShowZAxisValues(uiBlock);
+                bool show3D = AuraGUI.ShowZAxisValues(uiBlock);
 
                 if (toolbarRect.height > 0)
                 {
-                    float width = 2 * NovaGUI.SingleCharacterGUIWidth;
+                    float width = 2 * AuraGUI.SingleCharacterGUIWidth;
                     float height = EditorGUIUtility.singleLineHeight;
                     float y = toolbarRect.y + (0.5f * (toolbarRect.height - height));
                     float x = (2 * toolbarRect.x) + toolbarRect.width - (1.75f * width);
                     Rect toggleRect = new Rect(x, y, width, height);
 
                     EditorGUI.BeginChangeCheck();
-                    show3D = GUI.Toggle(toggleRect, show3D, Labels.Tools.ThreeDToggle, NovaGUI.Styles.ToolbarButtonMid);
+                    show3D = GUI.Toggle(toggleRect, show3D, Labels.Tools.ThreeDToggle, AuraGUI.Styles.ToolbarButtonMid);
                     if (EditorGUI.EndChangeCheck())
                     {
                         if (uiBlock is UIBlock3D)
                         {
-                            NovaEditorPrefs.UIBlock3DShowAllZAxis = show3D;
+                            AuraEditorPrefs.UIBlock3DShowAllZAxis = show3D;
                         }
                         else
                         {
-                            NovaEditorPrefs.UIBlockShowAllZAxis = show3D;
+                            AuraEditorPrefs.UIBlockShowAllZAxis = show3D;
                         }
                     }
                 }
-                NovaGUI.Layout.EndHorizontal();
+                AuraGUI.Layout.EndHorizontal();
 
                 if (ShouldShowPreviewSize(uiBlock, previewSize))
                 {
@@ -201,7 +201,7 @@ namespace Nova.Editor.GUIs
                 return;
             }
 
-            NovaGUI.Space();
+            AuraGUI.Space();
 
             EditorGUI.BeginChangeCheck();
 
@@ -209,11 +209,11 @@ namespace Nova.Editor.GUIs
 
             if (zField)
             {
-                NovaGUI.Vector3Field(Labels.Tools.PreviewSize, previewSize, disabled);
+                AuraGUI.Vector3Field(Labels.Tools.PreviewSize, previewSize, disabled);
             }
             else
             {
-                NovaGUI.Vector2Field(Labels.Tools.PreviewSize, previewSize, disabled.XY);
+                AuraGUI.Vector2Field(Labels.Tools.PreviewSize, previewSize, disabled.XY);
             }
 
             if (EditorGUI.EndChangeCheck())

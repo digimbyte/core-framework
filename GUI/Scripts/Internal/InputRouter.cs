@@ -1,14 +1,14 @@
 ﻿
 //#define DEBUG_GESTURES
 
-using Nova.Internal.Collections;
-using Nova.Internal.Utilities;
+using Aura.Internal.Collections;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal interface IBlockHit
     {

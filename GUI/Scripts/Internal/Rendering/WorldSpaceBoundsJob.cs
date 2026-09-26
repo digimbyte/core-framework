@@ -1,23 +1,23 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct WorldSpaceBoundsJob : INovaJobParallelFor
+    internal struct WorldSpaceBoundsJob : IAuraJobParallelFor
     {
         [ReadOnly]
-        public NovaHashMap<DataStoreIndex, int> DirtiedByRendering;
+        public AuraHashMap<DataStoreIndex, int> DirtiedByRendering;
         [ReadOnly]
         public NativeList<HierarchyDependency> DirtyDependencies;
         [NativeDisableContainerSafetyRestriction]
@@ -37,7 +37,7 @@ namespace Nova.Internal.Rendering
         [NativeDisableContainerSafetyRestriction]
         public NativeList<RenderIndex, UIBlock2DData> UIBlock2DData;
         [ReadOnly]
-        public NovaHashMap<RenderIndex, ComputeBufferIndex> ShadowIndices;
+        public AuraHashMap<RenderIndex, ComputeBufferIndex> ShadowIndices;
         [ReadOnly]
         public ImageDataProvider ImageDataProvider;
 

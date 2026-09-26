@@ -1,9 +1,9 @@
 ﻿
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Animations
+namespace Aura.Internal.Animations
 {
     internal readonly struct AnimationID : IEquatable<AnimationID>
     {

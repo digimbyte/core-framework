@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct DrawCall : IEquatable<DrawCallDescriptorID>, IEquatable<DrawCallSummary.DrawCallBatchingInfo>
     {
@@ -44,13 +44,13 @@ namespace Nova.Internal.Rendering
     /// </summary>
     internal struct DrawCallSummary : IInitializable, IClearable
     {
-        public NovaList<DrawCallDescriptorID, DrawCallDescriptor> DrawCallDescriptors;
-        public NovaList<DrawCallID, DrawCall> DrawCalls;
-        public NovaList<DrawCallID, NovaList<VisualElementIndex>> NonIndexedElements;
-        private NovaList<DrawCallID, NovaList<DrawCallIndex, ShaderIndex>> drawCallIndices;
-        public NovaList<ShaderIndexBounds> IndexBounds;
-        private NovaList<NovaList<DrawCallIndex, ShaderIndex>> indexListPool;
-        private NovaList<NovaList<VisualElementIndex>> nonIndexedPool;
+        public AuraList<DrawCallDescriptorID, DrawCallDescriptor> DrawCallDescriptors;
+        public AuraList<DrawCallID, DrawCall> DrawCalls;
+        public AuraList<DrawCallID, AuraList<VisualElementIndex>> NonIndexedElements;
+        private AuraList<DrawCallID, AuraList<DrawCallIndex, ShaderIndex>> drawCallIndices;
+        public AuraList<ShaderIndexBounds> IndexBounds;
+        private AuraList<AuraList<DrawCallIndex, ShaderIndex>> indexListPool;
+        private AuraList<AuraList<VisualElementIndex>> nonIndexedPool;
         public int TotalIndices;
 
         public int DrawCallCount
@@ -104,7 +104,7 @@ namespace Nova.Internal.Rendering
             bool applyChanges = false;
             for (int i = 0; i < drawCallIndices.Length; ++i)
             {
-                NovaList<DrawCallIndex, ShaderIndex> indices = drawCallIndices[i];
+                AuraList<DrawCallIndex, ShaderIndex> indices = drawCallIndices[i];
                 if (indices.Length == 0)
                 {
                     continue;
@@ -150,7 +150,7 @@ namespace Nova.Internal.Rendering
                 CoplanarSetID = coplanarSetID
             });
 
-            if (!indexListPool.TryPopBack(out NovaList<DrawCallIndex, ShaderIndex> freeList))
+            if (!indexListPool.TryPopBack(out AuraList<DrawCallIndex, ShaderIndex> freeList))
             {
                 freeList.Init();
             }
@@ -158,7 +158,7 @@ namespace Nova.Internal.Rendering
 
             if (DrawCallDescriptors.ElementAt(descriptorID).DrawCallType == VisualType.UIBlock2D)
             {
-                if (!nonIndexedPool.TryPopBack(out NovaList<VisualElementIndex> ordered))
+                if (!nonIndexedPool.TryPopBack(out AuraList<VisualElementIndex> ordered))
                 {
                     ordered.Init();
                 }
@@ -205,7 +205,7 @@ namespace Nova.Internal.Rendering
                     continue;
                 }
 
-                ref NovaList<VisualElementIndex> nonIndexed = ref NonIndexedElements.ElementAt(i);
+                ref AuraList<VisualElementIndex> nonIndexed = ref NonIndexedElements.ElementAt(i);
                 nonIndexed.Clear();
                 nonIndexedPool.Add(nonIndexed);
             }

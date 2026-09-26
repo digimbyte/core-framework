@@ -1,7 +1,7 @@
 ﻿
 using System.Collections.Generic;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     internal interface ICoreBlock : IHierarchyBlock, ITransformProvider, IGameObjectActiveReceiver
     {

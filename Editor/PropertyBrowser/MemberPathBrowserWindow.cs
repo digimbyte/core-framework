@@ -58,7 +58,7 @@ namespace Core.PropertyBrowser
                         var targetAssemblies = new[]
                         {
                             propType.Assembly,
-                            assemblies.FirstOrDefault(a => a.GetName().Name == "Nova")
+                            assemblies.FirstOrDefault(a => a.GetName().Name == "Aura")
                         }.Where(a => a != null).ToArray();
 
                         foreach (var asm in targetAssemblies)
@@ -167,7 +167,7 @@ namespace Core.PropertyBrowser
                         var targetAssemblies = new[]
                         {
                             currentType.Assembly,
-                            assemblies.FirstOrDefault(a => a.GetName().Name == "Nova")
+                            assemblies.FirstOrDefault(a => a.GetName().Name == "Aura")
                         }.Where(a => a != null).ToArray();
 
                         foreach (var asm in targetAssemblies)

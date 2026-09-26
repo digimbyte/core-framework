@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaDropShadowUnlit"
+Shader "Hidden/Aura/AuraDropShadowUnlit"
 {
     Properties
     {
@@ -42,8 +42,8 @@ Shader "Hidden/Nova/NovaDropShadowUnlit"
             #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
             
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
 
             #include "../DropShadow.cginc"
 

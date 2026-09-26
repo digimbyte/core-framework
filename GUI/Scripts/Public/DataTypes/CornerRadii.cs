@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>UIBlock2D corners which curve inward instead of rounding outward.</summary>
     [Flags]

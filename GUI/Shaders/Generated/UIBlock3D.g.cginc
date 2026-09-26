@@ -1,7 +1,7 @@
 #ifndef NOVA_UIBLOCK3D_STRUCTURES
 #define NOVA_UIBLOCK3D_STRUCTURES
 
-#include "../NovaPreV2F.cginc"
+#include "../AuraPreV2F.cginc"
 
 ////////////////// BEGIN GENERATED //////////////////
 #define GetColor(val) val.Color
@@ -210,6 +210,6 @@ struct v2f
 };
 ////////////////// END GENERATED //////////////////
 
-#include "../NovaPostV2F.cginc"
+#include "../AuraPostV2F.cginc"
 
 #endif

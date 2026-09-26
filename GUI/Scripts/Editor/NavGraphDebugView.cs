@@ -1,22 +1,22 @@
 ﻿
 //#define DEBUG_VISUALS
 
-using Nova.Compat;
-using Nova.Editor.GUIs;
-using Nova.Editor.Utilities;
-using Nova.Internal;
-using Nova.Internal.Core;
-using Nova.Internal.Input;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Editor.GUIs;
+using Aura.Editor.Utilities;
+using Aura.Internal;
+using Aura.Internal.Core;
+using Aura.Internal.Input;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using Navigator = Nova.Internal.Navigator<Nova.UIBlock>;
+using Navigator = Aura.Internal.Navigator<Aura.UIBlock>;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     internal class NavGraphDebugView : System<NavGraphDebugView>
     {
@@ -241,14 +241,14 @@ namespace Nova.Editor
                 return false;
             }
 
-            return NovaApplication.InPlayer(gr) ? gr.IsNavigable : gr.Navigable;
+            return AuraApplication.InPlayer(gr) ? gr.IsNavigable : gr.Navigable;
         }
 
         private static void GenerateGraph()
         {
             navigationGraph.Clear();
 
-            navNodes = NovaEditorPrefs.FilterNavDebugViewToSelection ?
+            navNodes = AuraEditorPrefs.FilterNavDebugViewToSelection ?
                        Selection.GetFiltered<GestureRecognizer>(SelectionMode.Deep).Where(x => x.enabled && NavNodeFilter(x.UIBlock)).ToArray() :
                        StageUtility.GetCurrentStageHandle().FindComponentsOfType<GestureRecognizer>().Where(x => x.enabled && x.gameObject.activeInHierarchy && x.Navigable).ToArray();
 
@@ -260,7 +260,7 @@ namespace Nova.Editor
 
         private static void DrawGizmos(SceneView scene)
         {
-            if (Event.current.type != EventType.Repaint || !NovaEditorPrefs.DisplayNavigationDebugView)
+            if (Event.current.type != EventType.Repaint || !AuraEditorPrefs.DisplayNavigationDebugView)
             {
                 return;
             }
@@ -270,7 +270,7 @@ namespace Nova.Editor
             drawnNodes.Clear();
 
             Color handleColor = Handles.color;
-            Handles.color = NovaGUI.Styles.Yellow_ish;
+            Handles.color = AuraGUI.Styles.Yellow_ish;
 
             foreach (GestureRecognizer recognizer in navNodes)
             {

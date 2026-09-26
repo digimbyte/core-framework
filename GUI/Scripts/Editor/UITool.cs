@@ -1,15 +1,15 @@
 ﻿
 //#define LOG_ACTIVATIONS
-using Nova.Compat;
-using Nova.Editor.GUIs;
-using Nova.Editor.Serialization;
-using Nova.Editor.Utilities;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Input;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Editor.GUIs;
+using Aura.Editor.Serialization;
+using Aura.Editor.Utilities;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Input;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
@@ -18,9 +18,9 @@ using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     internal class FallbackToolAttribute : System.Attribute
     {
@@ -40,8 +40,8 @@ namespace Nova.Editor.Tools
             Selection.selectionChanged += SelectionChanged;
             ToolManager.activeToolChanged += ActiveToolChanged;
 
-            uiBlockIDs = new NovaHashMap<DataStoreID, bool>(16, Allocator.Persistent);
-            NovaApplication.EditorBeforeAssemblyReload += () =>
+            uiBlockIDs = new AuraHashMap<DataStoreID, bool>(16, Allocator.Persistent);
+            AuraApplication.EditorBeforeAssemblyReload += () =>
             {
                 uiBlockIDs.Dispose();
             };
@@ -99,18 +99,18 @@ namespace Nova.Editor.Tools
         public static readonly PrimitiveBoundsHandle.Axes Axes3D = PrimitiveBoundsHandle.Axes.All;
 
         // Can't use static readonly initialize for these colors
-        public static Color EdgeGuideAccentColor => NovaGUI.Styles.NovaRed;
-        public static Color EdgeGuideColor => NovaGUI.Styles.NovaRed;
-        public static Color SizeColor => NovaGUI.Styles.NovaBlue;
-        public static Color MarginColor => NovaGUI.Styles.NovaCyan;
-        public static Color PaddingColor => NovaGUI.Styles.NovaGreen;
-        public static Color CornerColor => NovaGUI.Styles.NovaBlue;
-        public static Color EdgeColor => NovaGUI.Styles.Magenta_MoreBlue;
-        public static Color XAxisColor => NovaGUI.Styles.Red_ish;
-        public static Color YAxisColor => NovaGUI.Styles.Yellow_ish;
-        public static Color ZAxisColor => NovaGUI.Styles.Blue_ish;
+        public static Color EdgeGuideAccentColor => AuraGUI.Styles.AuraRed;
+        public static Color EdgeGuideColor => AuraGUI.Styles.AuraRed;
+        public static Color SizeColor => AuraGUI.Styles.AuraBlue;
+        public static Color MarginColor => AuraGUI.Styles.AuraCyan;
+        public static Color PaddingColor => AuraGUI.Styles.AuraGreen;
+        public static Color CornerColor => AuraGUI.Styles.AuraBlue;
+        public static Color EdgeColor => AuraGUI.Styles.Magenta_MoreBlue;
+        public static Color XAxisColor => AuraGUI.Styles.Red_ish;
+        public static Color YAxisColor => AuraGUI.Styles.Yellow_ish;
+        public static Color ZAxisColor => AuraGUI.Styles.Blue_ish;
         public static Color HighlightColor => Color.yellow;
-        public static Color HoverColor => NovaGUI.Styles.NovaBlue;
+        public static Color HoverColor => AuraGUI.Styles.AuraBlue;
 
         public static readonly Color ShadowColor = Color.black.Alpha(0.25f);
 
@@ -209,8 +209,8 @@ namespace Nova.Editor.Tools
             }
         }
 
-        private static NovaHashMap<DataStoreID, bool> uiBlockIDs;
-        protected NovaHashMap<DataStoreID, bool> UIBlockIDs => uiBlockIDs;
+        private static AuraHashMap<DataStoreID, bool> uiBlockIDs;
+        protected AuraHashMap<DataStoreID, bool> UIBlockIDs => uiBlockIDs;
 
         private void CleanupManagedCollections()
         {
@@ -275,7 +275,7 @@ namespace Nova.Editor.Tools
             Handles.lighting = false;
             HandleUtility.handleMaterial.color = Color.white;
 
-            tooltipBackground = NovaGUI.Styles.GetTexture(TooltipBackgroundColor);
+            tooltipBackground = AuraGUI.Styles.GetTexture(TooltipBackgroundColor);
 
             Undo.undoRedoPerformed -= RestoreUndoneProperties;
             Undo.undoRedoPerformed += RestoreUndoneProperties;

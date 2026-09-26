@@ -1,10 +1,10 @@
 ﻿
-using Nova.Editor.Serialization;
-using Nova.Extensions;
+using Aura.Editor.Serialization;
+using Aura.Extensions;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(Interactable)), CanEditMultipleObjects]
     internal class InteractableEditor : GestureRecognizerEditor<Interactable>
@@ -45,7 +45,7 @@ namespace Nova.Editor.GUIs
             EditorGUILayout.LabelField(dragHeader, EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-            NovaGUI.Toggle3DField(draggableProp, Labels.Interactable.DraggableLabel);
+            AuraGUI.Toggle3DField(draggableProp, Labels.Interactable.DraggableLabel);
             if (EditorGUI.EndChangeCheck() && Application.isPlaying)
             {
                 UpdateUnityObjects();
@@ -53,8 +53,8 @@ namespace Nova.Editor.GUIs
 
             if (Util.Any(targetComponents[0].Draggable))
             {
-                NovaGUI.SliderField(Labels.GestureRecognizer.DragThresholdLabel, dragThresholdProp, 0, MaxDragThreshold);
-                NovaGUI.SliderField(Labels.GestureRecognizer.LowAccuracyDragThresholdLabel, lowAccuracyDragThresholdProp, 0, MaxDragThreshold);
+                AuraGUI.SliderField(Labels.GestureRecognizer.DragThresholdLabel, dragThresholdProp, 0, MaxDragThreshold);
+                AuraGUI.SliderField(Labels.GestureRecognizer.LowAccuracyDragThresholdLabel, lowAccuracyDragThresholdProp, 0, MaxDragThreshold);
             }
 
             EditorGUILayout.Separator();

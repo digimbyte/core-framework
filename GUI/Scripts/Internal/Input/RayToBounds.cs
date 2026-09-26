@@ -1,10 +1,10 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
@@ -12,7 +12,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     internal interface IHit
     {
@@ -75,7 +75,7 @@ namespace Nova.Internal.Input
         [ReadOnly]
         public NativeList<Length3.Calculated> LengthProperties;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+        public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
         [ReadOnly]
         public NativeList<float3> Sizes;
@@ -209,7 +209,7 @@ namespace Nova.Internal.Input
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool IntersectsUnclippedBounds(DataStoreIndex index, VisualModifierID topLevelModifier, ref float3 hitInWorldSpace, ref VisualModifiers visualModifiers, ref NovaHashMap<DataStoreID, DataStoreIndex> hierarchy, ref NativeList<Length3.Calculated> lengths, float4x4* worldToLocalPtr)
+        public static unsafe bool IntersectsUnclippedBounds(DataStoreIndex index, VisualModifierID topLevelModifier, ref float3 hitInWorldSpace, ref VisualModifiers visualModifiers, ref AuraHashMap<DataStoreID, DataStoreIndex> hierarchy, ref NativeList<Length3.Calculated> lengths, float4x4* worldToLocalPtr)
         {
             VisualModifierID modifierID = visualModifiers.VisualModifierIDs[index];
 

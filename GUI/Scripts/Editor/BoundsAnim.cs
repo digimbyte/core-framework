@@ -3,7 +3,7 @@ using UnityEditor.AnimatedValues;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     internal class BoundsAnim : BaseAnimValueNonAlloc<Bounds>
     {

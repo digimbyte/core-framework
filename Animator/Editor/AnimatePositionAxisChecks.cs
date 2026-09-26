@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Reflection;
-using Nova;
+using Aura;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace Core.Animator
 {
     public static class AnimatePositionAxisChecks
     {
-        [MenuItem("Tools/Core/Animator/Check Nova Position Axes")]
+        [MenuItem("Tools/Core/Animator/Check Aura Position Axes")]
         public static void Run()
         {
             if (Application.isPlaying) throw new InvalidOperationException("Run outside Play mode.");
@@ -48,8 +48,8 @@ namespace Core.Animator
                 var entries = MemberPathBrowser.CollectNestedMembers(block, 3);
                 foreach (string axis in new[] { "X", "Y", "Z" })
                     Require(entries.Exists(e => e.path == "Position." + axis && e.typeName == "Single"), "Missing scalar picker entry: " + axis);
-                Require(Animate.NormalizeNovaPositionAxisPath(go.transform, "Position.X") == "Position.X", "Alias leaked to Transform");
-                Require(Animate.NormalizeNovaPositionAxisPath(block, "Position.X.Percent") == "Position.X.Percent", "Explicit percent path changed");
+                Require(Animate.NormalizeAuraPositionAxisPath(go.transform, "Position.X") == "Position.X", "Alias leaked to Transform");
+                Require(Animate.NormalizeAuraPositionAxisPath(block, "Position.X.Percent") == "Position.X.Percent", "Explicit percent path changed");
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }

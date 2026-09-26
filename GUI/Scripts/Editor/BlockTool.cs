@@ -1,16 +1,16 @@
 ﻿
-using Nova.Compat;
-using Nova.Editor.GUIs;
-using Nova.Editor.Utilities;
-using Nova.Extensions;
-using Nova.Internal;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Editor.GUIs;
+using Aura.Editor.Utilities;
+using Aura.Extensions;
+using Aura.Internal;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     internal class BlockTool : UIEdgeSnapTool
     {

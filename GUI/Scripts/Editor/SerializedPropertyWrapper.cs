@@ -1,7 +1,7 @@
 ﻿
 using UnityEditor;
 
-namespace Nova.Editor.Serialization
+namespace Aura.Editor.Serialization
 {
     internal interface ISerializedPropertyWrapper
     {

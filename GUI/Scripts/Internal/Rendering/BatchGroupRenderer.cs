@@ -1,16 +1,16 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal enum ComputeBufferUpdateType
     {
@@ -59,7 +59,7 @@ namespace Nova.Internal.Rendering
         private ShaderBuffer<SubQuadVert> subquadBuffer = null;
         private DrawCallSummary drawCallSummary;
 
-        private NovaList<DrawCallDescriptorID, MaterialCacheIndex> materials;
+        private AuraList<DrawCallDescriptorID, MaterialCacheIndex> materials;
         private Matrix4x4 worldFromLocal = default;
         private Matrix4x4 localFromWorld = default;
 
@@ -114,7 +114,7 @@ namespace Nova.Internal.Rendering
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Render(Camera camera)
         {
-            NovaList<DrawCallID, CameraSorting.ProcessedDrawCall> drawCallBounds = RenderEngine.Instance.GetDrawCallBounds(rootID);
+            AuraList<DrawCallID, CameraSorting.ProcessedDrawCall> drawCallBounds = RenderEngine.Instance.GetDrawCallBounds(rootID);
             for (int i = 0; i < instances.Count; ++i)
             {
                 DrawInstancedData drawCall = instances[i];
@@ -232,7 +232,7 @@ namespace Nova.Internal.Rendering
             worldFromLocal = LayoutDataStore.Instance.LocalToWorldMatrices.ElementAt(rootDataStoreIndex);
             localFromWorld = LayoutDataStore.Instance.WorldToLocalMatrices.ElementAt(rootDataStoreIndex);
 
-            NovaList<SubQuadVert> subQuadBuffers = BatchGroupBuffers.SubQuadBuffers[rootID];
+            AuraList<SubQuadVert> subQuadBuffers = BatchGroupBuffers.SubQuadBuffers[rootID];
             ShaderBufferUtils.SetBufferRef(ref subquadBuffer, ref subQuadBuffers);
 
             materials = BatchGroupBuffers.MaterialAssignments[rootID];
@@ -274,7 +274,7 @@ namespace Nova.Internal.Rendering
             instance.Mpb.SetMatrix(ShaderPropertyIDs.WorldFromLocalTransform, worldFromLocal);
             instance.Mpb.SetMatrix(ShaderPropertyIDs.LocalFromWorldTransform, localFromWorld);
             instance.Mpb.SetBuffer(ShaderPropertyIDs.TransformsAndLighting, DataStore.Common.TransformAndLightingData);
-            instance.Mpb.SetFloat(ShaderPropertyIDs.EdgeSoftenWidth, NovaSettings.EdgeSoftenWidth);
+            instance.Mpb.SetFloat(ShaderPropertyIDs.EdgeSoftenWidth, AuraSettings.EdgeSoftenWidth);
 
             SetClipMaskData(instance, ref descriptor);
 
@@ -324,7 +324,7 @@ namespace Nova.Internal.Rendering
 
             instance.Mpb.SetMatrixArray(ShaderPropertyIDs.VisualModifersFromRoot, visualModifierShaderData.VisualModifiersFromRoot);
             instance.Mpb.SetVectorArray(ShaderPropertyIDs.ClipRectInfos, visualModifierShaderData.ClipRectInfos);
-            instance.Mpb.SetVectorArray(Shader.PropertyToID("_NovaClipMaskParams"), visualModifierShaderData.ClipMaskParams);
+            instance.Mpb.SetVectorArray(Shader.PropertyToID("_AuraClipMaskParams"), visualModifierShaderData.ClipMaskParams);
             instance.Mpb.SetVectorArray(ShaderPropertyIDs.GlobalColorModifiers, visualModifierShaderData.VisualModifierColors);
 
             // Set the clip mask texture if there is one
@@ -357,7 +357,7 @@ namespace Nova.Internal.Rendering
         {
             instance.Mpb.SetBuffer(ShaderPropertyIDs.ShaderData, DataStore.UIBlock2DData.ShadowQuadShaderData);
             instance.Mpb.SetBuffer(ShaderPropertyIDs.PerBlockData, DataStore.UIBlock2DData.Shadow);
-            instance.Mpb.SetFloat(ShaderPropertyIDs.EdgeSoftenWidth, NovaSettings.EdgeSoftenWidth);
+            instance.Mpb.SetFloat(ShaderPropertyIDs.EdgeSoftenWidth, AuraSettings.EdgeSoftenWidth);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -371,7 +371,7 @@ namespace Nova.Internal.Rendering
                 instance.Mpb.SetBuffer(ShaderPropertyIDs.SubQuadVerts, subquadBuffer);
             }
             instance.Mpb.SetBuffer(ShaderPropertyIDs.ShaderData, DataStore.UIBlock2DData.ShaderData);
-            instance.Mpb.SetFloat(ShaderPropertyIDs.EdgeSoftenWidth, NovaSettings.EdgeSoftenWidth);
+            instance.Mpb.SetFloat(ShaderPropertyIDs.EdgeSoftenWidth, AuraSettings.EdgeSoftenWidth);
 
             if ((descriptor.MaterialModifiers & MaterialModifier.StaticImage) != 0)
             {

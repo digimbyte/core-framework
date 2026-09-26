@@ -1,17 +1,17 @@
-using Nova;
+using Aura;
 using System;
 using TMPro;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
-    /// Represents a location in a <see cref="Nova.TextBlock"/> string as both an
+    /// Represents a location in a <see cref="Aura.TextBlock"/> string as both an
     /// index into the string (char array), as well as a side (i.e., left or right
     /// of the character at <see cref="Index"/> in the string).<br/>
     /// </summary>
     /// <remarks>
-    /// NOTE: <see cref="TextPosition"/> is intrinsically tied to a <see cref="Nova.TextBlock"/>
+    /// NOTE: <see cref="TextPosition"/> is intrinsically tied to a <see cref="Aura.TextBlock"/>
     /// because it represents a position in the <b>visible</b> string, which adds a number of nuances
     /// and requires some additional functionality beyond indexing into a raw string. For example:
     /// <list type="bullet">
@@ -30,7 +30,7 @@ namespace NovaSamples.UIControls
     public struct TextPosition : IEquatable<TextPosition>
     {
         /// <summary>
-        /// The <see cref="Nova.TextBlock"/> with which this <see cref="TextPosition"/>
+        /// The <see cref="Aura.TextBlock"/> with which this <see cref="TextPosition"/>
         /// is associated.
         /// </summary>
         public TextBlock TextBlock { get; private set; }

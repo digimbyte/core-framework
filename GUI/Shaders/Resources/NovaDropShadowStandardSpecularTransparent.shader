@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
+Shader "Hidden/Aura/AuraDropShadowStandardSpecularTransparent"
 {
     Properties
     {
@@ -45,8 +45,8 @@ Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
 			// 
 
             // compile directives
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -78,7 +78,10 @@ Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
 
             #define NOVA_STANDARDSPECULAR_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_RADIAL_FILL            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../DropShadow.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../DropShadow.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -98,8 +101,8 @@ Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
             
             CGPROGRAM
             #define _ALPHABLEND_ON 1
-
-			// 
+Aura
+			// Aura
             // compile directives
             #pragma vertex NovaVert
             #pragma fragment NovaFrag
@@ -130,7 +133,10 @@ Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
 
             #define NOVA_STANDARDSPECULAR_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_RADIAL_FILL            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../DropShadow.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../DropShadow.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -145,8 +151,8 @@ Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
-            ZTest LEqual
-
+            ZTest LEqualAura
+Aura
             CGPROGRAM
             #define _ALPHABLEND_ON 1
 
@@ -176,7 +182,10 @@ Shader "Hidden/Nova/NovaDropShadowStandardSpecularTransparent"
 
             #define NOVA_STANDARDSPECULAR_LIGHTING
             
-            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_RADIAL_FILL            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../DropShadow.cginc"
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../DropShadow.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

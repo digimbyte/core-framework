@@ -1,16 +1,16 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal unsafe partial class RenderEngine : EngineBaseGeneric<RenderEngine>
     {
         private NativeList<HierarchyElement> Hierarchy => HierarchyDataStore.Instance.Hierarchy;
-        private NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex => HierarchyDataStore.Instance.HierarchyLookup;
+        private AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex => HierarchyDataStore.Instance.HierarchyLookup;
         private NativeList<BatchGroupElement> BatchGroupElements => HierarchyDataStore.Instance.BatchGroupTracker.BatchGroupElements;
         private NativeList<RenderElement<BaseRenderInfo>> BaseInfos => RenderingDataStore.Instance.Common.BaseInfos;
         private RenderingDataStore DataStore => RenderingDataStore.Instance;

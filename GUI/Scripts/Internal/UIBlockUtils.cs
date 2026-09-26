@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     internal static class UIBlockUtils
     {

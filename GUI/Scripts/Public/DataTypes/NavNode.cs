@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Defines the behavior of an element when it's selected.

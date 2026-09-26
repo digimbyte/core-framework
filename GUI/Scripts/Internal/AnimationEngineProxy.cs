@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Animations;
-using Nova.Internal.Collections;
+using Aura.Internal.Animations;
+using Aura.Internal.Collections;
 
-namespace Nova
+namespace Aura
 {
     internal static class AnimationEngineProxy
     {

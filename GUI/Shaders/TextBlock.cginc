@@ -7,30 +7,30 @@
     #define USES_BIAS_OUT
 #endif
 
-#include "Nova.cginc"
+#include "Aura.cginc"
 #include "UnityUI.cginc"
 #include "Generated/TextBlock.g.cginc"
-#include "NovaTMPProperties.cginc"
+#include "AuraTMPProperties.cginc"
 
-NOVA_DECLARE_BUFFER(PerVertTextData, _NovaData);
+NOVA_DECLARE_BUFFER(PerVertTextData, _AuraData);
 
-v2f NovaVert(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
+v2f AuraVert(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
-    NovaVertInit(instanceID, v2f, o);
+    AuraVertInit(instanceID, v2f, o);
 
     uint indexIntoIndexBuffer = InstanceIDToDataIndex(instanceID);
-    NOVA_GET_BUFFER_ITEM_uint(offsetInstanceID, indexIntoIndexBuffer, _NovaDataIndices);
+    NOVA_GET_BUFFER_ITEM_uint(offsetInstanceID, indexIntoIndexBuffer, _AuraDataIndices);
 
     uint vertDataIndex = 4u * offsetInstanceID + vertexID;
-    NOVA_GET_BUFFER_ITEM_PerVertTextData(textData, vertDataIndex, _NovaData);
-    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, textData.TransformIndex, _NovaTransformsAndLighting);
+    NOVA_GET_BUFFER_ITEM_PerVertTextData(textData, vertDataIndex, _AuraData);
+    NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, textData.TransformIndex, _AuraTransformsAndLighting);
 
     float3 blockPos = textData.Position;
     blockPos.x += _VertexOffsetX;
     blockPos.y += _VertexOffsetY;
 
     float3 rootSpace = mul(transformAndLighting.RootFromBlock, float4(blockPos, 1)).xyz;
-    float3 worldPos = NovaRootToWorldPos(rootSpace);
+    float3 worldPos = AuraRootToWorldPos(rootSpace);
     o.pos = UnityWorldToClipPos(worldPos);
 
     float2 pixelSize = o.pos.w;
@@ -108,25 +108,25 @@ v2f NovaVert(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     #endif
 
     #if defined(NOVA_LIT)
-        NovaSetLitV2FParams(o, transformAndLighting);
+        AuraSetLitV2FParams(o, transformAndLighting);
         SetWorldPos(o, worldPos);
-        float3 rootNormal = NovaRootFromBlockNormal(transformAndLighting.RootFromBlock, float3(0, 0, -1));
+        float3 rootNormal = AuraRootFromBlockNormal(transformAndLighting.RootFromBlock, float3(0, 0, -1));
         float3 worldNormal = UnityObjectToWorldNormal(rootNormal);
         SetWorldNormal(o, worldNormal);
 
-        NovaInitInstance(appdata_full, appdata);
+        AuraInitInstance(appdata_full, appdata);
         appdata.vertex = float4(rootSpace, 1);
         appdata.normal = rootNormal;
 
-        NovaDoLitVert(o, worldPos, worldNormal, appdata);
+        AuraDoLitVert(o, worldPos, worldNormal, appdata);
     #endif
 
     return o;
 }
 
-fixed4 NovaFrag(v2f i) : SV_Target
+fixed4 AuraFrag(v2f i) : SV_Target
 {
-    NovaFragInit(i);
+    AuraFragInit(i);
 
     float2 uv = GetTextureUV(i);
     #if NOVA_SUPER_SAMPLE
@@ -178,9 +178,9 @@ fixed4 NovaFrag(v2f i) : SV_Target
         #if defined(NOVA_SHADOW_CAST_PASS)
             // Don't assign back to color because the shadow caster pass just returns 0,
             // but we want to clip
-            NovaDoLightingCalculations(i, c);
+            AuraDoLightingCalculations(i, c);
         #else
-            c = NovaDoLightingCalculations(i, c);
+            c = AuraDoLightingCalculations(i, c);
         #endif
     #endif
 

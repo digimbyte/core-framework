@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]

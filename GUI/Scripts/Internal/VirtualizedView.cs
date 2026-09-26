@@ -1,19 +1,19 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.DataBinding;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.DataBinding;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     internal interface IScrollableView
     {
@@ -69,7 +69,7 @@ namespace Nova
 
         private CheckInView inView;
         private unsafe static BurstedMethod<BurstMethod> checkInView;
-        private NovaHashMap<DataStoreID, ViewItem> viewItems;
+        private AuraHashMap<DataStoreID, ViewItem> viewItems;
 
         private HashSet<DataStoreID> inViewElements = new HashSet<DataStoreID>();
         private HashSet<DataStoreID> processedIDs = new HashSet<DataStoreID>();
@@ -332,7 +332,7 @@ namespace Nova
             this.view = view;
             this.root = root;
 
-            viewItems = new NovaHashMap<DataStoreID, ViewItem>(16, Allocator.Persistent);
+            viewItems = new AuraHashMap<DataStoreID, ViewItem>(16, Allocator.Persistent);
 
             HierarchyDataStore hierarchy = HierarchyDataStore.Instance;
             LayoutDataStore layouts = LayoutDataStore.Instance;

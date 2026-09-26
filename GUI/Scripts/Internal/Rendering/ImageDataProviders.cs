@@ -1,16 +1,16 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct ImageDataProvider
     {
         [ReadOnly]
-        private NovaHashMap<ImageID, ImageDescriptor> imageDescriptors;
+        private AuraHashMap<ImageID, ImageDescriptor> imageDescriptors;
         [ReadOnly]
-        private NovaHashMap<TextureID, TextureDescriptor> textureDescriptors;
+        private AuraHashMap<TextureID, TextureDescriptor> textureDescriptors;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetTextureID(ImageID imageID, out TextureID textureID)
@@ -40,7 +40,7 @@ namespace Nova.Internal.Rendering
             return textureDescriptors.TryGetValue(imageDescriptor.TextureID, out textureDescriptor);
         }
 
-        public ImageDataProvider(ref NovaHashMap<ImageID, ImageDescriptor> imageDescriptors, ref NovaHashMap<TextureID, TextureDescriptor> textureDescriptors)
+        public ImageDataProvider(ref AuraHashMap<ImageID, ImageDescriptor> imageDescriptors, ref AuraHashMap<TextureID, TextureDescriptor> textureDescriptors)
         {
             this.imageDescriptors = imageDescriptors;
             this.textureDescriptors = textureDescriptors;
@@ -50,11 +50,11 @@ namespace Nova.Internal.Rendering
     internal struct TexturePackDataProvider
     {
         [ReadOnly]
-        private NovaHashMap<TextureID, TexturePackID> textureIDToPack;
+        private AuraHashMap<TextureID, TexturePackID> textureIDToPack;
         [ReadOnly]
-        private NovaHashMap<TextureID, TexturePackSlice> slices;
+        private AuraHashMap<TextureID, TexturePackSlice> slices;
         [ReadOnly]
-        private NovaHashMap<TexturePackID, int> packCounts;
+        private AuraHashMap<TexturePackID, int> packCounts;
 
         /// <summary>
         /// We always want to set the slice, even if the pack only has a count of 1 since this
@@ -68,7 +68,7 @@ namespace Nova.Internal.Rendering
         {
             index = TexturePackSlice.Invalid;
 
-            if (!NovaSettings.Config.PackedImagesEnabled)
+            if (!AuraSettings.Config.PackedImagesEnabled)
             {
                 return false;
             }
@@ -89,7 +89,7 @@ namespace Nova.Internal.Rendering
         public bool TryGetPackID(TextureID textureID, out TexturePackID texturePackID)
         {
             texturePackID = TexturePackID.Invalid;
-            if (!NovaSettings.Config.PackedImagesEnabled)
+            if (!AuraSettings.Config.PackedImagesEnabled)
             {
                 return false;
             }
@@ -103,8 +103,8 @@ namespace Nova.Internal.Rendering
             return packCounts.TryGetValue(texturePackID, out int count) && count > 1;
         }
 
-        public TexturePackDataProvider(ref NovaHashMap<TextureID, TexturePackID> idToPack, ref NovaHashMap<TextureID, TexturePackSlice> indices,
-            ref NovaHashMap<TexturePackID, int> counts)
+        public TexturePackDataProvider(ref AuraHashMap<TextureID, TexturePackID> idToPack, ref AuraHashMap<TextureID, TexturePackSlice> indices,
+            ref AuraHashMap<TexturePackID, int> counts)
         {
             textureIDToPack = idToPack;
             slices = indices;

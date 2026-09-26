@@ -1465,7 +1465,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 4bfe6b4847a2e6c49879d18dfde12b83, type: 3}
 --- !u!1 &4237033618582371726
@@ -2103,7 +2103,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 4237033618606028950}
@@ -2699,7 +2699,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 88063870a52ccd74e8a7aa5063589a05, type: 3}
 --- !u!1 &4237033618969107846
@@ -3013,7 +3013,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 4237033618969107844}
@@ -3384,7 +3384,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: c82b8e32dab5c5c4fbd3d949357fd308, type: 3}
 --- !u!1 &4237033619063691250
@@ -4328,7 +4328,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 99ae1d92247264246a5deb9be56f42b2, type: 3}
 --- !u!1 &4237033619386734931
@@ -4621,7 +4621,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 99ae1d92247264246a5deb9be56f42b2, type: 3}
 --- !u!1 &4237033619424381317
@@ -4935,7 +4935,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: ButtonVisuals, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: ButtonVisuals, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         TransitionType: 1
         transitionTarget: {fileID: 4237033619424381339}
@@ -5306,7 +5306,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 4bfe6b4847a2e6c49879d18dfde12b83, type: 3}
 --- !u!1 &4237033619617742778
@@ -5670,7 +5670,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowBar, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowBar, ns: AuraSamples.UIControls, asm: Aura.UIControls}
 --- !u!1 &4237033619851276264
 GameObject:
   m_ObjectHideFlags: 0
@@ -5961,7 +5961,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: c82b8e32dab5c5c4fbd3d949357fd308, type: 3}
 --- !u!1 &4237033620232808534
@@ -6254,7 +6254,7 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: WindowResizeRegion, ns: NovaSamples.UIControls, asm: Nova.UIControls}
+      type: {class: WindowResizeRegion, ns: AuraSamples.UIControls, asm: Aura.UIControls}
       data:
         Cursor: {fileID: 2800000, guid: 88063870a52ccd74e8a7aa5063589a05, type: 3}
 --- !u!1 &4337539268275465273

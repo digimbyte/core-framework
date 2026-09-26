@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Rendering;
+using Aura.Internal.Rendering;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     internal interface ITextBlock : IRenderBlock<Internal.TextBlockData>
     {

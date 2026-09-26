@@ -1,12 +1,12 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     /// <summary>
     /// The info tracked and updated in-line per hierarchy element
@@ -18,7 +18,7 @@ namespace Nova.Internal.Hierarchy
         public DataStoreID ID;
         public DataStoreID ParentID;
 
-        public NovaList<DataStoreIndex> Children;
+        public AuraList<DataStoreIndex> Children;
 
         public int ChildCount
         {

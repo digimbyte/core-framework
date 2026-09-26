@@ -1,7 +1,7 @@
-using Nova;
+using Aura;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// <see cref="ItemVisuals"/> type to use to target drag events around the perimeter of the window.
@@ -13,7 +13,7 @@ namespace NovaSamples.UIControls
     /// <seealso cref="Window"/>
     /// <seealso cref="WindowBar"/>
     [System.Serializable]
-    [TypeMenuPath("Nova")]
+    [TypeMenuPath("Aura")]
     public class WindowResizeRegion : ItemVisuals
     {
         [Tooltip("The cursor texture to display when this region is hovered.")]

@@ -1,16 +1,16 @@
 ﻿
-using Nova;
+using Aura;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     internal class ItemViewPostProcessor : AssetPostprocessor
     {
         private static HashSet<string> prefabsToReimport = new HashSet<string>();
-        private const string ItemViewPrefabReloadEditorPref = "Nova.ItemViewPrefabReload";
+        private const string ItemViewPrefabReloadEditorPref = "Aura.ItemViewPrefabReload";
         private const string Separator = "%";
 
         [InitializeOnLoadMethod]

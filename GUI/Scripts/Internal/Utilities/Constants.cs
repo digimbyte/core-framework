@@ -1,11 +1,11 @@
 ﻿
 using UnityEngine.Rendering;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal static class Constants
     {
-        public const string ProjectName = "Nova";
+        public const string ProjectName = "Aura";
         public const string PackageName = "com.nova.nova";
 
         public const int PhysicsAllLayers = -1;
@@ -37,7 +37,7 @@ namespace Nova.Internal.Utilities
         public const string StandardLightingKeyword = "NOVA_STANDARD_LIGHTING";
         public const string StanardSpecularLightingKeyword = "NOVA_STANDARD_SPECULAR_LIGHTING";
 
-        public const string LogDisableMessage = "(This warning can be disabled via Nova settings)";
+        public const string LogDisableMessage = "(This warning can be disabled via Aura settings)";
     }
 }
 

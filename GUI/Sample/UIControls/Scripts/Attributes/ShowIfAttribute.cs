@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace NovaSamples
+namespace AuraSamples
 {
     /// <summary>
     /// Hides the field/property unless the the compared property is equal to the designated visible value.

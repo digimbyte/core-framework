@@ -1,14 +1,14 @@
 ﻿
 //#define DEBUG_EXPAND
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutCore
     {
@@ -51,20 +51,20 @@ namespace Nova.Internal.Layouts
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
             [ReadOnly]
             public NativeList<AutoLayout> AutoLayouts;
             [NativeDisableParallelForRestriction]
             public NativeList<Length2.Calculated> CalculatedSpacing;
             [ReadOnly]
-            public NovaHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
+            public AuraHashMap<DataStoreIndex, Axes> FormerAutoLayoutAxes;
 
             public NativeList<ExpandableTrack> AutoLayoutTrackCache;
             public NativeList<ExpandableRange> AutoLayoutRangeCache;
 
             [ReadOnly]
-            public NovaHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
+            public AuraHashMap<DataStoreID, SizeOverride> ShrinkSizeOverrides;
 
             public NativeReference<bool> RequestSecondPass;
 

@@ -1,10 +1,10 @@
 ﻿
 //#define PROFILE_EVENTS
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Events
+namespace Aura.Events
 {
     internal struct TargetedEvent<TEvent> where TEvent : IEvent
     {

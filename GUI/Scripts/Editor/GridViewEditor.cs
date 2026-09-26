@@ -1,9 +1,9 @@
 ﻿
-using Nova.Editor.Serialization;
+using Aura.Editor.Serialization;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(GridView)), CanEditMultipleObjects]
     internal class GridViewEditor : ListViewEditor

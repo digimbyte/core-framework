@@ -1,17 +1,17 @@
 ﻿
 //#define DEBUG_VISUALS
 
-using Nova.Compat;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Input;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Input;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using UnityEngine;
-using static Nova.Interaction;
+using static Aura.Interaction;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A callback to invoke whenever navigation focus for a particular <paramref name="controlID"/> moves to a new <see cref="UIBlock"/>, <paramref name="focused"/>. 
@@ -89,7 +89,7 @@ namespace Nova
 
         /// <summary>
         /// Queues an attempt to move navigation focus to the next navigable <see cref="UIBlock"/> in the approximate local
-        /// space direction to be processed at the start of the next frame, after the Nova Engine 
+        /// space direction to be processed at the start of the next frame, after the Aura Engine 
         /// update has run for the current frame. 
         /// </summary>
         /// <param name="direction">The direction to navigate in the local space of the current focused element.</param>
@@ -399,7 +399,7 @@ namespace Nova
 
         internal static void Init()
         {
-            if (!NovaApplication.IsPlaying)
+            if (!AuraApplication.IsPlaying)
             {
                 return;
             }
@@ -418,7 +418,7 @@ namespace Nova
 
         private static void DequeueAll()
         {
-            if (!NovaApplication.IsPlaying || !EngineManager.Instance.HaveUpdated)
+            if (!AuraApplication.IsPlaying || !EngineManager.Instance.HaveUpdated)
             {
                 return;
             }

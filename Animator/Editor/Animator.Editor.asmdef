@@ -3,7 +3,7 @@
   "rootNamespace": "Animator",
   "references": [
     "Animator",
-    "Nova"
+    "Aura"
   ],
   "includePlatforms": [
     "Editor"

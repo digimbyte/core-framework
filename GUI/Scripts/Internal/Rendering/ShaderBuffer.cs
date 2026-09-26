@@ -1,7 +1,7 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Utilities;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
@@ -9,7 +9,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// We have two modes of rendering, regular and fallback (fallback being
@@ -253,7 +253,7 @@ namespace Nova.Internal.Rendering
             return toRet;
         }
 
-        public static bool SetBufferRef<T>(ref ShaderBuffer<T> shaderBuffer, ref NovaList<T> data) where T : unmanaged
+        public static bool SetBufferRef<T>(ref ShaderBuffer<T> shaderBuffer, ref AuraList<T> data) where T : unmanaged
         {
             bool toRet = EnsureSizeAndCreated<T>(ref shaderBuffer, data.Length);
 

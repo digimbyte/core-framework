@@ -1,23 +1,23 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System;
 using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
-    /// Configures the rendered sorting order of a <see cref="Nova.UIBlock"/> hierarchy.
+    /// Configures the rendered sorting order of a <see cref="Aura.UIBlock"/> hierarchy.
     /// </summary>
     /// <seealso cref="UIBlock2D.ZIndex"/>
     /// <seealso cref="TextBlock.ZIndex"/>
     [DisallowMultipleComponent]
     [ExecuteAlways]
-    [AddComponentMenu("Nova/Sort Group")]
+    [AddComponentMenu("Aura/Sort Group")]
     [RequireComponent(typeof(UIBlock))]
     [HelpURL("https://novaui.io/manual/RenderOrder.html")]
     public sealed class SortGroup : MonoBehaviour
@@ -91,7 +91,7 @@ namespace Nova
         }
         
         /// <summary>
-        /// The <see cref="Nova.UIBlock"/> on <c>this.gameObject</c>.
+        /// The <see cref="Aura.UIBlock"/> on <c>this.gameObject</c>.
         /// </summary>
         public UIBlock UIBlock
         {
@@ -144,10 +144,10 @@ namespace Nova
         {
             Unregister(UIBlock.ID);
             
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 DataStoreID id = UIBlock.ID;
-                NovaApplication.EditorDelayCall += () =>
+                AuraApplication.EditorDelayCall += () =>
                 {
                     if (this == null)
                     {

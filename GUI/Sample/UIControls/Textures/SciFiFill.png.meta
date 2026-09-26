@@ -3,9 +3,9 @@ guid: 6627ec0fde6425247a6f0732fe912f27
 AssetOrigin:
   serializedVersion: 1
   productId: 226304
-  packageName: Nova
+  packageName: Aura
   packageVersion: 2.1.3
-  assetPath: Assets/Nova/Sample/UIControls/Textures/SciFiFill.png
+  assetPath: Assets/Aura/Sample/UIControls/Textures/SciFiFill.png
   uploadId: 631462
 TextureImporter:
   internalIDToNameTable:

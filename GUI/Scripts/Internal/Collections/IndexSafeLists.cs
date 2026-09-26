@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     internal interface IIndex<T> : IComparable<T>, IEquatable<T> where T : IIndex<T>
     {
@@ -106,16 +106,16 @@ namespace Nova.Internal.Collections
     }
 
     /// <summary>
-    /// Wrapper around a NovaList<T> that provides type safety of the index type
+    /// Wrapper around a AuraList<T> that provides type safety of the index type
     /// </summary>
     /// <typeparam name="K"></typeparam>
     /// <typeparam name="V"></typeparam>
-    internal unsafe struct NovaList<K,V> : ICapacityInitializable, IResizable
+    internal unsafe struct AuraList<K,V> : ICapacityInitializable, IResizable
     where K : unmanaged, IIndex<K>
     where V : unmanaged
     {
         [NativeDisableContainerSafetyRestriction]
-        public NovaList<V> UnderlyingList;
+        public AuraList<V> UnderlyingList;
 
         public V* Ptr
         {
@@ -199,10 +199,10 @@ namespace Nova.Internal.Collections
         }
     }
 
-    internal static partial class NovaListExtensions
+    internal static partial class AuraListExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetIndexOf<K, V, U>(ref this NovaList<K, V> list, U item, out int index, int offset = 0)
+        public static bool TryGetIndexOf<K, V, U>(ref this AuraList<K, V> list, U item, out int index, int offset = 0)
             where K : unmanaged, IIndex<K>
             where V : unmanaged, IEquatable<U>
         {
@@ -210,7 +210,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void MemClear<K, V>(ref this NovaList<K, V> list)
+        public unsafe static void MemClear<K, V>(ref this AuraList<K, V> list)
             where K : unmanaged, IIndex<K>
             where V : unmanaged
         {
@@ -229,7 +229,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void DisposeListAndElements<K, V>(this ref NovaList<K, V> list) where K : unmanaged, IIndex<K> where V : unmanaged, IDisposable
+        public unsafe static void DisposeListAndElements<K, V>(this ref AuraList<K, V> list) where K : unmanaged, IIndex<K> where V : unmanaged, IDisposable
         {
             for (int i = 0; i < list.Length; ++i)
             {
@@ -240,7 +240,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReturnAllToPool<K, V>(this ref NovaList<K, V> list, ref NovaList<V> pool)
+        public static void ReturnAllToPool<K, V>(this ref AuraList<K, V> list, ref AuraList<V> pool)
             where K : unmanaged, IIndex<K>
             where V : unmanaged, IClearable
         {
@@ -248,7 +248,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void AddEmpty<K, V>(ref this NovaList<K, V> list)
+        public unsafe static void AddEmpty<K, V>(ref this AuraList<K, V> list)
             where K : unmanaged, IIndex<K>
             where V : unmanaged, IInitializable
         {

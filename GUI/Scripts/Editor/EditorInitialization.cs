@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Core;
+using Aura.Internal.Core;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     /// <summary>
-    /// Handles initialization of Nova in editor
+    /// Handles initialization of Aura in editor
     /// </summary>
     internal static class EditorInitialization
     {

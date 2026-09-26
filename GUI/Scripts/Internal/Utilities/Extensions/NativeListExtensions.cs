@@ -1,14 +1,14 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class NativeListExtensions
     {
@@ -36,13 +36,13 @@ namespace Nova.Internal.Utilities.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void AddRange<T>(ref this NativeList<T> list, ref NovaList<T> novaList) where T : unmanaged
+        public unsafe static void AddRange<T>(ref this NativeList<T> list, ref AuraList<T> novaList) where T : unmanaged
         {
             list.AddRange(novaList.Ptr, novaList.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void AddRangeReverse<T>(ref this NativeList<T> list, ref NovaList<T> novaList) where T : unmanaged
+        public unsafe static void AddRangeReverse<T>(ref this NativeList<T> list, ref AuraList<T> novaList) where T : unmanaged
         {
             for (int i = novaList.Length - 1; i >= 0; --i)
             {
@@ -144,9 +144,9 @@ namespace Nova.Internal.Utilities.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NovaList<T> GetFromPoolOrInit<T>(this NativeList<NovaList<T>> list) where T : unmanaged
+        public static AuraList<T> GetFromPoolOrInit<T>(this NativeList<AuraList<T>> list) where T : unmanaged
         {
-            if (!list.TryPopBack(out NovaList<T> val))
+            if (!list.TryPopBack(out AuraList<T> val))
             {
                 val.Init();
             }
@@ -154,11 +154,11 @@ namespace Nova.Internal.Utilities.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NovaList<T, V> GetFromPoolOrInit<T, V>(this NativeList<NovaList<T, V>> list)
+        public static AuraList<T, V> GetFromPoolOrInit<T, V>(this NativeList<AuraList<T, V>> list)
                 where T : unmanaged, IIndex<T>
                 where V : unmanaged
         {
-            if (!list.TryPopBack(out NovaList<T, V> val))
+            if (!list.TryPopBack(out AuraList<T, V> val))
             {
                 val.Init();
             }
@@ -180,7 +180,7 @@ namespace Nova.Internal.Utilities.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReturnToPool<T>(this NativeList<NovaList<T>> list, ref NovaList<T> val) where T : unmanaged
+        public static void ReturnToPool<T>(this NativeList<AuraList<T>> list, ref AuraList<T> val) where T : unmanaged
         {
             val.Clear();
             list.Add(val);

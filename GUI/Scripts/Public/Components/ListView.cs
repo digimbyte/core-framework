@@ -1,26 +1,26 @@
 ﻿
 //#define DEBUG_LOADING
-using Nova.Compat;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.DataBinding;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.DataBinding;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-using Math = Nova.Internal.Utilities.Math;
+using Math = Aura.Internal.Utilities.Math;
 
-namespace Nova
+namespace Aura
 {
     internal interface IListView : IScrollableView, IGameObjectActiveReceiver { }
 
     /// <summary>
     /// Creates a virtualized, scrollable list of <see cref="ItemView"/> prefabs from a user-provided data source.
     /// </summary>
-    [AddComponentMenu("Nova/List View")]
+    [AddComponentMenu("Aura/List View")]
     [RequireComponent(typeof(UIBlock))]
     [HelpURL("https://novaui.io/manual/ListView.html")]
     public class ListView : MonoBehaviour, IListView, ISerializationCallbackReceiver
@@ -63,13 +63,13 @@ namespace Nova
         public int MinLoadedIndex => DataSourceItemCount == 0 ? -1 : Math.Clamp(lowestPagedInIndex, 0, DataSourceItemCount - 1);
 
         /// <summary>
-        /// The parent <see cref="Nova.UIBlock"/> of all the list items. Attached to <c>this.gameObject</c>. 
+        /// The parent <see cref="Aura.UIBlock"/> of all the list items. Attached to <c>this.gameObject</c>. 
         /// </summary>
         public UIBlock UIBlock
         {
             get
             {
-                if (!NovaApplication.IsPlaying)
+                if (!AuraApplication.IsPlaying)
                 {
                     // We only want to cache and serialize
                     // _uiBlock in play mode, so just return
@@ -922,12 +922,12 @@ namespace Nova
             lowestPagedInIndex = 0;
             highestPagedInIndex = -1;
 
-            if (!haveInitializedView && Internal.NovaSettings.Config.ShouldLog(Internal.LogFlags.ListViewUntrackedItemsUnderRoot) && UIBlock.ChildCount != 0)
+            if (!haveInitializedView && Internal.AuraSettings.Config.ShouldLog(Internal.LogFlags.ListViewUntrackedItemsUnderRoot) && UIBlock.ChildCount != 0)
             {
                 string nameToUse = name;
                 nameToUse = string.IsNullOrWhiteSpace(nameToUse) ? "GameObject" : nameToUse;
 
-                Debug.LogWarning($"{nameToUse}'s {nameof(ListView)} has {nameof(Nova.UIBlock)} children before being initialized. Manually adding {nameof(Nova.UIBlock)} children to a {nameof(ListView)} is unsupported and will cause issues, as a {nameof(ListView)} must have full control over its children. {Constants.LogDisableMessage}", this);
+                Debug.LogWarning($"{nameToUse}'s {nameof(ListView)} has {nameof(Aura.UIBlock)} children before being initialized. Manually adding {nameof(Aura.UIBlock)} children to a {nameof(ListView)} is unsupported and will cause issues, as a {nameof(ListView)} must have full control over its children. {Constants.LogDisableMessage}", this);
             }
 
             haveInitializedView = true;
@@ -1454,7 +1454,7 @@ namespace Nova
                 // Item was destroyed, so notify the prefab pool to stop tracking
                 prefabPool.Remove(dataStoreID);
 
-                if (!haveLoggedDestroyWarning && Internal.NovaSettings.Config.ShouldLog(Internal.LogFlags.ListViewItemDestroyed))
+                if (!haveLoggedDestroyWarning && Internal.AuraSettings.Config.ShouldLog(Internal.LogFlags.ListViewItemDestroyed))
                 {
                     haveLoggedDestroyWarning = true;
                     Debug.LogWarning($"ListView item was destroyed without being detached first. This is unsupported and may cause issues. {Constants.LogDisableMessage}", this);
@@ -1488,20 +1488,20 @@ namespace Nova
 
             Clear(teardown: true);
 
-            NovaApplication.EditorBeforeAssemblyReload -= EditorOnly_AssemblyReload_TearDown;
+            AuraApplication.EditorBeforeAssemblyReload -= EditorOnly_AssemblyReload_TearDown;
         }
 
         void IGameObjectActiveReceiver.HandleOnEnable()
         {
-            if (!NovaApplication.InPlayer(this))
+            if (!AuraApplication.InPlayer(this))
             {
                 return;
             }
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
-                NovaApplication.EditorBeforeAssemblyReload -= EditorOnly_AssemblyReload_TearDown;
-                NovaApplication.EditorBeforeAssemblyReload += EditorOnly_AssemblyReload_TearDown;
+                AuraApplication.EditorBeforeAssemblyReload -= EditorOnly_AssemblyReload_TearDown;
+                AuraApplication.EditorBeforeAssemblyReload += EditorOnly_AssemblyReload_TearDown;
             }
 
             viewportVirtualizer.Init(View, UIBlock, UIBlock.ID);
@@ -1513,7 +1513,7 @@ namespace Nova
 
         void IGameObjectActiveReceiver.HandleOnDisable()
         {
-            if (!NovaApplication.InPlayer(this))
+            if (!AuraApplication.InPlayer(this))
             {
                 return;
             }
@@ -1609,7 +1609,7 @@ namespace Nova
 
         private protected void ClearSerializedUIBlock()
         {
-            if (!NovaApplication.IsPlaying && _uiBlock != null)
+            if (!AuraApplication.IsPlaying && _uiBlock != null)
             {
                 // Ensure this is null in edit mode, 
                 // even if something was copy/pasted

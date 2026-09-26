@@ -1,9 +1,9 @@
-using Nova;
+using Aura;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NovaSamples.Effects
+namespace AuraSamples.Effects
 {
     /// <summary>
     /// Synchronizes a <see cref="BackgroundCamera"/> and list of <see cref="BlurEffects"/> so that the blur effects get updated whenever the background content is rendered.

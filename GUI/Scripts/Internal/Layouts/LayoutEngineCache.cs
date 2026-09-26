@@ -1,15 +1,15 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Layouts
+namespace Aura.Internal.Layouts
 {
     internal partial class LayoutEngine
     {
@@ -89,7 +89,7 @@ namespace Nova.Internal.Layouts
             }
 
             [BurstCompile]
-            public struct Prepare : INovaJob
+            public struct Prepare : IAuraJob
             {
                 public NativeList<DataStoreIndex> AllProcessedElements;
                 public NativeList<DataStoreID> MovedRootIDs;

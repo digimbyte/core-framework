@@ -38,13 +38,13 @@
 
 			float DisabledBorderSegments;
 
-			NovaColor PrimaryColor;
+			AuraColor PrimaryColor;
 
-			NovaColor GradientColor;
+			AuraColor GradientColor;
 
-			NovaColor ShadowColor;
+			AuraColor ShadowColor;
 
-			NovaColor BorderColor;
+			AuraColor BorderColor;
 		};
 
 		struct PerInstanceDropShadowShaderData
@@ -64,7 +64,7 @@
 			float RadialFillAngle;
 			float3 _padding;
 
-			NovaColor Color;
+			AuraColor Color;
 		};
 
 		struct PerQuadDropShadowShaderData
@@ -85,7 +85,7 @@
 			float TransformIndex;
 			float2 _padAlignBeforeColor;
 
-			NovaColor Color;
+			AuraColor Color;
 		};
 	#endif
 
@@ -101,7 +101,7 @@
 			float ScaleMultiplier;
 			float3 _padding;
 
-			NovaColor Color;
+			AuraColor Color;
 		};
 	#endif
 
@@ -129,7 +129,7 @@
 			float Smoothness;
 			float3 _padding;
 
-			NovaColor SpecularColor;
+			AuraColor SpecularColor;
 		};
 	#endif
 #endif

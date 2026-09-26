@@ -1,8 +1,8 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal static class DestroyUtils
     {
@@ -13,7 +13,7 @@ namespace Nova.Internal.Utilities
         /// <param name="obj"></param>
         public static void Destroy(Object obj)
         {
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 if (Application.isPlaying)
                 {

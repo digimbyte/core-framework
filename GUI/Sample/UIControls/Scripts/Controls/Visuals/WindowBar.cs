@@ -1,6 +1,6 @@
-using Nova;
+using Aura;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// <see cref="ItemVisuals"/> type to represent the draggable window bar
@@ -9,6 +9,6 @@ namespace NovaSamples.UIControls
     /// <seealso cref="Window"/>
     /// <seealso cref="WindowResizeRegion"/>
     [System.Serializable]
-    [TypeMenuPath("Nova")]
+    [TypeMenuPath("Aura")]
     public class WindowBar : ItemVisuals { }
 }

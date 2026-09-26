@@ -1,9 +1,9 @@
-using Nova;
+using Aura;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A UI control which reacts to user input and fires click / hover events.

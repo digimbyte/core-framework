@@ -1,10 +1,10 @@
 ﻿
-using Nova.Editor.Serialization;
+using Aura.Editor.Serialization;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(Scroller)), CanEditMultipleObjects]
     internal class ScrollerEditor : GestureRecognizerEditor<Scroller>
@@ -64,8 +64,8 @@ namespace Nova.Editor.GUIs
 
             if (dragScrollingProp.boolValue)
             {
-                NovaGUI.SliderField(Labels.GestureRecognizer.DragThresholdLabel, dragThresholdProp, 0, MaxDragThreshold);
-                NovaGUI.SliderField(Labels.GestureRecognizer.LowAccuracyDragThresholdLabel, lowAccuracyDragThresholdProp, 0, MaxDragThreshold);
+                AuraGUI.SliderField(Labels.GestureRecognizer.DragThresholdLabel, dragThresholdProp, 0, MaxDragThreshold);
+                AuraGUI.SliderField(Labels.GestureRecognizer.LowAccuracyDragThresholdLabel, lowAccuracyDragThresholdProp, 0, MaxDragThreshold);
             }
 
             EditorGUILayout.Separator();
@@ -138,11 +138,11 @@ namespace Nova.Editor.GUIs
 
             if (missingInteractable)
             {
-                NovaGUI.WarningIcon("Scrollbar Visual is missing an Interactable component");
+                AuraGUI.WarningIcon("Scrollbar Visual is missing an Interactable component");
             }
             else if (notDraggable)
             {
-                NovaGUI.WarningIcon("The Scrollbar Visual's Interactable component must be configured to be draggable along the scrolling axis.");
+                AuraGUI.WarningIcon("The Scrollbar Visual's Interactable component must be configured to be draggable along the scrolling axis.");
             }
 
             DrawDragScrollbarField();

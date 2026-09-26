@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal enum ShadowDirection
     {

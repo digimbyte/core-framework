@@ -2,9 +2,9 @@
 using TMPro;
 using UnityEngine;
 
-namespace Nova.TMP
+namespace Aura.TMP
 {
-    [AddComponentMenu("Nova/Text Mesh Pro - TextBlock")]
+    [AddComponentMenu("Aura/Text Mesh Pro - TextBlock")]
     public sealed class TextMeshProTextBlock : TextMeshPro
     {
         public override void SetVerticesDirty()

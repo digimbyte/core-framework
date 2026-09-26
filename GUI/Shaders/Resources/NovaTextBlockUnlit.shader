@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaTextBlockUnlit"
+Shader "Hidden/Aura/AuraTextBlockUnlit"
 {
     Properties
     {
@@ -81,8 +81,8 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
         {
             CGPROGRAM
 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             // 
             
@@ -101,10 +101,10 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #define NOVA_PREMUL_COLORS
-            #include "../Nova.cginc"
-            #include "../NovaTMPProperties.cginc"
+            #include "../Aura.cginc"
+            #include "../AuraTMPProperties.cginc"
 
-            NOVA_DECLARE_BUFFER(PerVertTextData, _NovaData);
+            NOVA_DECLARE_BUFFER(PerVertTextData, _AuraData);
 
             struct v2f
             {
@@ -118,18 +118,18 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            v2f NovaVert(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
+            v2f AuraVert(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
             {
-                NovaVertInit(instanceID, v2f, o);
+                AuraVertInit(instanceID, v2f, o);
                 uint index = InstanceIDToDataIndex(instanceID);
-                NOVA_GET_BUFFER_ITEM_uint(offsetInstanceID, index, _NovaDataIndices);
+                NOVA_GET_BUFFER_ITEM_uint(offsetInstanceID, index, _AuraDataIndices);
                 uint vertIndex = 4u * offsetInstanceID + vertexID;
-                NOVA_GET_BUFFER_ITEM_PerVertTextData(textData, vertIndex, _NovaData);
-                NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, textData.TransformIndex, _NovaTransformsAndLighting);
+                NOVA_GET_BUFFER_ITEM_PerVertTextData(textData, vertIndex, _AuraData);
+                NOVA_GET_BUFFER_ITEM_TransformAndLighting(transformAndLighting, textData.TransformIndex, _AuraTransformsAndLighting);
                 float3 blockPos = textData.Position;
                 blockPos.xy += float2(_VertexOffsetX, _VertexOffsetY);
                 float3 rootSpace = mul(transformAndLighting.RootFromBlock, float4(blockPos, 1)).xyz;
-                o.pos = UnityWorldToClipPos(NovaRootToWorldPos(rootSpace));
+                o.pos = UnityWorldToClipPos(AuraRootToWorldPos(rootSpace));
                 o.atlas = textData.Texcoord0.xy;
                 float bold = step(textData.Texcoord1.y * textData.ScaleMultiplier, 0);
                 // Face weight is independent of outline-dependent TMP ratios.
@@ -169,9 +169,9 @@ Shader "Hidden/Nova/NovaTextBlockUnlit"
                 return c * vertexColor.a;
             }
 
-            float4 NovaFrag(v2f i) : SV_Target
+            float4 AuraFrag(v2f i) : SV_Target
             {
-                NovaFragInit(i);
+                AuraFragInit(i);
                 float sampleValue = tex2D(_MainTex, i.atlas).a;
                 float aa = max(length(float2(ddx(sampleValue), ddy(sampleValue))), 0.0001);
                 #if defined(NOVA_SUPER_SAMPLE)

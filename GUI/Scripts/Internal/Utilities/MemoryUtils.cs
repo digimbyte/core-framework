@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal unsafe static class MemoryUtils
     {

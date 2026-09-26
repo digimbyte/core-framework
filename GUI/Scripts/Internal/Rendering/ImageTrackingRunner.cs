@@ -1,8 +1,8 @@
 ﻿
 //#define VERBOSE
 using AOT;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
@@ -10,7 +10,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
     internal struct ImageTrackingRunner : IDisposable
@@ -178,7 +178,7 @@ namespace Nova.Internal.Rendering
 
         private bool IsStatic(ref ImageDescriptor imageDescriptor)
         {
-            if (imageDescriptor.Mode == ImagePackMode.Unpacked || !NovaSettings.Config.PackedImagesEnabled)
+            if (imageDescriptor.Mode == ImagePackMode.Unpacked || !AuraSettings.Config.PackedImagesEnabled)
             {
                 return false;
             }
@@ -205,7 +205,7 @@ namespace Nova.Internal.Rendering
                 return false;
             }
 
-            if (!graphicsFormatDescriptor.IsSupportedStatic && NovaSettings.Config.ShouldLog(LogFlags.PackedImageFailure))
+            if (!graphicsFormatDescriptor.IsSupportedStatic && AuraSettings.Config.ShouldLog(LogFlags.PackedImageFailure))
             {
                 Debug.LogWarning($"Platform does not support texture format. {Constants.LogDisableMessage}");
             }

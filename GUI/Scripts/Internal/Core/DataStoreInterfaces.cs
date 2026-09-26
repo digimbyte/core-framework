@@ -1,7 +1,7 @@
 ﻿
-using Nova.Internal.Common;
+using Aura.Internal.Common;
 
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     internal interface IDataStoreElement : INamedElement
     {

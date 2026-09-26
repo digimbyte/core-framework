@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova.Internal.Common
+namespace Aura.Internal.Common
 {
     internal interface IInitializable : IDisposable
     {

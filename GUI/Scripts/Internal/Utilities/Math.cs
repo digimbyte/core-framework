@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal static class Math
     {

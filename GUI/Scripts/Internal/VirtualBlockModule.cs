@@ -1,13 +1,13 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     [Serializable]
     internal class VirtualBlockModule : IDisposable

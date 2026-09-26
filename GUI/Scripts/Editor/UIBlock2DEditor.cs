@@ -1,10 +1,10 @@
 ﻿
-using Nova.Editor.Serialization;
+using Aura.Editor.Serialization;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     internal enum ImageSelectionType
     {
@@ -38,14 +38,14 @@ namespace Nova.Editor.GUIs
 
             UIBlock2DData.Calculated calc = serializedObject.isEditingMultipleObjects ? default : TargetBlock.CalculatedVisuals;
 
-            NovaLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
-            NovaLayoutEditors.DrawPositionUI(layout, uiBlock);
-            NovaLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
-            NovaRenderingEditors.DrawBodyVisualsUI(minHalfSize, renderData, surfaceInfo, baseRenderInfo, ref imageMode, ref calc);
-            NovaRenderingEditors.DrawBorderUI(renderData.Border, calc.Border);
+            AuraLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
+            AuraLayoutEditors.DrawPositionUI(layout, uiBlock);
+            AuraLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
+            AuraRenderingEditors.DrawBodyVisualsUI(minHalfSize, renderData, surfaceInfo, baseRenderInfo, ref imageMode, ref calc);
+            AuraRenderingEditors.DrawBorderUI(renderData.Border, calc.Border);
 
-            NovaRenderingEditors.DrawShadowUI(renderData, calc.Shadow);
-            NovaLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
+            AuraRenderingEditors.DrawShadowUI(renderData, calc.Shadow);
+            AuraLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
         }
     }
 }

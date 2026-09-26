@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A two-dimensional indexer

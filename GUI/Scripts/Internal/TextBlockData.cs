@@ -1,9 +1,9 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using TMPro;
@@ -11,12 +11,12 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct TextBlockData : IInitializable, IClearable
     {
-        public NovaList<TextBlockMeshData> MeshData;
+        public AuraList<TextBlockMeshData> MeshData;
         public AABB TextBounds;
         public int QuadCount;
         /// <summary>
@@ -86,10 +86,10 @@ namespace Nova.Internal
         public int VertCount;
         public int CharacterCount;
         public TextMaterialID MaterialID;
-        public NovaList<float3> VertexPositions;
-        public NovaList<Color32> Colors;
-        public NovaList<Vector2> UVs0;
-        public NovaList<Vector2> UVs1;
+        public AuraList<float3> VertexPositions;
+        public AuraList<Color32> Colors;
+        public AuraList<Vector2> UVs0;
+        public AuraList<Vector2> UVs1;
 
         public void Clear()
         {
@@ -149,7 +149,7 @@ namespace Nova.Internal
         {
             MaterialID = meshInfo.material.GetEntityId();
             Resize(meshInfo.vertices.Length);
-            NovaList<Vector3> asVec3 = VertexPositions.Reinterpret<float3, Vector3>();
+            AuraList<Vector3> asVec3 = VertexPositions.Reinterpret<float3, Vector3>();
             asVec3.CopyFrom(meshInfo.vertices, VertCount);
             Colors.CopyFrom(meshInfo.colors32, VertCount);
         }

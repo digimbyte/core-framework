@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct UIBlock2DData : IEquatable<UIBlock2DData>

@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Internal.DataBinding
+namespace Aura.Internal.DataBinding
 {
     internal enum PrefabRetrieval
     {

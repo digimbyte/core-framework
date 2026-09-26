@@ -1,7 +1,7 @@
 ﻿
-using Nova.Internal.Core;
+using Aura.Internal.Core;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal partial class RenderingDataStore : DataStore<RenderingDataStore, IRenderBlock>
     {

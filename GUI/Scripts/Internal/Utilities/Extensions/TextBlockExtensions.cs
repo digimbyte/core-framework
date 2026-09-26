@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Rendering;
+using Aura.Internal.Rendering;
 using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class TextBlockExtensions
     {

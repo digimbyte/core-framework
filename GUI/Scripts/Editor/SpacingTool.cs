@@ -1,16 +1,16 @@
 ﻿
-using Nova.Editor.GUIs;
-using Nova.Editor.Utilities;
-using Nova.Internal;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Editor.GUIs;
+using Aura.Editor.Utilities;
+using Aura.Internal;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Text;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
 #if UNITY_2021_2_OR_NEWER
     [EditorTool(displayName: "Spacing Tool", componentToolTarget: typeof(UIBlock))]

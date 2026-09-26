@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Rendering;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Rendering;
 using System;
 using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Clips the rendered bounds of a <see cref="UIBlock"/> hierarchy to a rounded-corner rectangle or custom texture.
@@ -18,7 +18,7 @@ namespace Nova
     /// <see cref="UIBlock"/> on this gameobject. If the attached <see cref="UIBlock"/> is a <see cref="UIBlock2D"/>, the <see cref="ClipMask"/>
     /// defaults to clipping to the rounded-corner rectangle bounds matching the <see cref="UIBlock2D"/>'s <see cref="UIBlock2D.CornerRadius">Corner Radius</see>.
     /// </remarks>
-    [AddComponentMenu("Nova/Clip Mask")]
+    [AddComponentMenu("Aura/Clip Mask")]
     [DisallowMultipleComponent]
     [ExecuteAlways]
     [HelpURL("https://novaui.io/manual/ClipMasks.html")]
@@ -153,7 +153,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The <see cref="Nova.UIBlock"/> on <c>this.gameObject</c>.
+        /// The <see cref="Aura.UIBlock"/> on <c>this.gameObject</c>.
         /// </summary>
         public UIBlock UIBlock
         {
@@ -228,10 +228,10 @@ namespace Nova
         {
             Unregister(UIBlock.ID);
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 DataStoreID id = UIBlock.ID;
-                NovaApplication.EditorDelayCall += () =>
+                AuraApplication.EditorDelayCall += () =>
                 {
                     if (this == null)
                     {

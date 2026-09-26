@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     
     internal struct RotationSpaceBounds

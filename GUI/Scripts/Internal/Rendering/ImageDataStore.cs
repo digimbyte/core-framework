@@ -1,16 +1,16 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using Unity.Burst;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
     internal struct ImageDataStore : IInitializable
@@ -31,21 +31,21 @@ namespace Nova.Internal.Rendering
             }
         }
 
-        public NovaHashMap<ImageID, ImageDescriptor> ImageDescriptors;
-        public NovaHashMap<TextureID, TextureDescriptor> TextureDescriptors;
-        public NovaHashMap<TextureID, RefCount> RefCounts;
+        public AuraHashMap<ImageID, ImageDescriptor> ImageDescriptors;
+        public AuraHashMap<TextureID, TextureDescriptor> TextureDescriptors;
+        public AuraHashMap<TextureID, RefCount> RefCounts;
 
-        public NovaHashMap<TextureID, TexturePackID> TextureIDToPack;
-        public NovaHashMap<TexturePackID, int> PackCounts;
-        public NovaHashMap<TextureID, TexturePackSlice> TexturePackSliceAssignments;
+        public AuraHashMap<TextureID, TexturePackID> TextureIDToPack;
+        public AuraHashMap<TexturePackID, int> PackCounts;
+        public AuraHashMap<TextureID, TexturePackSlice> TexturePackSliceAssignments;
         public NativeList<TexturePackID> CurrentTexturePacks;
-        public NovaHashMap<TexturePackID, TexturePackData> TexturePacks;
+        public AuraHashMap<TexturePackID, TexturePackData> TexturePacks;
 
-        public NovaHashMap<TextureDescriptor, TexturePackID> FormatToPackID;
+        public AuraHashMap<TextureDescriptor, TexturePackID> FormatToPackID;
         public NativeList<TexturePackData> TexturePackPool;
 
         private NativeReference<ValuePair<ImageID, TexturePackID>> nextID;
-        private NovaHashMap<int, GraphicsFormatDescriptor> formatDescriptors;
+        private AuraHashMap<int, GraphicsFormatDescriptor> formatDescriptors;
         private NativeReference<bool> loggedSupportWarnings;
         private bool textureArraysSupported;
         private bool textureCopySupported;
@@ -57,7 +57,7 @@ namespace Nova.Internal.Rendering
             {
                 if (!textureArraysSupported)
                 {
-                    if (!loggedSupportWarnings.Value && NovaSettings.Config.ShouldLog(LogFlags.PackedImageFailure))
+                    if (!loggedSupportWarnings.Value && AuraSettings.Config.ShouldLog(LogFlags.PackedImageFailure))
                     {
                         Debug.LogWarning($"TextureArrays not supported on platform. Static images will not be able to be batched, falling back to dynamic. {Constants.LogDisableMessage}");
                         loggedSupportWarnings.Value = true;
@@ -67,7 +67,7 @@ namespace Nova.Internal.Rendering
 
                 if (!fullResTextures)
                 {
-                    if (!loggedSupportWarnings.Value && NovaSettings.Config.ShouldLog(LogFlags.PackedImageFailure))
+                    if (!loggedSupportWarnings.Value && AuraSettings.Config.ShouldLog(LogFlags.PackedImageFailure))
                     {
                         Debug.LogWarning($"A bug with Texture2DArrays when the \"Texture Quality\" setting is not full resolution prevents static images from working properly. Falling back to dynamic. {Constants.LogDisableMessage}");
                         loggedSupportWarnings.Value = true;

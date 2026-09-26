@@ -1,18 +1,18 @@
 ﻿
-using Nova.Compat;
-using Nova.Editor.Utilities;
-using Nova.Internal;
-using Nova.Internal.Rendering;
+using Aura.Compat;
+using Aura.Editor.Utilities;
+using Aura.Internal;
+using Aura.Internal.Rendering;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     /// <summary>
-    /// Handles the various editor events to ensure Nova responds properly
+    /// Handles the various editor events to ensure Aura responds properly
     /// </summary>
-    internal static class NovaEditorEventManager
+    internal static class AuraEditorEventManager
     {
         private static bool wasUndoRedo = false;
 
@@ -122,7 +122,7 @@ namespace Nova.Editor
                 return;
             }
 
-            NovaApplication.QueueEditorPlayerLoop();
+            AuraApplication.QueueEditorPlayerLoop();
         }
 
         private static void HandleEvent(ref ChangeGameObjectOrComponentPropertiesEventArgs data)

@@ -1,9 +1,9 @@
 ﻿
-using Nova.Internal.Collections;
+using Aura.Internal.Collections;
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     internal class NavigationStack<T> where T : class, IUIBlock
     {

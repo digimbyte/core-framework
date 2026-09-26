@@ -1,13 +1,13 @@
 ﻿
-using Nova.Editor.Utilities;
+using Aura.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomPropertyDrawer(typeof(AutoLayout))]
-    internal class AutoLayoutDrawer : NovaPropertyDrawer<_AutoLayout>
+    internal class AutoLayoutDrawer : AuraPropertyDrawer<_AutoLayout>
     {
         protected override float GetPropertyHeight(GUIContent label)
         {
@@ -54,12 +54,12 @@ namespace Nova.Editor.GUIs
                 EditorGUI.BeginDisabledGroup(!enabled);
                 float tripleButtonWidth = (position.width - EditorGUIUtility.labelWidth) / 3f;
                 EditorGUI.PrefixLabel(position, Labels.AutoLayout.Axis);
-                Rect axisPosition = new Rect(position.x + NovaGUI.LabelWidth, position.y, position.width - NovaGUI.LabelWidth, position.height);
+                Rect axisPosition = new Rect(position.x + AuraGUI.LabelWidth, position.y, position.width - AuraGUI.LabelWidth, position.height);
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.BeginProperty(axisPosition, GUIContent.none, wrapper.AxisProp);
                 int axisIndex = wrapper.Axis.Index();
                 axisIndex = axisIndex >= 0 ? axisIndex : 0;
-                int layoutAxis = NovaGUI.Toolbar(axisPosition, axisIndex, Labels.AxisToolbarLabels, tripleButtonWidth);
+                int layoutAxis = AuraGUI.Toolbar(axisPosition, axisIndex, Labels.AxisToolbarLabels, tripleButtonWidth);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -71,10 +71,10 @@ namespace Nova.Editor.GUIs
 
                 EditorGUI.PrefixLabel(position, Labels.AutoLayout.Alignment);
 
-                Rect alignPosition = new Rect(position.x + NovaGUI.LabelWidth, position.y, position.width - NovaGUI.LabelWidth, position.height);
+                Rect alignPosition = new Rect(position.x + AuraGUI.LabelWidth, position.y, position.width - AuraGUI.LabelWidth, position.height);
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.BeginProperty(alignPosition, GUIContent.none, wrapper.alignmentProp);
-                int newAlignment = NovaGUI.Toolbar(alignPosition, wrapper.alignment + 1, Labels.Alignment[axisIndex], tripleButtonWidth);
+                int newAlignment = AuraGUI.Toolbar(alignPosition, wrapper.alignment + 1, Labels.Alignment[axisIndex], tripleButtonWidth);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -86,10 +86,10 @@ namespace Nova.Editor.GUIs
 
                 float doubleButtonWidth = (position.width - EditorGUIUtility.labelWidth) / 2f;
 
-                Rect orderPosition = new Rect(position.x + NovaGUI.LabelWidth, position.y, position.width - NovaGUI.LabelWidth, position.height);
+                Rect orderPosition = new Rect(position.x + AuraGUI.LabelWidth, position.y, position.width - AuraGUI.LabelWidth, position.height);
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.BeginProperty(orderPosition, GUIContent.none, wrapper.ReverseOrderProp);
-                int order = NovaGUI.Toolbar(orderPosition, wrapper.ReverseOrder ? 1 : 0, Labels.Order[axisIndex], doubleButtonWidth);
+                int order = AuraGUI.Toolbar(orderPosition, wrapper.ReverseOrder ? 1 : 0, Labels.Order[axisIndex], doubleButtonWidth);
                 EditorGUI.EndProperty();
                 if (EditorGUI.EndChangeCheck())
                 {

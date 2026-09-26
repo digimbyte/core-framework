@@ -3,9 +3,9 @@ guid: a80b1a92583909a4b8989148a2ad1dbc
 AssetOrigin:
   serializedVersion: 1
   productId: 226304
-  packageName: Nova
+  packageName: Aura
   packageVersion: 2.1.3
-  assetPath: Assets/Nova/Sample/UIControls/Textures/SciFiOutline.png
+  assetPath: Assets/Aura/Sample/UIControls/Textures/SciFiOutline.png
   uploadId: 631462
 TextureImporter:
   internalIDToNameTable:

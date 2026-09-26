@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomPropertyDrawer(typeof(ItemVisuals), useForChildren: true)]
     internal class ItemVisualsPropertyDrawer : PropertyDrawer

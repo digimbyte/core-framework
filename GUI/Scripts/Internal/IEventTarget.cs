@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Nova.Events
+namespace Aura.Events
 {
     internal interface IEventTarget { }
 

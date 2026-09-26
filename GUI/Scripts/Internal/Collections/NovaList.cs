@@ -1,8 +1,8 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
@@ -10,9 +10,9 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
-    internal unsafe struct NovaList<T> : IInitializable, IResizable where T : unmanaged
+    internal unsafe struct AuraList<T> : IInitializable, IResizable where T : unmanaged
     {
         public UnsafeList<T> list;
 
@@ -37,7 +37,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRange(ref NovaList<T> toAdd)
+        public void AddRange(ref AuraList<T> toAdd)
         {
             if (toAdd.Length > 0)
             {
@@ -101,7 +101,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRangeReverse(ref NovaList<T> toAdd)
+        public void AddRangeReverse(ref AuraList<T> toAdd)
         {
             for (int i = toAdd.Length - 1; i >= 0; --i)
             {
@@ -167,9 +167,9 @@ namespace Nova.Internal.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => list.Clear();
 
-        public NovaList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public AuraList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            list = new UnsafeList<T>(initialCapacity > 0 ? initialCapacity : 1, allocator == Allocator.Persistent ? NovaAllocator.Handle : allocator, options);
+            list = new UnsafeList<T>(initialCapacity > 0 ? initialCapacity : 1, allocator == Allocator.Persistent ? AuraAllocator.Handle : allocator, options);
         }
 
         public void Dispose()
@@ -198,15 +198,15 @@ namespace Nova.Internal.Collections
 
         public void Init()
         {
-            list = new UnsafeList<T>(1, NovaAllocator.Handle, NativeArrayOptions.UninitializedMemory);
+            list = new UnsafeList<T>(1, AuraAllocator.Handle, NativeArrayOptions.UninitializedMemory);
         }
     }
 
 
-    internal static partial class NovaListExtensions
+    internal static partial class AuraListExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetIndexOf<T, U>(ref this NovaList<T> list, U item, out int index, int offset = 0) where T : unmanaged, IEquatable<U>
+        public static bool TryGetIndexOf<T, U>(ref this AuraList<T> list, U item, out int index, int offset = 0) where T : unmanaged, IEquatable<U>
         {
             offset = math.max(0, offset);
             unsafe
@@ -229,7 +229,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetIndexOf<T, C>(ref this NovaList<T> list, T item, C comparer, out int index, int offset = 0)
+        public static bool TryGetIndexOf<T, C>(ref this AuraList<T> list, T item, C comparer, out int index, int offset = 0)
             where T : unmanaged
             where C : unmanaged, System.Collections.Generic.IComparer<T>
         {
@@ -254,7 +254,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CopyFrom<T>(this ref NovaList<T> dest, T[] src, int count, int startDestIndex = 0, int startSrcIndex = 0) where T : unmanaged
+        public unsafe static void CopyFrom<T>(this ref AuraList<T> dest, T[] src, int count, int startDestIndex = 0, int startSrcIndex = 0) where T : unmanaged
         {
             if (src == null)
             {
@@ -275,13 +275,13 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CreateEmpty<T>(this ref NovaList<T> list) where T : unmanaged
+        public unsafe static void CreateEmpty<T>(this ref AuraList<T> list) where T : unmanaged
         {
-            list = new NovaList<T>(0, Allocator.Persistent);
+            list = new AuraList<T>(0, Allocator.Persistent);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void FillWithValue<T>(this ref NovaList<T> list, T val) where T : unmanaged
+        public static void FillWithValue<T>(this ref AuraList<T> list, T val) where T : unmanaged
         {
             for (int i = 0; i < list.Length; ++i)
             {
@@ -290,19 +290,19 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void MemClear<T>(this ref NovaList<T> list) where T : unmanaged
+        public unsafe static void MemClear<T>(this ref AuraList<T> list) where T : unmanaged
         {
             UnsafeUtility.MemClear(list.Ptr, sizeof(T) * list.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void Init<T>(this ref NovaList<T> list, int capacity = 0) where T : unmanaged
+        public unsafe static void Init<T>(this ref AuraList<T> list, int capacity = 0) where T : unmanaged
         {
-            list = new NovaList<T>(capacity, Allocator.Persistent);
+            list = new AuraList<T>(capacity, Allocator.Persistent);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void DisposeListAndElements<T>(this ref NovaList<T> list) where T : unmanaged, IDisposable
+        public unsafe static void DisposeListAndElements<T>(this ref AuraList<T> list) where T : unmanaged, IDisposable
         {
             for (int i = 0; i < list.Length; ++i)
             {
@@ -313,26 +313,26 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CopyTo<T>(this ref NovaList<T> list, T* dest) where T : unmanaged
+        public unsafe static void CopyTo<T>(this ref AuraList<T> list, T* dest) where T : unmanaged
         {
             UnsafeUtility.MemCpy(dest, list.Ptr, sizeof(T) * list.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Sort<T>(this ref NovaList<T> list) where T : unmanaged, IComparable<T>
+        public static void Sort<T>(this ref AuraList<T> list) where T : unmanaged, IComparable<T>
         {
             list.list.Sort();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Sort<T, U>(this ref NovaList<T> list, U comparer) where T : unmanaged where U : System.Collections.Generic.IComparer<T>
+        public static void Sort<T, U>(this ref AuraList<T> list, U comparer) where T : unmanaged where U : System.Collections.Generic.IComparer<T>
         {
             list.list.Sort(comparer);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReturnAllToPool<T>(this ref NovaList<T> list, ref NovaList<T> pool) where T : unmanaged, IClearable
+        public static void ReturnAllToPool<T>(this ref AuraList<T> list, ref AuraList<T> pool) where T : unmanaged, IClearable
         {
             for (int i = 0; i < list.Length; ++i)
             {
@@ -344,9 +344,9 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static NovaList<U> Reinterpret<T, U>(this NovaList<T> list) where T : unmanaged where U : unmanaged
+        public unsafe static AuraList<U> Reinterpret<T, U>(this AuraList<T> list) where T : unmanaged where U : unmanaged
         {
-            return new NovaList<U>()
+            return new AuraList<U>()
             {
                 list = new UnsafeList<U>((U*)list.Ptr, list.Length),
             };
@@ -354,7 +354,7 @@ namespace Nova.Internal.Collections
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryRemove<T, U>(ref this NovaList<T> list, U item) where T : unmanaged, IEquatable<U>
+        public static bool TryRemove<T, U>(ref this AuraList<T> list, U item) where T : unmanaged, IEquatable<U>
         {
             if (!list.TryGetIndexOf(item, out int index))
             {
@@ -365,7 +365,7 @@ namespace Nova.Internal.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Swap<T>(this ref NovaList<T> list, int index1, int index2) where T : unmanaged
+        public static void Swap<T>(this ref AuraList<T> list, int index1, int index2) where T : unmanaged
         {
             T temp = list.ElementAt(index1);
             list.ElementAt(index1) = list.ElementAt(index2);

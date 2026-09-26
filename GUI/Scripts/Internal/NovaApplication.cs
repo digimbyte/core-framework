@@ -1,9 +1,9 @@
 ﻿
 using UnityEngine;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
-    internal static class NovaApplication
+    internal static class AuraApplication
     {
         public static event System.Action EditorDelayCall
         {
@@ -16,7 +16,7 @@ namespace Nova.Compat
             remove
             {
 #if UNITY_EDITOR
-                Debug.LogError("NovaApplication.DelayCall doesn't support unsubscribing because it wraps UnityEditor.EditorApplication.delayCall, which uses its own editor-only delegate type" +
+                Debug.LogError("AuraApplication.DelayCall doesn't support unsubscribing because it wraps UnityEditor.EditorApplication.delayCall, which uses its own editor-only delegate type" +
                     " that isn't accessible in an Editor-agnostic dll. Currently not worth remapping events since we don't need that functionality at time of writing.");
 #endif
             }

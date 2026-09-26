@@ -1,15 +1,15 @@
 ﻿
 //#define VERBOSE
-using Nova.Compat;
-using Nova.Internal.Common;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Common;
+using Aura.Internal.Utilities;
 using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// Handles the managed side of a texture pack
@@ -19,7 +19,7 @@ namespace Nova.Internal.Rendering
         private Texture2DArray textureArray = null;
         private bool recreatedTextureArray = false;
 
-        // These should only be accessed when NovaApplication.IsEditor == true
+        // These should only be accessed when AuraApplication.IsEditor == true
         private List<Texture2D> compressedCopyTexturePool = new List<Texture2D>();
         private Dictionary<TextureID, Texture2D> decompressed = new Dictionary<TextureID, Texture2D>();
 
@@ -42,7 +42,7 @@ namespace Nova.Internal.Rendering
             DestroyUtils.SafeDestroy(textureArray);
             textureArray = null;
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 for (int i = 0; i < compressedCopyTexturePool.Count; ++i)
                 {
@@ -106,14 +106,14 @@ namespace Nova.Internal.Rendering
                 return;
             }
 
-            if (!NovaSettings.Config.PackedImagesEnabled)
+            if (!AuraSettings.Config.PackedImagesEnabled)
             {
                 return;
             }
 
             EnsureTextureArray(ref data);
 
-            if (NovaApplication.IsEditor && !data.FormatDescriptor.IsSupportedStatic)
+            if (AuraApplication.IsEditor && !data.FormatDescriptor.IsSupportedStatic)
             {
                 EditorOnly_CopyDecompressedTextures(ref data);
                 return;
@@ -153,7 +153,7 @@ namespace Nova.Internal.Rendering
             int2 blockSize2 = data.FormatDescriptor.BlockSize;
             for (int mip = 0; mip < texture.mipmapCount; ++mip)
             {
-                switch (NovaSettings.Config.PackedImageCopyMode)
+                switch (AuraSettings.Config.PackedImageCopyMode)
                 {
                     case PackedImageCopyMode.Blind:
                     {
@@ -200,7 +200,7 @@ namespace Nova.Internal.Rendering
 
             TextureFormat texFormat;
 
-            if (NovaApplication.IsEditor)
+            if (AuraApplication.IsEditor)
             {
                 texFormat = data.FormatDescriptor.IsSupportedStatic ? data.FormatDescriptor.TextureFormat : TextureFormat.RGBA32;
             }
@@ -213,7 +213,7 @@ namespace Nova.Internal.Rendering
             textureArray.wrapMode = TextureWrapMode.Clamp;
             textureArray.hideFlags = HideFlags.DontSave;
 
-            if (!NovaApplication.IsEditor || data.FormatDescriptor.IsSupportedStatic)
+            if (!AuraApplication.IsEditor || data.FormatDescriptor.IsSupportedStatic)
             {
                 // Make unreadable on cpu
                 textureArray.Apply(false, true);

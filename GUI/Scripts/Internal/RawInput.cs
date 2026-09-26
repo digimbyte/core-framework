@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal static partial class RawInput
     {

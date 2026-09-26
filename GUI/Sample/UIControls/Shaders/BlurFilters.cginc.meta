@@ -8,7 +8,7 @@ ShaderIncludeImporter:
 AssetOrigin:
   serializedVersion: 1
   productId: 226304
-  packageName: Nova
+  packageName: Aura
   packageVersion: 2.1.3
-  assetPath: Assets/Nova/Sample/UIControls/Shaders/BlurFilters.cginc
+  assetPath: Assets/Aura/Sample/UIControls/Shaders/BlurFilters.cginc
   uploadId: 631462

@@ -1,13 +1,13 @@
 ﻿
-namespace Nova.Internal
+namespace Aura.Internal
 {
     [System.Reflection.Obfuscation]
-    internal class NovaEngine
+    internal class AuraEngine
     {
         [System.Reflection.Obfuscation]
-        public class NovaAnimator { }
+        public class AuraAnimator { }
 
         [System.Reflection.Obfuscation]
-        public class NovaNavigation { }
+        public class AuraNavigation { }
     }
 }

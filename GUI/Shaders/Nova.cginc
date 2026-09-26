@@ -1,15 +1,15 @@
 #ifndef NOVA_INCLUDED
 #define NOVA_INCLUDED
 #include "UnityCG.cginc"
-#include "NovaMath.cginc"
-#include "NovaDataStructures.cginc"
+#include "AuraMath.cginc"
+#include "AuraDataStructures.cginc"
 
 #if defined(_ALPHABLEND_ON) || defined(_ALPHAPREMULTIPLY_ON)
     #define NOVA_ALPHA
 #endif
 
 // Creates an instance of the specified type with the specified name
-#define NovaInitInstance(type, var) \
+#define AuraInitInstance(type, var) \
     type var; \
     UNITY_INITIALIZE_OUTPUT(type, var);
 
@@ -17,23 +17,23 @@
 
 #if 1 //////////////////////// TRANSFORMS ///////////////////////////////////
 
-    NOVA_DECLARE_BUFFER(TransformAndLighting, _NovaTransformsAndLighting);
-    float4x4 _NovaWorldFromLocal;
-    float4x4 _NovaLocalFromWorld;
+    NOVA_DECLARE_BUFFER(TransformAndLighting, _AuraTransformsAndLighting);
+    float4x4 _AuraWorldFromLocal;
+    float4x4 _AuraLocalFromWorld;
 
     // Need to do this for the various unity macros to work
     void UpdateMatrices()
     {
-        unity_ObjectToWorld = _NovaWorldFromLocal;
-        unity_WorldToObject = _NovaLocalFromWorld;
+        unity_ObjectToWorld = _AuraWorldFromLocal;
+        unity_WorldToObject = _AuraLocalFromWorld;
     }
 #endif
 
 
 #if 1 //////////////////////// INDEXING ///////////////////////////////////
-    int _NovaFirstIndex;
-    int _NovaLastIndex;
-    int _NovaViewingFromBehind;
+    int _AuraFirstIndex;
+    int _AuraLastIndex;
+    int _AuraViewingFromBehind;
 
     // Annoyingly, UNITY_SETUP_INSTANCE_ID doesn't allow you to just pass in the instance ID,
     // it expects a struct with the instance ID stored in a member called "instanceID", so this
@@ -51,20 +51,20 @@
         #define HandleStereoInstancingInstanceID(id)
     #endif
 
-    #define NovaVertInit(id, outputType, outputVar) \
+    #define AuraVertInit(id, outputType, outputVar) \
         InstanceIDWrapper wrapper; \
         wrapper.instanceID = id; \
         UNITY_SETUP_INSTANCE_ID(wrapper); \
         UpdateMatrices(); \
-        NovaInitInstance(outputType, outputVar); \
+        AuraInitInstance(outputType, outputVar); \
         UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(outputVar); \
         HandleStereoInstancingInstanceID(id);
 
 
     #if defined(UNITY_STEREO_INSTANCING_ENABLED)
-        #define NovaFragInit(v2f) UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(v2f);
+        #define AuraFragInit(v2f) UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(v2f);
     #else
-        #define NovaFragInit(v2f)
+        #define AuraFragInit(v2f)
     #endif
 
 
@@ -73,23 +73,23 @@
     // behind
     uint InstanceIDToDataIndex(uint instanceID)
     {
-        uint fromFront = instanceID + (uint)_NovaFirstIndex;
-        uint fromBack = (uint)_NovaLastIndex - instanceID;
-        uint viewingFromFront = 1 - (uint)_NovaViewingFromBehind;
-        return viewingFromFront * fromFront + _NovaViewingFromBehind * fromBack;
+        uint fromFront = instanceID + (uint)_AuraFirstIndex;
+        uint fromBack = (uint)_AuraLastIndex - instanceID;
+        uint viewingFromFront = 1 - (uint)_AuraViewingFromBehind;
+        return viewingFromFront * fromFront + _AuraViewingFromBehind * fromBack;
     }
 
     // Same as InstanceIDToDataIndex, but for vert index
     uint InstanceIDToVertIndex(uint instanceID, uint vid, uint vertsPerInstance)
     {
-        uint fromFront = (uint)_NovaFirstIndex + instanceID * vertsPerInstance + vid;
-        uint fromBack = (uint)_NovaLastIndex - instanceID * vertsPerInstance - (vertsPerInstance - 1u) + vid;
-        uint viewingFromFront = 1 - (uint)_NovaViewingFromBehind;
-        return viewingFromFront * fromFront + _NovaViewingFromBehind * fromBack;
+        uint fromFront = (uint)_AuraFirstIndex + instanceID * vertsPerInstance + vid;
+        uint fromBack = (uint)_AuraLastIndex - instanceID * vertsPerInstance - (vertsPerInstance - 1u) + vid;
+        uint viewingFromFront = 1 - (uint)_AuraViewingFromBehind;
+        return viewingFromFront * fromFront + _AuraViewingFromBehind * fromBack;
     }
 
     #if !defined(NOVA_NO_INDEX_BUFFER)
-        NOVA_DECLARE_BUFFER(float, _NovaDataIndices);
+        NOVA_DECLARE_BUFFER(float, _AuraDataIndices);
     #endif
 #endif
 
@@ -99,13 +99,13 @@
 
 #if 1 ///////////////////////////// COLORS ////////////////////////////////////
     #if defined(NOVA_PREMUL_COLORS)
-        #define NovaColorToV2F(colorName, v2f, novaColor) \
+        #define AuraColorToV2F(colorName, v2f, novaColor) \
             fixed4 unpacked##colorName = UnpackColor(novaColor); \
             PremulColor(unpacked##colorName); \
             Set##colorName(v2f, unpacked##colorName);
 
     #else
-        #define NovaColorToV2F(colorName, v2f, novaColor) \
+        #define AuraColorToV2F(colorName, v2f, novaColor) \
             fixed4 unpacked##colorName = UnpackColor(novaColor); \
             Set##colorName(v2f, unpacked##colorName);
             
@@ -114,7 +114,7 @@
 
 #if 1 ///////////////////////////// Edge Softening ////////////////////////////////////
 
-    half _NovaEdgeSoftenWidth;
+    half _AuraEdgeSoftenWidth;
 
     half GetSoftenWidth(half2 position)
     {
@@ -122,7 +122,7 @@
         float2 dx = abs(ddx(posAsFloat));
         float2 dy = abs(ddy(posAsFloat));
         half fw = sqrt(dot(dx, dy.yx));
-        fw = max(_NovaEdgeSoftenWidth * fw, NOVA_EPSILON);
+        fw = max(_AuraEdgeSoftenWidth * fw, NOVA_EPSILON);
         return fw;
     }
 
@@ -133,7 +133,7 @@
         float4 dy = abs(ddy(posAsFloat));
         half2 fw = half2(dot(dx.xy, dy.yx), dot(dx.zw, dy.wz));
         fw = sqrt(fw);
-        fw = max(_NovaEdgeSoftenWidth * fw, NOVA_EPSILON);
+        fw = max(_AuraEdgeSoftenWidth * fw, NOVA_EPSILON);
         return fw;
     }
 
@@ -206,18 +206,18 @@
 ///////////////////////////// CLIP MASKS ////////////////////////////////////
 #if defined(NOVA_CLIP_RECT) || defined(NOVA_CLIP_MASK)
     #define MAX_VISUAL_MODIFIERS 16
-    uint _NovaVisualModifierCount;
-    float4x4 _NovaVisualModifiersFromRoot[MAX_VISUAL_MODIFIERS];
+    uint _AuraVisualModifierCount;
+    float4x4 _AuraVisualModifiersFromRoot[MAX_VISUAL_MODIFIERS];
     // xy -> nHalfSize
     // z -> nFactor
     // w -> nRadius
-    float4 _NovaClipRectInfos[MAX_VISUAL_MODIFIERS];
+    float4 _AuraClipRectInfos[MAX_VISUAL_MODIFIERS];
     // x -> procedural flag (1 = procedural, 0 = sample texture)
     // y -> procedural percent (0..1)
     // z -> tangent cos
     // w -> tangent sin
-    float4 _NovaClipMaskParams[MAX_VISUAL_MODIFIERS];
-    float4 _NovaGlobalColorModifiers[MAX_VISUAL_MODIFIERS];
+    float4 _AuraClipMaskParams[MAX_VISUAL_MODIFIERS];
+    float4 _AuraGlobalColorModifiers[MAX_VISUAL_MODIFIERS];
 
     #if defined(NOVA_CLIP_RECT) || defined(NOVA_CLIP_MASK)
         #define NOVA_CLIPPING
@@ -230,10 +230,10 @@
         half GetTotalVisualModifierClipping(float3 rootPos)
         {
             half clipWeight = 1.0;
-            for (uint i = 0; i < _NovaVisualModifierCount; ++i)
+            for (uint i = 0; i < _AuraVisualModifierCount; ++i)
             {
-                float2 visualModifierPos = mul(_NovaVisualModifiersFromRoot[i], float4(rootPos, 1.0)).xy;
-                float4 clipRectInfo = _NovaClipRectInfos[i];
+                float2 visualModifierPos = mul(_AuraVisualModifiersFromRoot[i], float4(rootPos, 1.0)).xy;
+                float4 clipRectInfo = _AuraClipRectInfos[i];
                 float2 visualModifierNPos = visualModifierPos * GetClipRectNFactor(clipRectInfo);
 
 
@@ -250,10 +250,10 @@
 
         fixed4 ApplyVisualModiferClipping(fixed4 color, float3 rootPos)
         {
-            for (uint i = 0; i < _NovaVisualModifierCount; ++i)
+            for (uint i = 0; i < _AuraVisualModifierCount; ++i)
             {
-                float2 visualModifierPos = mul(_NovaVisualModifiersFromRoot[i], float4(rootPos, 1.0)).xy;
-                float4 clipRectInfo = _NovaClipRectInfos[i];
+                float2 visualModifierPos = mul(_AuraVisualModifiersFromRoot[i], float4(rootPos, 1.0)).xy;
+                float4 clipRectInfo = _AuraClipRectInfos[i];
                 float2 visualModifierNPos = visualModifierPos * GetClipRectNFactor(clipRectInfo);
 
 
@@ -272,9 +272,9 @@
 
         fixed4 ApplyGlobalColorModification(fixed4 color)
         {
-            for (uint i = 0; i < _NovaVisualModifierCount; ++i)
+            for (uint i = 0; i < _AuraVisualModifierCount; ++i)
             {
-                color = ApplyColorTint(color, _NovaGlobalColorModifiers[i]);
+                color = ApplyColorTint(color, _AuraGlobalColorModifiers[i]);
             }
             #if !defined(NOVA_ALPHA)
                 clip(color.a - NOVA_EPSILON);
@@ -285,19 +285,19 @@
 
     #if defined(NOVA_CLIP_MASK)
         // The index of the visual modifier corresponding to the clip mask
-        uint _NovaClipMaskIndex;
+        uint _AuraClipMaskIndex;
         sampler2D _ClipMaskTex;
 
         fixed4 ApplyClipMaskAndColorModifiers(fixed4 color, float3 rootPos)
         {
-            float4 clipMaskInfo = _NovaClipRectInfos[_NovaClipMaskIndex];
+            float4 clipMaskInfo = _AuraClipRectInfos[_AuraClipMaskIndex];
 
-            float2 clipMaskPos = mul(_NovaVisualModifiersFromRoot[_NovaClipMaskIndex], float4(rootPos, 1.0)).xy;
+            float2 clipMaskPos = mul(_AuraVisualModifiersFromRoot[_AuraClipMaskIndex], float4(rootPos, 1.0)).xy;
             float2 clipMaskNPos = clipMaskPos * GetClipRectNFactor(clipMaskInfo);
 
             half2 novaUV = clipMaskNPos / GetClipRectNHalfSize(clipMaskInfo);
 
-            float4 maskParams = _NovaClipMaskParams[_NovaClipMaskIndex];
+            float4 maskParams = _AuraClipMaskParams[_AuraClipMaskIndex];
             // Procedural mode: treat mask as an implicit linear gradient across the rect, rotated by maskParams.zw
             if (maskParams.x == 1.0)
             {

@@ -1,8 +1,8 @@
-using Nova;
+using Aura;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A UI control which reacts to user input and flips an underlying bool to track a <see cref="ToggledOn"/> state as it is clicked.

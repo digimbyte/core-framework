@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal static class ShaderUtils
     {
@@ -21,15 +21,15 @@ namespace Nova.Internal.Rendering
             LightingModelBuildFlag includedShadersMask;
             if ((visualType & UIBlock2DMask) != 0)
             {
-                includedShadersMask = NovaSettings.Config.UIBlock2DLightingModels;
+                includedShadersMask = AuraSettings.Config.UIBlock2DLightingModels;
             }
             else if (visualType == VisualType.UIBlock3D)
             {
-                includedShadersMask = NovaSettings.Config.UIBlock3DLightingModels;
+                includedShadersMask = AuraSettings.Config.UIBlock3DLightingModels;
             }
             else if ((visualType & VisualType.TEXT_MASK) != 0)
             {
-                includedShadersMask = NovaSettings.Config.TextBlockLightingModels;
+                includedShadersMask = AuraSettings.Config.TextBlockLightingModels;
             }
             else
             {

@@ -1,8 +1,8 @@
-using Nova;
+using Aura;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// An <see cref="ItemVisuals"/> for a simple button control with an image.

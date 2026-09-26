@@ -1,13 +1,13 @@
 ﻿
-using Nova.Internal;
-using Nova.Internal.Rendering;
+using Aura.Internal;
+using Aura.Internal.Rendering;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     
     [Serializable]

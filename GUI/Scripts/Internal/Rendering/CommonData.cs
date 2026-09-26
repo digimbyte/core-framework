@@ -1,13 +1,13 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     /// <summary>
     /// The data common to all blocks
@@ -16,16 +16,16 @@ namespace Nova.Internal.Rendering
     {
         public NativeList<DataStoreIndex, RenderBounds> BlockRenderBounds;
         public NativeList<DataStoreIndex, int> OrderInZLayer;
-        public NativeList<DataStoreIndex, NovaList<VisualElementIndex>> OverlappingElements;
+        public NativeList<DataStoreIndex, AuraList<VisualElementIndex>> OverlappingElements;
         public NativeList<DataStoreIndex, VisualModifierID> VisualModifierIDs;
         public NativeList<DataStoreIndex, ComputeBufferIndex> TransformIndices;
         public NativeList<DataStoreIndex, CoplanarSetID> CoplanarSetIDs;
         public NativeList<DataStoreIndex, RotationSetID> RotationSetIDs;
         public NativeList<RenderElement<BaseRenderInfo>> BaseInfos;
-        public NovaComputeBuffer<TransformAndLightingData, TransformAndLightingData> TransformAndLightingData;
-        public NovaHashMap<DataStoreID, byte> HiddenElements;
+        public AuraComputeBuffer<TransformAndLightingData, TransformAndLightingData> TransformAndLightingData;
+        public AuraHashMap<DataStoreID, byte> HiddenElements;
 
-        public NativeList<NovaList<VisualElementIndex>> OverlappingElementsPool;
+        public NativeList<AuraList<VisualElementIndex>> OverlappingElementsPool;
 
         public void Init()
         {

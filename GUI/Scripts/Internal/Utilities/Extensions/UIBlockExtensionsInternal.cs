@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Layouts;
+using Aura.Internal.Layouts;
 using UnityEngine;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class UIBlockExtensionsInternal
     {

@@ -1,12 +1,12 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct CoplanarSet
     {
@@ -55,7 +55,7 @@ namespace Nova.Internal.Rendering
     internal static class CoplanarSetExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref T GetSet<T>(this ref NovaHashMap<DataStoreID, NovaList<CoplanarSetID, T>> map, ref CoplanarSetIdentifier set) where T : unmanaged
+        public static ref T GetSet<T>(this ref AuraHashMap<DataStoreID, AuraList<CoplanarSetID, T>> map, ref CoplanarSetIdentifier set) where T : unmanaged
         {
             return ref map[set.BatchRootID].ElementAt(set.CoplanarSetID);
         }

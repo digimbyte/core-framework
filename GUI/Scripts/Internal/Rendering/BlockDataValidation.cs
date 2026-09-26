@@ -3,14 +3,14 @@ using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal static class BlockDataValidation
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ClampPositive100Public(ref global::Nova.Length length)
+        private static void ClampPositive100Public(ref global::Aura.Length length)
         {
-            if (length.Type == global::Nova.LengthType.Value)
+            if (length.Type == global::Aura.LengthType.Value)
             {
                 length.Raw = math.max(length.Raw, 0);
             }
@@ -21,23 +21,23 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool CornerRadiiIsUninitialized(in global::Nova.CornerRadii cr)
+        private static bool CornerRadiiIsUninitialized(in global::Aura.CornerRadii cr)
         {
-            return cr.TopLeft == global::Nova.Length.Zero &&
-                   cr.TopRight == global::Nova.Length.Zero &&
-                   cr.BottomRight == global::Nova.Length.Zero &&
-                   cr.BottomLeft == global::Nova.Length.Zero;
+            return cr.TopLeft == global::Aura.Length.Zero &&
+                   cr.TopRight == global::Aura.Length.Zero &&
+                   cr.BottomRight == global::Aura.Length.Zero &&
+                   cr.BottomLeft == global::Aura.Length.Zero;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool AllCornerRadiiMatch(in global::Nova.CornerRadii cr, global::Nova.Length master)
+        private static bool AllCornerRadiiMatch(in global::Aura.CornerRadii cr, global::Aura.Length master)
         {
             return cr.TopLeft == master && cr.TopRight == master &&
                    cr.BottomRight == master && cr.BottomLeft == master;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ClampCornerRadiiLengths(ref global::Nova.CornerRadii cr)
+        private static void ClampCornerRadiiLengths(ref global::Aura.CornerRadii cr)
         {
             ClampPositive100Public(ref cr.TopLeft);
             ClampPositive100Public(ref cr.TopRight);
@@ -47,22 +47,22 @@ namespace Nova.Internal.Rendering
 
         // Same effect as internal Length.ClampPositive() for public mirror fields after UnsafeUtility.As.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ClampLengthRawNonNegative(ref global::Nova.Length length)
+        private static void ClampLengthRawNonNegative(ref global::Aura.Length length)
         {
             length.Raw = math.max(length.Raw, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ClampLengthRawNonNegative(ref global::Nova.Length2 length)
+        private static void ClampLengthRawNonNegative(ref global::Aura.Length2 length)
         {
             ClampLengthRawNonNegative(ref length.X);
             ClampLengthRawNonNegative(ref length.Y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void SyncCornerRadiiFromMaster(ref global::Nova.UIBlock2DData data)
+        private static void SyncCornerRadiiFromMaster(ref global::Aura.UIBlock2DData data)
         {
-            global::Nova.Length u = data.CornerRadius;
+            global::Aura.Length u = data.CornerRadius;
             data.CornerRadii.TopLeft = u;
             data.CornerRadii.TopRight = u;
             data.CornerRadii.BottomRight = u;
@@ -70,9 +70,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void SyncCornerRadiiFromMaster(ref global::Nova.UIBlock3DData data)
+        private static void SyncCornerRadiiFromMaster(ref global::Aura.UIBlock3DData data)
         {
-            global::Nova.Length u = data.CornerRadius;
+            global::Aura.Length u = data.CornerRadius;
             data.CornerRadii.TopLeft = u;
             data.CornerRadii.TopRight = u;
             data.CornerRadii.BottomRight = u;
@@ -80,9 +80,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Validate(ref this global::Nova.Internal.UIBlock2DData data)
+        public static void Validate(ref this global::Aura.Internal.UIBlock2DData data)
         {
-            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            ref global::Aura.UIBlock2DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock2DData, global::Aura.UIBlock2DData>(ref data);
 
             ClampPositive100Public(ref pub.CornerRadius);
             ClampCornerRadiiLengths(ref pub.CornerRadii);
@@ -108,9 +108,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Validate(ref this global::Nova.Internal.UIBlock3DData data)
+        public static void Validate(ref this global::Aura.Internal.UIBlock3DData data)
         {
-            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            ref global::Aura.UIBlock3DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock3DData, global::Aura.UIBlock3DData>(ref data);
 
             ClampPositive100Public(ref pub.CornerRadius);
             ClampCornerRadiiLengths(ref pub.CornerRadii);

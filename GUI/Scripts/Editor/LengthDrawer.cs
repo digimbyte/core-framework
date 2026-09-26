@@ -1,18 +1,18 @@
 ﻿
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomPropertyDrawer(typeof(Length))]
-    internal class LengthDrawer : NovaPropertyDrawer<_Length>
+    internal class LengthDrawer : AuraPropertyDrawer<_Length>
     {
         protected override void OnGUI(Rect position, GUIContent label)
         {
             GUIContent propertyLabel = EditorGUI.BeginProperty(position, label, wrapper.SerializedProperty);
             Rect floatField = position;
-            floatField.width = Mathf.Max(NovaGUI.MinFloatFieldWidth, floatField.width - NovaGUI.ToggleToolbarFieldWidth) - NovaGUI.MinSpaceBetweenFields;
+            floatField.width = Mathf.Max(AuraGUI.MinFloatFieldWidth, floatField.width - AuraGUI.ToggleToolbarFieldWidth) - AuraGUI.MinSpaceBetweenFields;
 
             EditorGUI.BeginChangeCheck();
             float raw = wrapper.Raw;
@@ -23,9 +23,9 @@ namespace Nova.Editor.GUIs
 
             EditorGUI.BeginChangeCheck();
             Rect lengthTypeField = floatField;
-            lengthTypeField.width = NovaGUI.ToggleToolbarFieldWidth;
-            lengthTypeField.x += floatField.width + NovaGUI.MinSpaceBetweenFields;
-            LengthType newType = NovaGUI.LengthTypeField(lengthTypeField, wrapper.Type);
+            lengthTypeField.width = AuraGUI.ToggleToolbarFieldWidth;
+            lengthTypeField.x += floatField.width + AuraGUI.MinSpaceBetweenFields;
+            LengthType newType = AuraGUI.LengthTypeField(lengthTypeField, wrapper.Type);
             bool typeChanged = EditorGUI.EndChangeCheck();
             EditorGUI.EndProperty();
 

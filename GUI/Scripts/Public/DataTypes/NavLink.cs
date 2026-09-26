@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Defines a type of <see cref="NavLink"/>.

@@ -1,16 +1,16 @@
 ﻿
-using Nova.Internal;
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.Utilities
+namespace Aura.Editor.Utilities
 {
     /// <summary>
     /// When transform positions are modified manually in editor, the layout positions

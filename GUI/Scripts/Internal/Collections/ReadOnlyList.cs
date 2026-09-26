@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     /// <summary>
     /// A ref struct wrapper around a list. The struct cannot be stored or written to.

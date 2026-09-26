@@ -2,7 +2,7 @@
 using System;
 using System.Globalization;
 
-namespace Nova
+namespace Aura
 {
     internal static class FormatUtils
     {

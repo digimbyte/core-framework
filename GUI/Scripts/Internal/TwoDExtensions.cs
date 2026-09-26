@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova.Extensions
+namespace Aura.Extensions
 {
     internal static partial class Util
     {

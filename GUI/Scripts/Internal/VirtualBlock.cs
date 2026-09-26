@@ -1,14 +1,14 @@
 ﻿
 #define CACHE_NAME
 
-using Nova.Internal;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
+using Aura.Internal;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
 using System;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     
     [Serializable]

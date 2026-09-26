@@ -1,15 +1,15 @@
 ﻿
 //#define DEBUG_GESTURES
 
-using Nova.Events;
-using Nova.Extensions;
-using Nova.Internal;
-using Nova.Internal.Utilities;
+using Aura.Events;
+using Aura.Extensions;
+using Aura.Internal;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
-using Navigator = Nova.Internal.Navigator<Nova.UIBlock>;
+using Navigator = Aura.Internal.Navigator<Aura.UIBlock>;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Defines on which event a "click" should be triggered.
@@ -222,7 +222,7 @@ namespace Nova
         public NavNode Navigation = NavNode.TwoD;
 
         /// <summary>
-        /// The attached <see cref="Nova.UIBlock"/> receiving the interaction events, <see cref="IEvent.Receiver"/>
+        /// The attached <see cref="Aura.UIBlock"/> receiving the interaction events, <see cref="IEvent.Receiver"/>
         /// </summary>
         public UIBlock UIBlock
         {
@@ -501,7 +501,7 @@ namespace Nova
                 Unhover(ref state, ref source);
             }
 
-            bool clickable = Time.frameCount - pressTime >= Internal.NovaSettings.Config.ClickFrameDeltaThreshold;
+            bool clickable = Time.frameCount - pressTime >= Internal.AuraSettings.Config.ClickFrameDeltaThreshold;
 
             pressTime = int.MaxValue;
 
@@ -558,7 +558,7 @@ namespace Nova
     /// <seealso cref="Gesture.OnDrag"/>
     /// <seealso cref="Gesture.OnCancel"/>
 
-    [AddComponentMenu("Nova/Interactable")]
+    [AddComponentMenu("Aura/Interactable")]
     [HelpURL("https://novaui.io/manual/InputOverview.html#interactable--scroller")]
     public sealed class Interactable : GestureRecognizer, IInteractable
     {

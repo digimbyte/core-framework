@@ -1,7 +1,7 @@
 ﻿
 //#define DEBUG_RECTS
-using Nova;
-using Nova.Internal.Utilities;
+using Aura;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.Mathematics;
@@ -9,11 +9,11 @@ using UnityEditor;
 using UnityEditor.ShortcutManagement;
 using UnityEditorInternal;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal static class NovaGUI
+    internal static class AuraGUI
     {
         public static bool LengthToggleShortcutEnabled = false;
         public static bool EditingSingleObject = true;
@@ -50,7 +50,7 @@ namespace Nova.Editor.GUIs
         public static float PrefixLabelWidth => Mathf.Min(EditorGUIUtility.labelWidth, ViewWidth - MinimumTotalViewWidth) + MinSpaceBetweenFields;
         public static float FieldWidth => Mathf.Max(ViewWidth * 0.575f, MinimumFieldWidth);
 
-        [ClutchShortcut("Nova/Length Type Swap", KeyCode.L, ShortcutModifiers.Action)]
+        [ClutchShortcut("Aura/Length Type Swap", KeyCode.L, ShortcutModifiers.Action)]
         private static void LengthSwapToggled()
         {
             LengthToggleShortcutEnabled = !LengthToggleShortcutEnabled;
@@ -77,7 +77,7 @@ namespace Nova.Editor.GUIs
             }
         }
 
-        public static bool ShowZAxisValues(UIBlock uiBlock) => uiBlock is UIBlock3D ? NovaEditorPrefs.UIBlock3DShowAllZAxis : NovaEditorPrefs.UIBlockShowAllZAxis;
+        public static bool ShowZAxisValues(UIBlock uiBlock) => uiBlock is UIBlock3D ? AuraEditorPrefs.UIBlock3DShowAllZAxis : AuraEditorPrefs.UIBlockShowAllZAxis;
 
         public static class Styles
         {
@@ -90,11 +90,11 @@ namespace Nova.Editor.GUIs
                 EditorApplication.playModeStateChanged += (_) => CleanupTextures();
 
                 playerColorSpace = PlayerSettings.colorSpace;
-                NovaEditorEventManager.PlayerSettingsChanged += HandlePlayerSettingsChanged;
+                AuraEditorEventManager.PlayerSettingsChanged += HandlePlayerSettingsChanged;
 
                 SceneView.beforeSceneGui += (SceneView sceneView) =>
                 {
-                    if (!NovaEditorPrefs.HierarchyGizmosEnabled || !sceneView.drawGizmos)
+                    if (!AuraEditorPrefs.HierarchyGizmosEnabled || !sceneView.drawGizmos)
                     {
                         return;
                     }
@@ -610,10 +610,10 @@ namespace Nova.Editor.GUIs
                 }
             }
 
-            public static readonly Color NovaRed = new Color(0.8f, 0, 0.35f);
-            public static readonly Color NovaBlue = new Color(0, 0.33f, 1);
-            public static readonly Color NovaGreen = new Color(0, .45f, 0.25f);
-            public static readonly Color NovaCyan = new Color(0, 0.4f, 0.4f);
+            public static readonly Color AuraRed = new Color(0.8f, 0, 0.35f);
+            public static readonly Color AuraBlue = new Color(0, 0.33f, 1);
+            public static readonly Color AuraGreen = new Color(0, .45f, 0.25f);
+            public static readonly Color AuraCyan = new Color(0, 0.4f, 0.4f);
             public static readonly Color Cyan_MoreBlue = new Color(0, 0.8f, 0.9f);
             public static readonly Color Cyan_MoreGreen = new Color(0, 0.9f, 0.8f);
             public static readonly Color Magenta_MoreBlue = new Color(0.6f, 0.4f, 0.9f);
@@ -626,7 +626,7 @@ namespace Nova.Editor.GUIs
                 if (createTexture)
                 {
                     texture = CreateTexture(color);
-                    texture.name = $"NovaGUI.SolidTexture.{ColorUtility.ToHtmlStringRGBA(color)}";
+                    texture.name = $"AuraGUI.SolidTexture.{ColorUtility.ToHtmlStringRGBA(color)}";
                     solidTextures[color] = texture;
                 }
 
@@ -789,7 +789,7 @@ namespace Nova.Editor.GUIs
         {
             // Request value with size 0, so we have the lightest impact on shifting all the other objects.
             // Still moves things around a bit, which is why we offset a negative amount below.
-            Rect position = NovaGUI.Layout.GetControlRect(GUILayout.Width(0), GUILayout.Height(0));
+            Rect position = AuraGUI.Layout.GetControlRect(GUILayout.Width(0), GUILayout.Height(0));
 
             WarningIcon(position, tooltip);
 
@@ -798,10 +798,10 @@ namespace Nova.Editor.GUIs
 
         public static void WarningIcon(Rect position, string tooltip)
         {
-            position.x -= NovaGUI.IconSize;
-            position.y += NovaGUI.MinSpaceBetweenFields;
-            position.width = NovaGUI.IconSize;
-            position.height = NovaGUI.IconSize;
+            position.x -= AuraGUI.IconSize;
+            position.y += AuraGUI.MinSpaceBetweenFields;
+            position.width = AuraGUI.IconSize;
+            position.height = AuraGUI.IconSize;
 
             EditorGUI.LabelField(position, new GUIContent(Labels.WarningIcon) { tooltip = tooltip });
         }
@@ -882,7 +882,7 @@ namespace Nova.Editor.GUIs
 
         public static Foldout EditorPrefFoldoutHeader(string labelKey, System.Action<Rect> dropdownMenu = null, string displayName = null)
         {
-            string prefKey = NovaEditorPrefs.GetFullEditorPrefPath(labelKey);
+            string prefKey = AuraEditorPrefs.GetFullEditorPrefPath(labelKey);
             bool currentVal = EditorPrefs.GetBool(prefKey, false);
             Foldout foldout = Foldout.DoHeaderGroup(currentVal, string.IsNullOrEmpty(displayName) ? labelKey : displayName, dropdownMenu);
 
@@ -895,7 +895,7 @@ namespace Nova.Editor.GUIs
 
         public static Foldout EditorPrefFoldoutHeader(string label, SerializedProperty enabledProperty)
         {
-            string prefKey = NovaEditorPrefs.GetFullEditorPrefPath(label);
+            string prefKey = AuraEditorPrefs.GetFullEditorPrefPath(label);
             bool currentVal = EditorPrefs.GetBool(prefKey, false);
             Foldout foldout = Foldout.DoHeaderGroup(currentVal, label, enabledProperty);
 
@@ -1067,7 +1067,7 @@ namespace Nova.Editor.GUIs
         public static void IntSlider(GUIContent label, SerializedProperty serializedProperty, int min, int max)
         {
             EditorGUI.BeginChangeCheck();
-            Rect rect = NovaGUI.Layout.GetControlRect();
+            Rect rect = AuraGUI.Layout.GetControlRect();
             GUIContent labelContent = EditorGUI.BeginProperty(rect, label, serializedProperty);
             int newVal = EditorGUI.IntSlider(rect, labelContent, serializedProperty.intValue, min, max);
             EditorGUI.EndProperty();
@@ -1127,16 +1127,16 @@ namespace Nova.Editor.GUIs
 
         public static void Length2Field(GUIContent label, _Length2 length, Length2.Calculated calc, Vector2 min, Vector2 max)
         {
-            NovaGUI.Layout.BeginHorizontal();
+            AuraGUI.Layout.BeginHorizontal();
             PrefixLabel(label);
 
-            NovaGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect _);
+            AuraGUI.Layout.GetXYZFieldRects(false, out Rect x, out Rect y, out Rect _);
             float labelWidth = LabelWidth;
             LabelWidth = SingleCharacterGUIWidth;
             LengthField(x, Labels.X, length.X, calc.X, min: min.x, max: max.x);
             LengthField(y, Labels.Y, length.Y, calc.Y, min: min.y, max: max.y);
             LabelWidth = labelWidth;
-            NovaGUI.Layout.EndHorizontal();
+            AuraGUI.Layout.EndHorizontal();
         }
 
         public static bool Length3Field(GUIContent label, _Length3 lengths, _MinMax3 minMax, Length3.Calculated calc, ThreeD<bool> disabled, bool zField, bool showRange)
@@ -1206,7 +1206,7 @@ namespace Nova.Editor.GUIs
         public static void EnumFlagsField<T>(GUIContent label, SerializedProperty serializedProperty, T current) where T : System.Enum
         {
             EditorGUI.BeginChangeCheck();
-            Rect rect = NovaGUI.Layout.GetControlRect();
+            Rect rect = AuraGUI.Layout.GetControlRect();
             GUIContent labelContent = EditorGUI.BeginProperty(rect, label, serializedProperty);
             System.Enum newVal = EditorGUI.EnumFlagsField(rect, labelContent, current);
             EditorGUI.EndProperty();
@@ -1219,7 +1219,7 @@ namespace Nova.Editor.GUIs
         public static void EnumField<T>(GUIContent label, SerializedProperty serializedProperty, T current) where T : System.Enum
         {
             EditorGUI.BeginChangeCheck();
-            Rect rect = NovaGUI.Layout.GetControlRect();
+            Rect rect = AuraGUI.Layout.GetControlRect();
             GUIContent labelContent = EditorGUI.BeginProperty(rect, label, serializedProperty);
             System.Enum newVal = EditorGUI.EnumPopup(rect, labelContent, current);
             EditorGUI.EndProperty();

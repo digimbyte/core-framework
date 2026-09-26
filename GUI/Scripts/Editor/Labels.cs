@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     internal static class Labels
     {
@@ -17,7 +17,7 @@ namespace Nova.Editor.GUIs
                     string[] paths = AssetDatabase.FindAssets("UIBlock2DIcon t:texture2D");
                     if (paths.Length == 0)
                     {
-                        Debug.LogWarning("Failed to find Nova icons path");
+                        Debug.LogWarning("Failed to find Aura icons path");
                     }
 
                     _iconPath = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(paths[0]));
@@ -225,13 +225,13 @@ namespace Nova.Editor.GUIs
         public static readonly GUIContent MinMax = EditorGUIUtility.TrTextContent("Min-Max");
         public static readonly GUIContent Opacity = EditorGUIUtility.TrTextContent(" ", "Opacity");
 
-        public static readonly GUIContent Logo = EditorGUIUtility.TrIconContent($"{IconPath}/NovaLogo.png");
+        public static readonly GUIContent Logo = EditorGUIUtility.TrIconContent($"{IconPath}/AuraLogo.png");
 
         public class Settings
         {
             private const string LightingModelIncludeTooltip = "The lighting models to include in builds. Including lighting models increases both build time and the size of the final build due to the number of shader variants. Only select models that you know you use in the final build.";
 
-            public static readonly GUIContent LogFlags = EditorGUIUtility.TrTextContent("Log Flags", "Enables or disables warnings that may be logged by Nova.");
+            public static readonly GUIContent LogFlags = EditorGUIUtility.TrTextContent("Log Flags", "Enables or disables warnings that may be logged by Aura.");
             public static readonly GUIContent PackedImages = EditorGUIUtility.TrTextContent("Packed images", "Global toggle for packed images, which reduce the number of draw calls by batching images with the same dimensions, format, and mip count.");
             public static readonly GUIContent SuperSampleText = EditorGUIUtility.TrTextContent("Super Sample Text", "Improves quality of text (especially in VR).");
             public static readonly GUIContent EdgeSoftenWidth = EditorGUIUtility.TrTextContent("Edge Soften Width", "The width (in pixels) of the softening for edges (block edges, clip mask edges, etc.).");
@@ -243,7 +243,7 @@ namespace Nova.Editor.GUIs
             public static readonly GUIContent UIBlock3DLightingModels = EditorGUIUtility.TrTextContent("UIBlock3D", LightingModelIncludeTooltip);
             public static readonly GUIContent TextBlockLightingModels = EditorGUIUtility.TrTextContent("TextBlock", LightingModelIncludeTooltip);
             public static readonly GUIContent ClickThreshold = EditorGUIUtility.TrTextContent("Click Frame Threshold", "The number of frames that must separate a \"Press\" and \"Release\" Gesture in order to trigger a Click. For low-accuracy input devices (e.g. VR hand tracking), a higher value (such as 3) might be required to reduce noise. For high-accuracy input devices (e.g. mouse and touch), 1 should be sufficient.");
-            public static readonly GUIContent EdgeSnapping = EditorGUIUtility.TrTextContent("Edge Snapping", "Enables or disables edge detection and snapping for all Nova editor tools (e.g. UIBlock Tool and Padding/Margin Tool).");
+            public static readonly GUIContent EdgeSnapping = EditorGUIUtility.TrTextContent("Edge Snapping", "Enables or disables edge detection and snapping for all Aura editor tools (e.g. UIBlock Tool and Padding/Margin Tool).");
             public static readonly GUIContent HierarchyGizmos = EditorGUIUtility.TrTextContent("Hierarchy Gizmos", "Enables or disables outlining every UIBlock in the selection hierarchy. Only applicable while scene Gizmos are enabled.");
         }
 
@@ -276,7 +276,7 @@ namespace Nova.Editor.GUIs
         {
             public static readonly GUIContent Color = EditorGUIUtility.TrTextContent("Color", "The color of the body.");
             public static readonly GUIContent CornerRadius = EditorGUIUtility.TrTextContent("Corner Radius", "Master corner radius for the body, border, and shadow (same role as the top Padding field). Expand the arrow to set each corner independently.");
-            public static readonly GUIContent SoftenEdges = EditorGUIUtility.TrTextContent("Soften Edges", "In certain situations, like when rendering a texture that has transparency which handles softening edges, having Nova add additional edge softening may not be desired.");
+            public static readonly GUIContent SoftenEdges = EditorGUIUtility.TrTextContent("Soften Edges", "In certain situations, like when rendering a texture that has transparency which handles softening edges, having Aura add additional edge softening may not be desired.");
         }
 
         public static class UIBlock3D
@@ -359,9 +359,9 @@ namespace Nova.Editor.GUIs
 
         public static class NavLink
         {
-            public static readonly GUIContent TypeLabel = EditorGUIUtility.TrTextContent(nameof(Nova.NavLink.Type), "The type of navigation to perform in this direction.");
-            public static readonly GUIContent TargetLabel = EditorGUIUtility.TrTextContent(nameof(Nova.NavLink.Target), "The Interactable or Scroller to navigate to when \"Type\" is set to \"Manual\".");
-            public static readonly GUIContent FallbackLabel = EditorGUIUtility.TrTextContent(nameof(Nova.NavLink.Fallback), "Designates the fallback behavior in the event a navigation target isn't found or is not configured to be navigable.");
+            public static readonly GUIContent TypeLabel = EditorGUIUtility.TrTextContent(nameof(Aura.NavLink.Type), "The type of navigation to perform in this direction.");
+            public static readonly GUIContent TargetLabel = EditorGUIUtility.TrTextContent(nameof(Aura.NavLink.Target), "The Interactable or Scroller to navigate to when \"Type\" is set to \"Manual\".");
+            public static readonly GUIContent FallbackLabel = EditorGUIUtility.TrTextContent(nameof(Aura.NavLink.Fallback), "Designates the fallback behavior in the event a navigation target isn't found or is not configured to be navigable.");
             public static readonly GUIContent TargetNotNavigableWarningLabel = EditorGUIUtility.TrIconContent(WarningIconString, "\"Target\" not configured to be navigable. Will result in \"Fallback\" behavior.");
         }
 
@@ -387,7 +387,7 @@ namespace Nova.Editor.GUIs
             private const string RenderOverOpaqueGeometryTitle = "Render Over Opaque Geometry";
             private const string OverriddenTooltip = "This value is inherited from the Screen Space root.";
 
-            public static readonly GUIContent SortingOrder = EditorGUIUtility.TrTextContent("Sorting Order", "The sorting order of this hierarchy relative to other coplanar Nova content. Higher values render on top.");
+            public static readonly GUIContent SortingOrder = EditorGUIUtility.TrTextContent("Sorting Order", "The sorting order of this hierarchy relative to other coplanar Aura content. Higher values render on top.");
             public static readonly GUIContent RenderQueue = EditorGUIUtility.TrTextContent(RenderQueueTitle, "The value that will be assigned to the material's render queue for the hierarchy.");
             public static readonly GUIContent RenderQueue_Overridden = EditorGUIUtility.TrTextContent(RenderQueueTitle, OverriddenTooltip);
             public static readonly GUIContent RenderOverOpaqueGeometry = EditorGUIUtility.TrTextContent(RenderOverOpaqueGeometryTitle, "Whether or not the content in the sort group should render over geometry rendered in the opaque render queue. This is useful for rendering in screen space.");
@@ -396,11 +396,11 @@ namespace Nova.Editor.GUIs
 
         public static class ScreenSpace
         {
-            public static readonly GUIContent TargetCamera = EditorGUIUtility.TrTextContent("Target Camera", "The target camera used to render the Nova content.");
+            public static readonly GUIContent TargetCamera = EditorGUIUtility.TrTextContent("Target Camera", "The target camera used to render the Aura content.");
             public static readonly GUIContent AdditionalCameras = EditorGUIUtility.TrTextContent("Additional Cameras", "Additional cameras that the ScreenSpace content will be rendered to.\nNOTE: The content will still be positioned and size based on the Target Camera, it will simply also render to these additional cameras.");
-            public static readonly GUIContent Mode = EditorGUIUtility.TrTextContent("Fill Mode", $"The mode used to render the content:\n-{nameof(Nova.ScreenSpace.FillMode.FixedWidth)}: Maintains the {nameof(Nova.ScreenSpace.ReferenceResolution)} width on the root UIBlock, adjusting the height to match the camera's aspect ratio.\n-{nameof(Nova.ScreenSpace.FillMode.FixedHeight)}: Maintains the {nameof(Nova.ScreenSpace.ReferenceResolution)} height on the root UIBlock, adjusting the width to match the camera's aspect ratio.\n-{nameof(Nova.ScreenSpace.FillMode.MatchCameraResolution)}: Sets the root UIBlock's size to match the pixel-dimensions of the camera.\n-{nameof(Nova.ScreenSpace.FillMode.Adaptive)}: Automatically chooses the axis (width or height) to preserve based on the current camera resolution vs the Reference Resolution so the UI adapts for portrait or landscape devices.\n-{nameof(Nova.ScreenSpace.FillMode.Manual)}: Does not modify the size or scale of the UIBlock. Useful if a custom resize behavior is desired.");
+            public static readonly GUIContent Mode = EditorGUIUtility.TrTextContent("Fill Mode", $"The mode used to render the content:\n-{nameof(Aura.ScreenSpace.FillMode.FixedWidth)}: Maintains the {nameof(Aura.ScreenSpace.ReferenceResolution)} width on the root UIBlock, adjusting the height to match the camera's aspect ratio.\n-{nameof(Aura.ScreenSpace.FillMode.FixedHeight)}: Maintains the {nameof(Aura.ScreenSpace.ReferenceResolution)} height on the root UIBlock, adjusting the width to match the camera's aspect ratio.\n-{nameof(Aura.ScreenSpace.FillMode.MatchCameraResolution)}: Sets the root UIBlock's size to match the pixel-dimensions of the camera.\n-{nameof(Aura.ScreenSpace.FillMode.Adaptive)}: Automatically chooses the axis (width or height) to preserve based on the current camera resolution vs the Reference Resolution so the UI adapts for portrait or landscape devices.\n-{nameof(Aura.ScreenSpace.FillMode.Manual)}: Does not modify the size or scale of the UIBlock. Useful if a custom resize behavior is desired.");
             public static readonly GUIContent ReferenceResolution = EditorGUIUtility.TrTextContent("Reference Resolution", "The resolution to use as a reference when resizing the root UIBlock to match the camera's aspect ratio.");
-            public static readonly GUIContent PlaneDistance = EditorGUIUtility.TrTextContent("Plane Distance", "The distance in front of the camera at which to render the Nova content.");
+            public static readonly GUIContent PlaneDistance = EditorGUIUtility.TrTextContent("Plane Distance", "The distance in front of the camera at which to render the Aura content.");
         }
 
         public static class PaddingAndMargin
@@ -443,7 +443,7 @@ namespace Nova.Editor.GUIs
         public static class Image
         {
             public static readonly GUIContent Label = EditorGUIUtility.TrTextContent("Image", "The image to render in the body of this UI Block.");
-            public static readonly GUIContent ImageMode = EditorGUIUtility.TrTextContent("Mode", "Specifies how the Nova Engine should store and attempt to batch the image.");
+            public static readonly GUIContent ImageMode = EditorGUIUtility.TrTextContent("Mode", "Specifies how the Aura Engine should store and attempt to batch the image.");
             public static readonly GUIContent ImageScaleMode = EditorGUIUtility.TrTextContent("Scale Mode", "Specifies how to render the image based on the aspect ratio of the image and the UI Block.");
             public static readonly GUIContent FillAxis = EditorGUIUtility.TrTextContent("Fill Axis", "Axis used as the pixel-density reference when Scale Mode is set to Fill.");
             public static readonly GUIContent ImageCenter = EditorGUIUtility.TrTextContent("Center", "The center position of the image in UV space, where UVs go from (-1, -1) in the bottom-left to (1, 1) in the top-right.");

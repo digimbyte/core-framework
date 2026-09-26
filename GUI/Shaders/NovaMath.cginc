@@ -14,10 +14,10 @@
 #define SafeDivideSigned(n, d) (n / (sign(d) * max(abs(d), NOVA_EPSILON)))
 
 // Unity UVs go (0,0) -> (1,1) (depending on d3d or opengl conventions), but it's often more
-// convenient for calculations to have (0,0) be in the center. So "Nova" conventions are (0, 0) in the center
+// convenient for calculations to have (0,0) be in the center. So "Aura" conventions are (0, 0) in the center
 // and the extents go to .5
 #define ToUnityUV(uv) (0.5 * (uv + 1.0))
-#define ToNovaUV(uv) (2 * uv - 1.0)
+#define ToAuraUV(uv) (2 * uv - 1.0)
 
 float GetNFactor(float2 halfSize)
 {
@@ -67,7 +67,7 @@ half2 Length4To2(half4 vec)
 }
 
 // CornerRadii order: x=TL, y=TR, z=BR, w=BL (block space, Y+ up)
-half NovaPickCornerRadius(half2 blockPos, half4 r_tl_tr_br_bl)
+half AuraPickCornerRadius(half2 blockPos, half4 r_tl_tr_br_bl)
 {
     if (blockPos.x >= 0 && blockPos.y >= 0) { return r_tl_tr_br_bl.y; }
     if (blockPos.x >= 0 && blockPos.y < 0) { return r_tl_tr_br_bl.z; }
@@ -75,7 +75,7 @@ half NovaPickCornerRadius(half2 blockPos, half4 r_tl_tr_br_bl)
     return r_tl_tr_br_bl.x;
 }
 
-half NovaMaxCornerRadius(half4 r)
+half AuraMaxCornerRadius(half4 r)
 {
     return max(max(r.x, r.y), max(r.z, r.w));
 }
@@ -146,18 +146,18 @@ half NovaMaxCornerRadius(half4 r)
 // NOTE: This does not account for non uniform scale
 // If we had the blockFromRoot matrix, we could account for non-uniform scale via:
 // normalize(mul(transpose((float3x3)blockFromRoot), blockNormal));
-float3 NovaRootFromBlockNormal(float4x4 rootFromBlock, float3 blockNormal)
+float3 AuraRootFromBlockNormal(float4x4 rootFromBlock, float3 blockNormal)
 {
     return normalize(mul((float3x3)rootFromBlock, blockNormal));
 }
 
-float4 NovaBlockToClipPos(float4 blockPos, float4x4 rootFromBlock)
+float4 AuraBlockToClipPos(float4 blockPos, float4x4 rootFromBlock)
 {
     float3 rootPos = mul(rootFromBlock, blockPos).xyz;
     return UnityObjectToClipPos(rootPos);
 }
 
-float3 NovaRootToWorldPos(float3 pos)
+float3 AuraRootToWorldPos(float3 pos)
 {
     return mul(unity_ObjectToWorld, float4(pos, 1.0)).xyz;
 }

@@ -1,5 +1,5 @@
 ﻿
-namespace Nova
+namespace Aura
 {
     internal interface IGameObjectActiveReceiver
     {

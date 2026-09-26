@@ -1,25 +1,25 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Core;
+using Aura.Compat;
+using Aura.Internal.Core;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 
-namespace Nova.Internal.Hierarchy
+namespace Aura.Internal.Hierarchy
 {
     internal partial class Hierarchy
     {
         [BurstCompile]
-        internal struct AssignBatchRoots : INovaJobParallelFor, IJob
+        internal struct AssignBatchRoots : IAuraJobParallelFor, IJob
         {
             [ReadOnly]
             public NativeList<HierarchyElement> Hierarchy;
             [ReadOnly]
-            public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+            public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
             [ReadOnly]
-            public NovaHashMap<DataStoreID, int> BatchRoots;
+            public AuraHashMap<DataStoreID, int> BatchRoots;
 
             [ReadOnly]
             public NativeList<DataStoreIndex> DirtyToDataStoreIndices;

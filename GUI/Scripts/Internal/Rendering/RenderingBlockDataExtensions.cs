@@ -1,23 +1,23 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal static class BlockDataExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float GetClampedCornerLength(ref global::Nova.Length length, float halfMinBlockDimension)
+        private static float GetClampedCornerLength(ref global::Aura.Length length, float halfMinBlockDimension)
         {
             float rel = halfMinBlockDimension;
-            ref Length il = ref global::Nova.LengthExtensions.ToInternal(ref length);
+            ref Length il = ref global::Aura.LengthExtensions.ToInternal(ref length);
             return math.clamp(GetLengthValue(ref il, ref rel), 0f, halfMinBlockDimension);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 GetResolvedCornerRadii(ref this global::Nova.UIBlock2DData data, float halfMinBlockDimension)
+        public static float4 GetResolvedCornerRadii(ref this global::Aura.UIBlock2DData data, float halfMinBlockDimension)
         {
             if (!data.UseIndividualCornerRadii)
             {
@@ -25,7 +25,7 @@ namespace Nova.Internal.Rendering
                 return new float4(u, u, u, u);
             }
 
-            ref global::Nova.CornerRadii cr = ref data.CornerRadii;
+            ref global::Aura.CornerRadii cr = ref data.CornerRadii;
             return new float4(
                 GetClampedCornerLength(ref cr.TopLeft, halfMinBlockDimension),
                 GetClampedCornerLength(ref cr.TopRight, halfMinBlockDimension),
@@ -34,7 +34,7 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 GetResolvedCornerRadii(ref this global::Nova.UIBlock3DData data, float halfMinXY)
+        public static float4 GetResolvedCornerRadii(ref this global::Aura.UIBlock3DData data, float halfMinXY)
         {
             if (!data.UseIndividualCornerRadii)
             {
@@ -42,7 +42,7 @@ namespace Nova.Internal.Rendering
                 return new float4(u, u, u, u);
             }
 
-            ref global::Nova.CornerRadii cr = ref data.CornerRadii;
+            ref global::Aura.CornerRadii cr = ref data.CornerRadii;
             return new float4(
                 GetClampedCornerLength(ref cr.TopLeft, halfMinXY),
                 GetClampedCornerLength(ref cr.TopRight, halfMinXY),
@@ -51,57 +51,57 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetCornerRadius(ref this global::Nova.UIBlock2DData data, float halfMinBlockDimension)
+        public static float GetCornerRadius(ref this global::Aura.UIBlock2DData data, float halfMinBlockDimension)
         {
             return math.cmax(data.GetResolvedCornerRadii(halfMinBlockDimension));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetCornerRadius(ref this global::Nova.UIBlock3DData data, float halfMinBlockDimension)
+        public static float GetCornerRadius(ref this global::Aura.UIBlock3DData data, float halfMinBlockDimension)
         {
             return math.cmax(data.GetResolvedCornerRadii(halfMinBlockDimension));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 GetResolvedCornerRadii(ref this global::Nova.Internal.UIBlock2DData data, float halfMinBlockDimension)
+        public static float4 GetResolvedCornerRadii(ref this global::Aura.Internal.UIBlock2DData data, float halfMinBlockDimension)
         {
-            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            ref global::Aura.UIBlock2DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock2DData, global::Aura.UIBlock2DData>(ref data);
             return pub.GetResolvedCornerRadii(halfMinBlockDimension);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 GetResolvedCornerRadii(ref this global::Nova.Internal.UIBlock3DData data, float halfMinXY)
+        public static float4 GetResolvedCornerRadii(ref this global::Aura.Internal.UIBlock3DData data, float halfMinXY)
         {
-            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            ref global::Aura.UIBlock3DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock3DData, global::Aura.UIBlock3DData>(ref data);
             return pub.GetResolvedCornerRadii(halfMinXY);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetCornerRadius(ref this global::Nova.Internal.UIBlock2DData data, float halfMinBlockDimension)
+        public static float GetCornerRadius(ref this global::Aura.Internal.UIBlock2DData data, float halfMinBlockDimension)
         {
-            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            ref global::Aura.UIBlock2DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock2DData, global::Aura.UIBlock2DData>(ref data);
             return pub.GetCornerRadius(halfMinBlockDimension);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetCornerRadius(ref this global::Nova.Internal.UIBlock3DData data, float halfMinBlockDimension)
+        public static float GetCornerRadius(ref this global::Aura.Internal.UIBlock3DData data, float halfMinBlockDimension)
         {
-            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            ref global::Aura.UIBlock3DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock3DData, global::Aura.UIBlock3DData>(ref data);
             return pub.GetCornerRadius(halfMinBlockDimension);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetEdgeRadius(ref this global::Nova.Internal.UIBlock3DData data, float zSize, float clampedCornerRadius)
+        public static float GetEdgeRadius(ref this global::Aura.Internal.UIBlock3DData data, float zSize, float clampedCornerRadius)
         {
-            ref global::Nova.UIBlock3DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock3DData, global::Nova.UIBlock3DData>(ref data);
+            ref global::Aura.UIBlock3DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock3DData, global::Aura.UIBlock3DData>(ref data);
             return pub.GetEdgeRadius(zSize, clampedCornerRadius);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetEdgeRadius(ref this global::Nova.UIBlock3DData data, float zSize, float clampedCornerRadius)
+        public static float GetEdgeRadius(ref this global::Aura.UIBlock3DData data, float zSize, float clampedCornerRadius)
         {
             float maxEdgeRadius = math.min(0.5f * zSize, clampedCornerRadius);
-            ref Length il = ref global::Nova.LengthExtensions.ToInternal(ref data.EdgeRadius);
+            ref Length il = ref global::Aura.LengthExtensions.ToInternal(ref data.EdgeRadius);
             float toClamp = GetLengthValue(ref il, ref maxEdgeRadius);
             return math.clamp(toClamp, 0, maxEdgeRadius);
         }
@@ -193,9 +193,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AdjustSizeForImage(this ref global::Nova.UIBlock2DData data, ref float2 size, float aspectRatio)
+        public static void AdjustSizeForImage(this ref global::Aura.UIBlock2DData data, ref float2 size, float aspectRatio)
         {
-            if (data.Image.Adjustment.ScaleMode == global::Nova.ImageScaleMode.Fit)
+            if (data.Image.Adjustment.ScaleMode == global::Aura.ImageScaleMode.Fit)
             {
                 float nodeAspectRatio = size.x / size.y;
                 float relativeAspectRatio = aspectRatio / nodeAspectRatio;
@@ -211,9 +211,9 @@ namespace Nova.Internal.Rendering
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AdjustSizeForImage(this ref global::Nova.Internal.UIBlock2DData data, ref float2 size, float aspectRatio)
+        public static void AdjustSizeForImage(this ref global::Aura.Internal.UIBlock2DData data, ref float2 size, float aspectRatio)
         {
-            ref global::Nova.UIBlock2DData pub = ref UnsafeUtility.As<global::Nova.Internal.UIBlock2DData, global::Nova.UIBlock2DData>(ref data);
+            ref global::Aura.UIBlock2DData pub = ref UnsafeUtility.As<global::Aura.Internal.UIBlock2DData, global::Aura.UIBlock2DData>(ref data);
             pub.AdjustSizeForImage(ref size, aspectRatio);
         }
 

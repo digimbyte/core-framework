@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4879fac941303444fac0e381955f4a8d, type: 3}
-  m_Name: NovaSettings
+  m_Name: AuraSettings
   m_EditorClassIdentifier: 
   settings:
     LogFlags: -1

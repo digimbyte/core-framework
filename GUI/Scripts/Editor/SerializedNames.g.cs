@@ -9,14 +9,14 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Nova.Editor.Serialization
+namespace Aura.Editor.Serialization
 {
     
     
     internal class Wrappers
     {
         
-        public class _Alignment : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Alignment : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -39,11 +39,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.HorizontalAlignment X
+            public Aura.HorizontalAlignment X
             {
                 get
                 {
-                    return ((Nova.HorizontalAlignment)(this.XProp.intValue));
+                    return ((Aura.HorizontalAlignment)(this.XProp.intValue));
                 }
                 set
                 {
@@ -63,11 +63,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.VerticalAlignment Y
+            public Aura.VerticalAlignment Y
             {
                 get
                 {
-                    return ((Nova.VerticalAlignment)(this.YProp.intValue));
+                    return ((Aura.VerticalAlignment)(this.YProp.intValue));
                 }
                 set
                 {
@@ -87,11 +87,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.DepthAlignment Z
+            public Aura.DepthAlignment Z
             {
                 get
                 {
-                    return ((Nova.DepthAlignment)(this.ZProp.intValue));
+                    return ((Aura.DepthAlignment)(this.ZProp.intValue));
                 }
                 set
                 {
@@ -117,7 +117,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _AutoLayout : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _AutoLayout : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -156,11 +156,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Axis Axis
+            public Aura.Axis Axis
             {
                 get
                 {
-                    return ((Nova.Axis)(this.AxisProp.intValue));
+                    return ((Aura.Axis)(this.AxisProp.intValue));
                 }
                 set
                 {
@@ -357,7 +357,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _AutoSize3 : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _AutoSize3 : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -380,11 +380,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Internal.AutoSize X
+            public Aura.Internal.AutoSize X
             {
                 get
                 {
-                    return ((Nova.Internal.AutoSize)(this.XProp.intValue));
+                    return ((Aura.Internal.AutoSize)(this.XProp.intValue));
                 }
                 set
                 {
@@ -404,11 +404,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Internal.AutoSize Y
+            public Aura.Internal.AutoSize Y
             {
                 get
                 {
-                    return ((Nova.Internal.AutoSize)(this.YProp.intValue));
+                    return ((Aura.Internal.AutoSize)(this.YProp.intValue));
                 }
                 set
                 {
@@ -428,11 +428,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Internal.AutoSize Z
+            public Aura.Internal.AutoSize Z
             {
                 get
                 {
-                    return ((Nova.Internal.AutoSize)(this.ZProp.intValue));
+                    return ((Aura.Internal.AutoSize)(this.ZProp.intValue));
                 }
                 set
                 {
@@ -458,7 +458,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _BaseRenderInfo : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _BaseRenderInfo : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -493,11 +493,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.BlockType BlockType
+            public Aura.BlockType BlockType
             {
                 get
                 {
-                    return ((Nova.BlockType)(this.BlockTypeProp.intValue));
+                    return ((Aura.BlockType)(this.BlockTypeProp.intValue));
                 }
                 set
                 {
@@ -547,7 +547,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _BlockTool : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _BlockTool : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -604,7 +604,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Border : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Border : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -704,11 +704,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.BorderDirection Direction
+            public Aura.BorderDirection Direction
             {
                 get
                 {
-                    return ((Nova.BorderDirection)(this.DirectionProp.intValue));
+                    return ((Aura.BorderDirection)(this.DirectionProp.intValue));
                 }
                 set
                 {
@@ -734,7 +734,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ClipMask : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ClipMask : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -812,7 +812,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ClipMaskInfo : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ClipMaskInfo : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -887,7 +887,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _CoreBlock : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _CoreBlock : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -939,7 +939,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _CrossLayout : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _CrossLayout : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -980,11 +980,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Axis Axis
+            public Aura.Axis Axis
             {
                 get
                 {
-                    return ((Nova.Axis)(this.AxisProp.intValue));
+                    return ((Aura.Axis)(this.AxisProp.intValue));
                 }
                 set
                 {
@@ -1228,7 +1228,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _DataStoreID : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _DataStoreID : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1265,7 +1265,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _GestureRecognizer : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _GestureRecognizer : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1372,11 +1372,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ClickBehavior ClickBehavior
+            public Aura.ClickBehavior ClickBehavior
             {
                 get
                 {
-                    return ((Nova.ClickBehavior)(this.ClickBehaviorProp.intValue));
+                    return ((Aura.ClickBehavior)(this.ClickBehaviorProp.intValue));
                 }
                 set
                 {
@@ -1420,11 +1420,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.SelectBehavior onSelect
+            public Aura.SelectBehavior onSelect
             {
                 get
                 {
-                    return ((Nova.SelectBehavior)(this.onSelectProp.intValue));
+                    return ((Aura.SelectBehavior)(this.onSelectProp.intValue));
                 }
                 set
                 {
@@ -1499,7 +1499,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _GradientTool : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _GradientTool : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1556,7 +1556,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _GridView : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _GridView : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1579,11 +1579,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Axis crossAxis
+            public Aura.Axis crossAxis
             {
                 get
                 {
-                    return ((Nova.Axis)(this.crossAxisProp.intValue));
+                    return ((Aura.Axis)(this.crossAxisProp.intValue));
                 }
                 set
                 {
@@ -1627,11 +1627,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Internal.VirtualBlockSerializer virtualBlockSerializer
+            public Aura.Internal.VirtualBlockSerializer virtualBlockSerializer
             {
                 get
                 {
-                    return ((Nova.Internal.VirtualBlockSerializer)(this.virtualBlockSerializerProp.objectReferenceValue));
+                    return ((Aura.Internal.VirtualBlockSerializer)(this.virtualBlockSerializerProp.objectReferenceValue));
                 }
                 set
                 {
@@ -1657,7 +1657,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ImageAdjustment : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ImageAdjustment : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1782,11 +1782,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ImageScaleMode scaleMode
+            public Aura.ImageScaleMode scaleMode
             {
                 get
                 {
-                    return ((Nova.ImageScaleMode)(this.scaleModeProp.intValue));
+                    return ((Aura.ImageScaleMode)(this.scaleModeProp.intValue));
                 }
                 set
                 {
@@ -1806,11 +1806,11 @@ namespace Nova.Editor.Serialization
                 }
             }
 
-            public Nova.ImageFillAxis fillAxis
+            public Aura.ImageFillAxis fillAxis
             {
                 get
                 {
-                    return ((Nova.ImageFillAxis)(this.fillAxisProp.intValue));
+                    return ((Aura.ImageFillAxis)(this.fillAxisProp.intValue));
                 }
                 set
                 {
@@ -1836,7 +1836,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ImageData : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ImageData : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1884,11 +1884,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ImagePackMode Mode
+            public Aura.ImagePackMode Mode
             {
                 get
                 {
-                    return ((Nova.ImagePackMode)(this.ModeProp.intValue));
+                    return ((Aura.ImagePackMode)(this.ModeProp.intValue));
                 }
                 set
                 {
@@ -1914,7 +1914,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Interactable : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Interactable : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -1963,11 +1963,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.GestureSpace GestureSpace
+            public Aura.GestureSpace GestureSpace
             {
                 get
                 {
-                    return ((Nova.GestureSpace)(this.GestureSpaceProp.intValue));
+                    return ((Aura.GestureSpace)(this.GestureSpaceProp.intValue));
                 }
                 set
                 {
@@ -2059,11 +2059,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ClickBehavior ClickBehavior
+            public Aura.ClickBehavior ClickBehavior
             {
                 get
                 {
-                    return ((Nova.ClickBehavior)(this.ClickBehaviorProp.intValue));
+                    return ((Aura.ClickBehavior)(this.ClickBehaviorProp.intValue));
                 }
                 set
                 {
@@ -2083,11 +2083,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.SelectBehavior onSelect
+            public Aura.SelectBehavior onSelect
             {
                 get
                 {
-                    return ((Nova.SelectBehavior)(this.onSelectProp.intValue));
+                    return ((Aura.SelectBehavior)(this.onSelectProp.intValue));
                 }
                 set
                 {
@@ -2162,7 +2162,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ItemView : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ItemView : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -2207,7 +2207,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Layout : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Layout : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -2555,11 +2555,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.Axis AspectRatioAxis
+            public Aura.Axis AspectRatioAxis
             {
                 get
                 {
-                    return ((Nova.Axis)(this.AspectRatioAxisProp.intValue));
+                    return ((Aura.Axis)(this.AspectRatioAxisProp.intValue));
                 }
                 set
                 {
@@ -2609,7 +2609,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Length : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Length : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -2654,11 +2654,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.LengthType Type
+            public Aura.LengthType Type
             {
                 get
                 {
-                    return ((Nova.LengthType)(this.TypeProp.intValue));
+                    return ((Aura.LengthType)(this.TypeProp.intValue));
                 }
                 set
                 {
@@ -2684,7 +2684,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _CornerRadii : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _CornerRadii : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -2823,7 +2823,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Length2 : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Length2 : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -2904,7 +2904,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Length3 : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Length3 : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3014,7 +3014,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _LengthBounds : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _LengthBounds : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3211,7 +3211,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ListView : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ListView : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3264,11 +3264,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.UIBlock _uiBlock
+            public Aura.UIBlock _uiBlock
             {
                 get
                 {
-                    return ((Nova.UIBlock)(this._uiBlockProp.objectReferenceValue));
+                    return ((Aura.UIBlock)(this._uiBlockProp.objectReferenceValue));
                 }
                 set
                 {
@@ -3294,7 +3294,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _MinMax : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _MinMax : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3369,7 +3369,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _MinMax3 : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _MinMax3 : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3479,7 +3479,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _MinMaxBounds : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _MinMaxBounds : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3676,7 +3676,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _NavLink : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _NavLink : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3699,11 +3699,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.NavLinkType Type
+            public Aura.NavLinkType Type
             {
                 get
                 {
-                    return ((Nova.NavLinkType)(this.TypeProp.intValue));
+                    return ((Aura.NavLinkType)(this.TypeProp.intValue));
                 }
                 set
                 {
@@ -3723,11 +3723,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.NavLinkFallback Fallback
+            public Aura.NavLinkFallback Fallback
             {
                 get
                 {
-                    return ((Nova.NavLinkFallback)(this.FallbackProp.intValue));
+                    return ((Aura.NavLinkFallback)(this.FallbackProp.intValue));
                 }
                 set
                 {
@@ -3747,11 +3747,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.GestureRecognizer Target
+            public Aura.GestureRecognizer Target
             {
                 get
                 {
-                    return ((Nova.GestureRecognizer)(this.TargetProp.objectReferenceValue));
+                    return ((Aura.GestureRecognizer)(this.TargetProp.objectReferenceValue));
                 }
                 set
                 {
@@ -3777,7 +3777,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _NavNode : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _NavNode : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -3974,7 +3974,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _NovaSettings : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _AuraSettings : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -4026,7 +4026,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _RadialFill : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _RadialFill : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -4156,7 +4156,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _RadialGradient : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _RadialGradient : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -4315,7 +4315,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _ScreenSpace : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _ScreenSpace : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -4390,11 +4390,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ScreenSpace.FillMode fillMode
+            public Aura.ScreenSpace.FillMode fillMode
             {
                 get
                 {
-                    return ((Nova.ScreenSpace.FillMode)(this.fillModeProp.intValue));
+                    return ((Aura.ScreenSpace.FillMode)(this.fillModeProp.intValue));
                 }
                 set
                 {
@@ -4476,7 +4476,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Scroller : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Scroller : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -4521,11 +4521,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.OverscrollEffect OverscrollEffect
+            public Aura.OverscrollEffect OverscrollEffect
             {
                 get
                 {
-                    return ((Nova.OverscrollEffect)(this.OverscrollEffectProp.intValue));
+                    return ((Aura.OverscrollEffect)(this.OverscrollEffectProp.intValue));
                 }
                 set
                 {
@@ -4617,11 +4617,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.UIBlock scrollbarVisual
+            public Aura.UIBlock scrollbarVisual
             {
                 get
                 {
-                    return ((Nova.UIBlock)(this.scrollbarVisualProp.objectReferenceValue));
+                    return ((Aura.UIBlock)(this.scrollbarVisualProp.objectReferenceValue));
                 }
                 set
                 {
@@ -4737,11 +4737,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ClickBehavior ClickBehavior
+            public Aura.ClickBehavior ClickBehavior
             {
                 get
                 {
-                    return ((Nova.ClickBehavior)(this.ClickBehaviorProp.intValue));
+                    return ((Aura.ClickBehavior)(this.ClickBehaviorProp.intValue));
                 }
                 set
                 {
@@ -4761,11 +4761,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.SelectBehavior onSelect
+            public Aura.SelectBehavior onSelect
             {
                 get
                 {
-                    return ((Nova.SelectBehavior)(this.onSelectProp.intValue));
+                    return ((Aura.SelectBehavior)(this.onSelectProp.intValue));
                 }
                 set
                 {
@@ -4840,7 +4840,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _SettingsConfig : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _SettingsConfig : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -4879,11 +4879,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.LogFlags LogFlags
+            public Aura.LogFlags LogFlags
             {
                 get
                 {
-                    return ((Nova.LogFlags)(this.LogFlagsProp.intValue));
+                    return ((Aura.LogFlags)(this.LogFlagsProp.intValue));
                 }
                 set
                 {
@@ -4927,11 +4927,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.PackedImageCopyMode PackedImageCopyMode
+            public Aura.PackedImageCopyMode PackedImageCopyMode
             {
                 get
                 {
-                    return ((Nova.PackedImageCopyMode)(this.PackedImageCopyModeProp.intValue));
+                    return ((Aura.PackedImageCopyMode)(this.PackedImageCopyModeProp.intValue));
                 }
                 set
                 {
@@ -5047,11 +5047,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.LightingModelBuildFlag UIBlock2DLightingModels
+            public Aura.LightingModelBuildFlag UIBlock2DLightingModels
             {
                 get
                 {
-                    return ((Nova.LightingModelBuildFlag)(this.UIBlock2DLightingModelsProp.intValue));
+                    return ((Aura.LightingModelBuildFlag)(this.UIBlock2DLightingModelsProp.intValue));
                 }
                 set
                 {
@@ -5071,11 +5071,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.LightingModelBuildFlag TextBlockLightingModels
+            public Aura.LightingModelBuildFlag TextBlockLightingModels
             {
                 get
                 {
-                    return ((Nova.LightingModelBuildFlag)(this.TextBlockLightingModelsProp.intValue));
+                    return ((Aura.LightingModelBuildFlag)(this.TextBlockLightingModelsProp.intValue));
                 }
                 set
                 {
@@ -5095,11 +5095,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.LightingModelBuildFlag UIBlock3DLightingModels
+            public Aura.LightingModelBuildFlag UIBlock3DLightingModels
             {
                 get
                 {
-                    return ((Nova.LightingModelBuildFlag)(this.UIBlock3DLightingModelsProp.intValue));
+                    return ((Aura.LightingModelBuildFlag)(this.UIBlock3DLightingModelsProp.intValue));
                 }
                 set
                 {
@@ -5149,7 +5149,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Shadow : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Shadow : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5307,11 +5307,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.ShadowDirection Direction
+            public Aura.ShadowDirection Direction
             {
                 get
                 {
-                    return ((Nova.ShadowDirection)(this.DirectionProp.intValue));
+                    return ((Aura.ShadowDirection)(this.DirectionProp.intValue));
                 }
                 set
                 {
@@ -5337,7 +5337,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _SortGroup : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _SortGroup : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5389,7 +5389,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _SortGroupInfo : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _SortGroupInfo : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5490,7 +5490,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _SpacingTool : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _SpacingTool : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5547,7 +5547,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _Surface : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _Surface : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5648,11 +5648,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.LightingModel LightingModel
+            public Aura.LightingModel LightingModel
             {
                 get
                 {
-                    return ((Nova.LightingModel)(this.LightingModelProp.intValue));
+                    return ((Aura.LightingModel)(this.LightingModelProp.intValue));
                 }
                 set
                 {
@@ -5726,7 +5726,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _TextBlock : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _TextBlock : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5833,7 +5833,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIBlock : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIBlock : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -5998,7 +5998,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIBlock2D : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIBlock2D : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6186,7 +6186,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIBlock2DData : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIBlock2DData : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6504,7 +6504,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIBlock3D : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIBlock3D : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6640,7 +6640,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIBlock3DData : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIBlock3DData : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6790,7 +6790,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIBlockTool : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIBlockTool : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6847,7 +6847,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UIEdgeSnapTool : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UIEdgeSnapTool : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6904,7 +6904,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _UITool : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _UITool : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -6961,7 +6961,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _VirtualBlockModule : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _VirtualBlockModule : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -7028,11 +7028,11 @@ namespace Nova.Editor.Serialization
                 }
             }
             
-            public Nova.CoreBlock owner
+            public Aura.CoreBlock owner
             {
                 get
                 {
-                    return ((Nova.CoreBlock)(this.ownerProp.objectReferenceValue));
+                    return ((Aura.CoreBlock)(this.ownerProp.objectReferenceValue));
                 }
                 set
                 {
@@ -7058,7 +7058,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _VirtualUIBlock : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _VirtualUIBlock : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -7197,7 +7197,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _VirtualUIBlock2D : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _VirtualUIBlock2D : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -7249,7 +7249,7 @@ namespace Nova.Editor.Serialization
             }
         }
         
-        public class _VirtualUIBlock3D : Nova.Editor.Serialization.ISerializedPropertyWrapper
+        public class _VirtualUIBlock3D : Aura.Editor.Serialization.ISerializedPropertyWrapper
         {
             
             private UnityEditor.SerializedProperty _serializedProperty;
@@ -7650,7 +7650,7 @@ namespace Nova.Editor.Serialization
             public static string Back = "Back";
         }
         
-        public class NovaSettings
+        public class AuraSettings
         {
             
             public static string settings = "settings";

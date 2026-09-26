@@ -1,19 +1,19 @@
 ﻿
 //#define DEBUG_GESTURES
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Input;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Input;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-using InputRouter = Nova.Internal.InputState<Nova.UIBlockHit>.InputRouter;
-using Navigator = Nova.Internal.Navigator<Nova.UIBlock>;
+using InputRouter = Aura.Internal.InputState<Aura.UIBlockHit>.InputRouter;
+using Navigator = Aura.Internal.Navigator<Aura.UIBlock>;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A way to indicate the physical stability of an input device as it's used to perform various interactions.
@@ -77,7 +77,7 @@ namespace Nova
 
 
     /// <summary>
-    /// The details of a <see cref="Ray"/>-><see cref="Nova.UIBlock"/> or <see cref="Sphere"/>-><see cref="Nova.UIBlock"/> intersection.
+    /// The details of a <see cref="Ray"/>-><see cref="Aura.UIBlock"/> or <see cref="Sphere"/>-><see cref="Aura.UIBlock"/> intersection.
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
@@ -184,7 +184,7 @@ namespace Nova
     }
 
     /// <summary>
-    /// The static access point to provide input events and leverage the Nova input system.
+    /// The static access point to provide input events and leverage the Aura input system.
     /// </summary>
     public static class Interaction
     {
@@ -344,7 +344,7 @@ namespace Nova
 
         internal static void Init()
         {
-            if (!Compat.NovaApplication.IsPlaying)
+            if (!Compat.AuraApplication.IsPlaying)
             {
                 return;
             }
@@ -373,7 +373,7 @@ namespace Nova
         /// <summary>
         /// Performs a sphere collision against all active <see cref="UIBlock"/>s in the scene and populates the provided list with <see cref="UIBlockHit"/>s for all <see cref="UIBlock"/>s colliding with the provided <paramref name="sphere"/>.
         /// </summary>
-        /// <remarks>Performed by the Nova Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
+        /// <remarks>Performed by the Aura Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
         /// <param name="sphere">The sphere, in world space, to cast</param>
         /// <param name="hitsToPopulate">The list to populate with all <see cref="UIBlockHit"/> collisions, sorted by top-most-rendered (at index 0).</param>
         /// <param name="layerMask">The gameobject layers to include, defaults to "All Layers".</param>
@@ -391,7 +391,7 @@ namespace Nova
         /// <summary>
         /// Performs a sphere collision test against all active <see cref="UIBlock"/>s in the scene and retrieves a <see cref="UIBlockHit"/> for the top-most-rendered <see cref="UIBlock"/> colliding with the provided <paramref name="sphere"/>.
         /// </summary>
-        /// <remarks>Performed by the Nova Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
+        /// <remarks>Performed by the Aura Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
         /// <param name="sphere">The sphere, in world space, to cast</param>
         /// <param name="blockHit">A <see cref="UIBlockHit"/> for the top-most-rendered <see cref="UIBlock"/> colliding with the provided <paramref name="sphere"/>.</param>
         /// <param name="layerMask">The gameobject layers to include, defaults to "All Layers".</param>
@@ -415,7 +415,7 @@ namespace Nova
         /// <summary>
         /// Performs a raycast against all active <see cref="UIBlock"/>s in the scene and populates the provided list with <see cref="UIBlockHit"/>s for all <see cref="UIBlock"/>s intersecting with the provided <paramref name="ray"/>.
         /// </summary>
-        /// <remarks>Performed by the Nova Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
+        /// <remarks>Performed by the Aura Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
         /// <param name="ray">The ray, in world space, to cast</param>
         /// <param name="hitsToPopulate">The list to populate with all <see cref="UIBlockHit"/> collisions, sorted by top-most-rendered (at index 0).</param>
         /// <param name="maxDistance">The max distance from the ray origin (in world space) to consider an intersection point a "hit".</param>
@@ -429,7 +429,7 @@ namespace Nova
         /// <summary>
         /// Performs a raycast against all active <see cref="UIBlock"/>s in the scene and retrieves a <see cref="UIBlockHit"/> for the top-most-rendered <see cref="UIBlock"/> colliding with the provided <paramref name="ray"/>.
         /// </summary>
-        /// <remarks>Performed by the Nova Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
+        /// <remarks>Performed by the Aura Input System, independent of the <see cref="Physics"/> and <see cref="Physics2D"/> systems.</remarks>
         /// <param name="ray">The ray, in world space, to cast</param>
         /// <param name="blockHit">A <see cref="UIBlockHit"/> for the top-most-rendered <see cref="UIBlock"/> colliding with the provided <paramref name="ray"/>.</param>
         /// <param name="maxDistance">The max distance from the ray origin (in world space) to consider an intersection point a "hit".</param>

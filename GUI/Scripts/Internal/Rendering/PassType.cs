@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal enum PassType : byte
     {

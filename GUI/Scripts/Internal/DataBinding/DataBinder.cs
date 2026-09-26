@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace Nova.Internal.DataBinding
+namespace Aura.Internal.DataBinding
 {
     internal class DataBinder<TData> : DataBinder
     {

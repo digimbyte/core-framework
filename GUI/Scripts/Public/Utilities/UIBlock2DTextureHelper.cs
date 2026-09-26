@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// Helper that auto-adjusts a `UIBlock2D`'s image tiling/scale when the
@@ -17,7 +17,7 @@ namespace Nova
     /// Runs in edit mode and at runtime.
     /// </summary>
     [ExecuteAlways]
-    [AddComponentMenu("Nova/Utilities/UIBlock2D Texture Helper")]
+    [AddComponentMenu("Aura/Utilities/UIBlock2D Texture Helper")]
     [DisallowMultipleComponent]
     public class UIBlock2DTextureHelper : MonoBehaviour
     {
@@ -234,7 +234,7 @@ namespace Nova
                     adj.UVScale = desiredUVScale;
                 }
 
-                // Mark dirty so Nova picks up the change in editor and at runtime
+                // Mark dirty so Aura picks up the change in editor and at runtime
                 try
                 {
                     uiBlock.EditorOnly_MarkDirty();

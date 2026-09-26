@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace NovaSamples.DummyScripts
+namespace AuraSamples.DummyScripts
 {
     [ExecuteAlways]
     public class DummyCubeAnimator : MonoBehaviour

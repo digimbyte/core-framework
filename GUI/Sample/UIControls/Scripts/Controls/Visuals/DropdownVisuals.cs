@@ -1,9 +1,9 @@
-using Nova;
+using Aura;
 using System;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// The <see cref="ItemVisuals"/> type used to display a <see cref="Dropdown"/> control and its list of selectable options.

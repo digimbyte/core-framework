@@ -1,9 +1,9 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [Flags]
     internal enum MaterialModifier

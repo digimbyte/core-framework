@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     internal enum Axis
     {

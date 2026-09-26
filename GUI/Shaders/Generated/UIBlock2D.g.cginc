@@ -1,7 +1,7 @@
 #ifndef NOVA_UIBLOCK2D_STRUCTURES
 #define NOVA_UIBLOCK2D_STRUCTURES
 
-#include "../NovaPreV2F.cginc"
+#include "../AuraPreV2F.cginc"
 
 ////////////////// BEGIN GENERATED //////////////////
 #define GetGradientSpaceUV(val) val.Packed0.xy
@@ -7594,6 +7594,6 @@ struct v2f
 };
 ////////////////// END GENERATED //////////////////
 
-#include "../NovaPostV2F.cginc"
+#include "../AuraPostV2F.cginc"
 
 #endif

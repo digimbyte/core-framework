@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Common;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal.Common;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
@@ -13,7 +13,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     internal struct HitTestResult : System.IEquatable<HitTestResult>
     {
@@ -95,7 +95,7 @@ namespace Nova.Internal.Input
                 }
 
 #pragma warning disable CS0162 // Unreachable code detected
-                if (NovaApplication.ConstIsEditor && FilterToPlayer && NovaApplication.IsPlaying)
+                if (AuraApplication.ConstIsEditor && FilterToPlayer && AuraApplication.IsPlaying)
                 {
                     if (!Application.IsPlaying(monoBlock.gameObject))
                     {
@@ -113,9 +113,9 @@ namespace Nova.Internal.Input
         private static BurstedMethod<BurstMethod> navAncestorScopesQuery;
         private NativeList<DataStoreID> navigationScopeRootIDs;
         private NativeList<DataStoreID> navigationScopeIDCache;
-        private NovaHashMap<DataStoreID, bool> navigationScopeFlags;
-        private NovaHashMap<DataStoreID, bool> navigationNodeFlags;
-        private NovaHashMap<DataStoreID, float> topLevelProximityCache;
+        private AuraHashMap<DataStoreID, bool> navigationScopeFlags;
+        private AuraHashMap<DataStoreID, bool> navigationNodeFlags;
+        private AuraHashMap<DataStoreID, float> topLevelProximityCache;
         private HitTestCache<NavigationHit> NavigationCache;
         [FixedAddressValueType]
         private HitTest<NavigateToBounds, StructuredRay, NavigationHit> NavigationRunner;
@@ -378,7 +378,7 @@ namespace Nova.Internal.Input
 
                 // because we reuse the struct, just ensure this is false
                 // unless we explicitly call the scene view methods
-                HitTestRunner.CollisionTest.IncludeInvisibleContent = NovaApplication.IsEditor ? includeInvisible : false;
+                HitTestRunner.CollisionTest.IncludeInvisibleContent = AuraApplication.IsEditor ? includeInvisible : false;
                 HitTestRunner.CollisionTest.Ray = ray;
                 HitTestRunner.CollisionTest.LayerMask = layerMask;
                 HitTestRunner.HitIndices = buffers.Hits;
@@ -510,9 +510,9 @@ namespace Nova.Internal.Input
             NavigationCache.Init();
             navigationScopeRootIDs = new NativeList<DataStoreID>(1, Allocator.Persistent);
             navigationScopeIDCache = new NativeList<DataStoreID>(Constants.FewElementsInitialCapacity, Allocator.Persistent);
-            navigationScopeFlags = new NovaHashMap<DataStoreID, bool>(Constants.FewElementsInitialCapacity, Allocator.Persistent);
-            navigationNodeFlags = new NovaHashMap<DataStoreID, bool>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
-            topLevelProximityCache = new NovaHashMap<DataStoreID, float>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
+            navigationScopeFlags = new AuraHashMap<DataStoreID, bool>(Constants.FewElementsInitialCapacity, Allocator.Persistent);
+            navigationNodeFlags = new AuraHashMap<DataStoreID, bool>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
+            topLevelProximityCache = new AuraHashMap<DataStoreID, float>(Constants.SomeElementsInitialCapacity, Allocator.Persistent);
             navigationScopeRootIDs.Length = 1;
 
             PointerCache.Init();

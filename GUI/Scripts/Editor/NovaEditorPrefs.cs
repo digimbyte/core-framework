@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using UnityEditor;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
-    internal static class NovaEditorPrefs
+    internal static class AuraEditorPrefs
     {
         public static string GetFullEditorPrefPath(string label) => $"{Constants.ProjectName}.{label}";
 

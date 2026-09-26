@@ -1,8 +1,8 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Input.Scrolling
+namespace Aura.Internal.Input.Scrolling
 {
     internal interface IScrollBoundsProvider
     {

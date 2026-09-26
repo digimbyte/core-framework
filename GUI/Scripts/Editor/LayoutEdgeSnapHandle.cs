@@ -1,15 +1,15 @@
 ﻿
 //#define DEBUG_VISUALS
 
-using Nova.Editor.Utilities;
-using Nova.Internal.Collections;
-using Nova.Internal.Input;
-using Nova.Internal.Utilities;
+using Aura.Editor.Utilities;
+using Aura.Internal.Collections;
+using Aura.Internal.Input;
+using Aura.Internal.Utilities;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     /// <summary>
     /// Snaps adjusted layout properties to other layout property edges. Caller provides edge detection event.

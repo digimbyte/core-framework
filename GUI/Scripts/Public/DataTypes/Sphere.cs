@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A sphere represented by a center position and radius.

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal unsafe delegate void BurstMethod(void* jobData);

@@ -1,11 +1,11 @@
 ﻿
-using Nova.Editor.Serialization;
+using Aura.Editor.Serialization;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal abstract class NovaPropertyDrawer<T> : PropertyDrawer where T : class, ISerializedPropertyWrapper, new()
+    internal abstract class AuraPropertyDrawer<T> : PropertyDrawer where T : class, ISerializedPropertyWrapper, new()
     {
         protected T wrapper = new T();
 

@@ -1,2 +1,2 @@
 using System.Runtime.CompilerServices;
-[assembly: InternalsVisibleTo("Nova.UIControls.Editor")]
+[assembly: InternalsVisibleTo("Aura.UIControls.Editor")]

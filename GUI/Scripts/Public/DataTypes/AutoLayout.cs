@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// X, Y, or Z axis.
@@ -179,7 +179,7 @@ namespace Nova
         /// <seealso cref="HorizontalAlignment"/>
         /// <seealso cref="VerticalAlignment"/>
         /// <seealso cref="DepthAlignment"/>
-        /// <seealso cref="Nova.Alignment"/>
+        /// <seealso cref="Aura.Alignment"/>
         public int Alignment { get { return alignment; } set { alignment = Math.Clamp(value, -1, 1); } }
 
         /// <summary>
@@ -339,7 +339,7 @@ namespace Nova
         /// <seealso cref="HorizontalAlignment"/>
         /// <seealso cref="VerticalAlignment"/>
         /// <seealso cref="DepthAlignment"/>
-        /// <seealso cref="Nova.Alignment"/>
+        /// <seealso cref="Aura.Alignment"/>
         public int Alignment
         {
             readonly get

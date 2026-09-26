@@ -1,10 +1,10 @@
 ﻿
-using Nova.Internal;
+using Aura.Internal;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A layout and 2D visual configuration of a "grid slice", a row <i> or </i> column in a <see cref="GridView"/> that's positioned along the <see cref="GridView.PrimaryAxis"/>

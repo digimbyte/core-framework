@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 
-namespace Nova.Internal
+namespace Aura.Internal
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct CrossLayout

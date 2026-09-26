@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Nova.Internal.Animations
+namespace Aura.Internal.Animations
 {
     internal class AnimationEngine : EngineBaseGeneric<AnimationEngine>
     {

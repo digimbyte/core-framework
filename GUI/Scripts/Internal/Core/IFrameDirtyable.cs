@@ -1,5 +1,5 @@
 ﻿
-namespace Nova.Internal.Core
+namespace Aura.Internal.Core
 {
     /// <summary>
     /// Something that can be dirtied frame to frame

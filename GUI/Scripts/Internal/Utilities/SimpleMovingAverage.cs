@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal struct SimpleMovingAverage
     {

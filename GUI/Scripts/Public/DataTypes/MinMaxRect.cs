@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A min/max range, per 2D edge (Left, Right, Top, and Bottom) offset.

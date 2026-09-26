@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaUIBlock2DUnlit"
+Shader "Hidden/Aura/AuraUIBlock2DUnlit"
 {
     Properties
     {
@@ -11,9 +11,9 @@ Shader "Hidden/Nova/NovaUIBlock2DUnlit"
         [HideInInspector]
         _CullMode ("CullMode", Float) = 2
         [HideInInspector]
-        _NovaTextureArray ("NovaTextureArray", 2DArray) = "" { }
+        _AuraTextureArray ("AuraTextureArray", 2DArray) = "" { }
         [HideInInspector]
-        _NovaDynamicTexture ("NovaDynamicTexture", 2D) = "white" { }
+        _AuraDynamicTexture ("AuraDynamicTexture", 2D) = "white" { }
         [HideInInspector]
         _ClipMaskTex ("ClipMaskTex", 2D) = "white" { }
         [HideInInspector]
@@ -35,8 +35,8 @@ Shader "Hidden/Nova/NovaUIBlock2DUnlit"
         {
             CGPROGRAM
 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             // 
             #pragma target 3.5
             

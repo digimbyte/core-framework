@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace Nova.Extensions
+namespace Aura.Extensions
 {
     internal static partial class Util
     {

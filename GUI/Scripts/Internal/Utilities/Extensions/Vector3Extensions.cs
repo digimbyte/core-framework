@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class Vector3Extensions
     {

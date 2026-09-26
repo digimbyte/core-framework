@@ -1,11 +1,11 @@
 ﻿
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A <see cref="UIBlock"/> with an adjustable, rounded-corner rectangle mesh.
@@ -14,14 +14,14 @@ namespace Nova
     /// Supports a wide range of stylistic features including:
     /// <list type="bullet">
     /// <item><description>Rendering images</description></item>
-    /// <item><description><see cref="Nova.Border"/></description></item>
+    /// <item><description><see cref="Aura.Border"/></description></item>
     /// <item><description><see cref="RadialGradient"/></description></item>
-    /// <item><description><see cref="Nova.Shadow"/></description></item>
+    /// <item><description><see cref="Aura.Shadow"/></description></item>
     /// </list>
     /// </remarks>
     [ExecuteAlways]
     [HelpURL("https://novaui.io/manual/UIBlock2D.html")]
-    [AddComponentMenu("Nova/UIBlock 2D")]
+    [AddComponentMenu("Aura/UIBlock 2D")]
     public sealed class UIBlock2D : UIBlock, IUIBlock2D
     {
         #region Public
@@ -51,7 +51,7 @@ namespace Nova
         /// the minimum dimension (X or Y) of <see cref="UIBlock.CalculatedSize">CalculatedSize</see>. Mathematically speaking:<br/>
         /// <c>float calculatedBorderWidth = Border.Width.Percent * 0.5f * Mathf.Min(CalculatedSize.X.Value, CalculatedSize.Y.Value)</c>
         /// </remarks>
-        /// <seealso cref="Nova.Border"/>
+        /// <seealso cref="Aura.Border"/>
         public ref Border Border
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -86,7 +86,7 @@ namespace Nova
         /// <see cref="UIBlock.CalculatedSize">CalculatedSize</see>. Mathematically speaking:<br/>
         ///  <c>Vector2 calculatedShadowOffset = Shadow.Offset.Percent * CalculatedSize.XY.Value</c>
         /// </remarks>
-        /// <seealso cref="Nova.Shadow"/>
+        /// <seealso cref="Aura.Shadow"/>
         public ref Shadow Shadow
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,7 +97,7 @@ namespace Nova
         /// <summary>
         /// The position and scale adjustments applied to the attached image (i.e. <see cref="Sprite">Sprite</see>, <see cref="Texture">Texture</see>, or <see cref="RenderTexture">RenderTexture</see>), if it exists.
         /// </summary>
-        /// <seealso cref="Nova.ImageAdjustment"/>
+        /// <seealso cref="Aura.ImageAdjustment"/>
         /// <seealso cref="Texture"/>
         /// <seealso cref="Sprite"/>
         /// <seealso cref="SetImage(RenderTexture)"/>
@@ -205,7 +205,7 @@ namespace Nova
         /// <summary>
         /// Configure how to store (and attempt to batch) the attached image's (i.e. <see cref="Sprite">Sprite</see>, <see cref="Texture">Texture</see>, or <see cref="RenderTexture">RenderTexture</see>) underlying texture.
         /// </summary>
-        /// <seealso cref="NovaSettings.PackedImagesEnabled"/>
+        /// <seealso cref="AuraSettings.PackedImagesEnabled"/>
         public ImagePackMode ImagePackMode
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

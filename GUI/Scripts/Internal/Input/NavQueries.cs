@@ -1,28 +1,28 @@
 ﻿
 using AOT;
-using Nova.Compat;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Input
+namespace Aura.Internal.Input
 {
     [BurstCompile]
     internal struct FirstNavigableDescendant
     {
         [ReadOnly]
-        public NovaHashMap<DataStoreID, bool> NavNodes;
+        public AuraHashMap<DataStoreID, bool> NavNodes;
         public NativeList<DataStoreIndex> Descendants;
 
         public NativeList<HierarchyElement> Hierarchy;
-        public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+        public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
 
         public NativeList<Length3.Calculated> LengthProperties;
 
@@ -117,12 +117,12 @@ namespace Nova.Internal.Input
     internal struct AncestorScopeQuery
     {
         [ReadOnly]
-        public NovaHashMap<DataStoreID, bool> NavScopes;
+        public AuraHashMap<DataStoreID, bool> NavScopes;
         [ReadOnly]
         public NativeList<RenderElement<BaseRenderInfo>> BaseInfos;
 
         public NativeList<HierarchyElement> Hierarchy;
-        public NovaHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
+        public AuraHashMap<DataStoreID, DataStoreIndex> HierarchyLookup;
         public int LayerMask;
         public DataStoreIndex DescendantIndex;
         public DataStoreID RootID;

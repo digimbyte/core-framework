@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A 3D <see cref="Length"/>.
@@ -713,7 +713,7 @@ namespace Nova
             {
                 case LengthInputSpace.PercentUI_0_100:
                     {
-                        float p = input * 0.01f; // UI(0-100) -> Nova(0-1)
+                        float p = input * 0.01f; // UI(0-100) -> Aura(0-1)
                         if (current.Type == LengthType.Percent)
                         {
                             // No conversion needed

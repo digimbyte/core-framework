@@ -1,9 +1,9 @@
 ﻿
-using Nova.Extensions;
+using Aura.Extensions;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A delegate for handling events.
@@ -473,7 +473,7 @@ namespace Nova
         public struct OnMove : IGestureEvent, System.IEquatable<OnMove>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -572,7 +572,7 @@ namespace Nova
         public struct OnHover : IGestureEvent, System.IEquatable<OnHover>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -669,7 +669,7 @@ namespace Nova
         public struct OnUnhover : IGestureEvent, System.IEquatable<OnUnhover>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -759,7 +759,7 @@ namespace Nova
         public struct OnPress : IGestureEvent, System.IEquatable<OnPress>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -856,7 +856,7 @@ namespace Nova
         public struct OnRelease : IGestureEvent, System.IEquatable<OnRelease>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -964,7 +964,7 @@ namespace Nova
         public struct OnClick : IGestureEvent, System.IEquatable<OnClick>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -1053,7 +1053,7 @@ namespace Nova
         public struct OnScroll : IGestureEvent, System.IEquatable<OnScroll>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -1162,7 +1162,7 @@ namespace Nova
         public struct OnDrag : IGestureEvent, System.IEquatable<OnDrag>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -1315,7 +1315,7 @@ namespace Nova
         public struct OnCancel : IGestureEvent, System.IEquatable<OnCancel>
         {
             /// <summary>
-            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+            /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
             /// </summary>
             public Interaction.Update Interaction { get; set; }
 
@@ -1935,7 +1935,7 @@ namespace Nova
     public interface IGestureEvent : IEvent
     {
         /// <summary>
-        /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Nova.Interaction"/> method.
+        /// The interaction update responsible for triggering the event. Either passed into or created by an <see cref="Aura.Interaction"/> method.
         /// </summary>
         Interaction.Update Interaction { get; set; }
     }

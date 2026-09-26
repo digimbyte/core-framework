@@ -1,8 +1,8 @@
-using Nova;
+using Aura;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// A simple positionable and resizable window component

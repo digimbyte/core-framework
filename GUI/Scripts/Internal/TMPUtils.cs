@@ -3,7 +3,7 @@ using TMPro;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
     internal static class TMPUtils
     {

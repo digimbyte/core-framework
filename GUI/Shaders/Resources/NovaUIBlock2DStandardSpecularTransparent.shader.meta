@@ -11,7 +11,7 @@ ShaderImporter:
 AssetOrigin:
   serializedVersion: 1
   productId: 226304
-  packageName: Nova
+  packageName: Aura
   packageVersion: 2.1.3
-  assetPath: Assets/Nova/Shaders/Resources/NovaUIBlock2DStandardSpecularTransparent.shader
+  assetPath: Assets/Aura/Shaders/Resources/AuraUIBlock2DStandardSpecularTransparent.shader
   uploadId: 631462

@@ -1,15 +1,15 @@
 ﻿
-using Nova.Internal.Collections;
-using Nova.Internal.Common;
+using Aura.Internal.Collections;
+using Aura.Internal.Common;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal struct ZLayerCounts : IInitializable, IClearable
     {
-        private NovaList<ZLayerCount> layerCounts;
+        private AuraList<ZLayerCount> layerCounts;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IncrementCount(short layer)

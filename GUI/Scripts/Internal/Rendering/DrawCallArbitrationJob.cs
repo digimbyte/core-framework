@@ -1,9 +1,9 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -11,17 +11,17 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal unsafe struct DrawCallArbitrationJob : INovaJobParallelFor
+    internal unsafe struct DrawCallArbitrationJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatchGroups;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, BatchZLayers> ZLayers;
+        public AuraHashMap<DataStoreID, BatchZLayers> ZLayers;
         [ReadOnly]
         public NativeList<DataStoreIndex, CoplanarSetID> CoplanarSetIDs;
         [ReadOnly]
@@ -29,34 +29,34 @@ namespace Nova.Internal.Rendering
         [ReadOnly]
         public BlockBounds Bounds;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<CoplanarSetID, CoplanarSet>> CoplanarSets;
+        public AuraHashMap<DataStoreID, AuraList<CoplanarSetID, CoplanarSet>> CoplanarSets;
         [ReadOnly]
         public NativeList<RenderIndex, TextBlockData> TextData;
         [ReadOnly]
         public ComputeBufferIndices ComputeBufferIndices;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [NativeDisableContainerSafetyRestriction]
         public NativeList<float4x4> LocalFromWorldMatrices;
         [NativeDisableContainerSafetyRestriction]
         public NativeList<float4x4> WorldFromLocalMatrices;
         [ReadOnly]
-        public NovaHashMap<VisualModifierID, AABB> VisualModifierClipBounds;
+        public AuraHashMap<VisualModifierID, AABB> VisualModifierClipBounds;
         [ReadOnly]
         public OverlapElements OverlapElements;
         [ReadOnly]
         public NativeList<VisualModifierID, DataStoreID> ModifierToBlockID;
 
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
+        public AuraHashMap<DataStoreID, DrawCallSummary> DrawCallSummaries;
         [NativeDisableParallelForRestriction]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, DrawCallID>> MinDrawCalls;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, DrawCallID>> MinDrawCalls;
 
         private DataStoreID batchRootID;
         private DrawCallSummary drawCallSummary;
         private BatchZLayers zLayers;
-        private NovaList<VisualElementIndex, VisualElement> visualElements;
-        private NovaList<VisualElementIndex, DrawCallID> assignedDrawCalls;
+        private AuraList<VisualElementIndex, VisualElement> visualElements;
+        private AuraList<VisualElementIndex, DrawCallID> assignedDrawCalls;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Execute(int index)
@@ -92,7 +92,7 @@ namespace Nova.Internal.Rendering
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateCoplanarCountsAndBounds()
         {
-            NovaList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets[batchRootID];
+            AuraList<CoplanarSetID, CoplanarSet> coplanarSets = CoplanarSets[batchRootID];
 
             for (int i = 0; i < drawCallSummary.DrawCalls.Length; ++i)
             {
@@ -157,7 +157,7 @@ namespace Nova.Internal.Rendering
                 case VisualType.TextBlock:
                 case VisualType.TextSubmesh:
                 {
-                    NovaList<ComputeBufferIndex> textShaderIndices = ComputeBufferIndices.Text[renderIndex];
+                    AuraList<ComputeBufferIndex> textShaderIndices = ComputeBufferIndices.Text[renderIndex];
                     ref DrawCallDescriptor descriptor = ref drawCallSummary.DrawCallDescriptors.ElementAt(visualElement.DrawCallDescriptorID);
                     TextBlockData textData = TextData[renderIndex];
                     textData.GetInstanceSliceForSubmesh(descriptor.Text.MaterialID, out int startIndex, out int count);
@@ -198,7 +198,7 @@ namespace Nova.Internal.Rendering
         private DrawCallID GetMinDrawCall(ref VisualElement visualElement)
         {
             DrawCallID toRet = DrawCallID.Invalid;
-            ref NovaList<VisualElementIndex> dependencies = ref OverlapElements.Get(ref visualElement, ref ComputeBufferIndices);
+            ref AuraList<VisualElementIndex> dependencies = ref OverlapElements.Get(ref visualElement, ref ComputeBufferIndices);
             for (int i = 0; i < dependencies.Length; ++i)
             {
                 toRet = DrawCallID.Max(ref toRet, ref assignedDrawCalls.ElementAt(dependencies[i]));

@@ -1,13 +1,13 @@
 ﻿
-using Nova.Editor.GUIs;
-using Nova.Editor.Serialization;
+using Aura.Editor.GUIs;
+using Aura.Editor.Serialization;
 using System.Collections.Generic;
 using UnityEditor;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
-    internal class NovaSettingsProvider : SettingsProvider
+    internal class AuraSettingsProvider : SettingsProvider
     {
         private _SettingsConfig config = new _SettingsConfig();
         private SerializedObject serializedObject = null;
@@ -16,36 +16,36 @@ namespace Nova.Editor
         {
             if (serializedObject == null || config.SerializedProperty == null)
             {
-                serializedObject = new SerializedObject(NovaSettings.Instance);
-                config.SerializedProperty = serializedObject.FindProperty(Names.NovaSettings.settings);
+                serializedObject = new SerializedObject(AuraSettings.Instance);
+                config.SerializedProperty = serializedObject.FindProperty(Names.AuraSettings.settings);
             }
 
             serializedObject.UpdateIfRequiredOrScript();
 
             Foldout.InProjectSettings = true;
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawGeneral(config);
+            AuraSettingsEditors.DrawGeneral(config);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(false);
             }
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawRendering(config);
+            AuraSettingsEditors.DrawRendering(config);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(true);
             }
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawInput(config);
+            AuraSettingsEditors.DrawInput(config);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(false);
             }
 
             EditorGUI.BeginChangeCheck();
-            NovaSettingsEditors.DrawEditor(serializedObject);
+            AuraSettingsEditors.DrawEditor(serializedObject);
             if (EditorGUI.EndChangeCheck())
             {
                 MarkDirty(false);
@@ -59,18 +59,18 @@ namespace Nova.Editor
             serializedObject.ApplyModifiedProperties();
             if (fireEvents)
             {
-                NovaSettings.Instance.MarkDirty(true, false);
+                AuraSettings.Instance.MarkDirty(true, false);
             }
         }
 
-        public NovaSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
+        public AuraSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
         {
         }
 
         [SettingsProvider]
         private static SettingsProvider CreateProjectSettingsProvider()
         {
-            NovaSettingsProvider provider = new NovaSettingsProvider("Project/Nova", SettingsScope.Project, SettingsProvider.GetSearchKeywordsFromGUIContentProperties<Labels.Settings>());
+            AuraSettingsProvider provider = new AuraSettingsProvider("Project/Aura", SettingsScope.Project, SettingsProvider.GetSearchKeywordsFromGUIContentProperties<Labels.Settings>());
             return provider;
         }
     }

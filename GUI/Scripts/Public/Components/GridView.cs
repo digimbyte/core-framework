@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Internal;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// A callback to configure a <see cref="GridSlice"/>, <see cref="GridSlice2D"/> or <see cref="GridSlice3D"/> before it's inserted into the grid view.
@@ -38,7 +38,7 @@ namespace Nova
     /// <see cref="GridView"/> are calculated relative to their "virtual" parent <see cref="GridSlice"/>, 
     /// not the <see cref="GridView"/> itself.
     /// </remarks>
-    [AddComponentMenu("Nova/Grid View")]
+    [AddComponentMenu("Aura/Grid View")]
     [HelpURL("https://novaui.io/manual/GridView.html")]
     public sealed class GridView : ListView, ISerializationCallbackReceiver
     {
@@ -449,7 +449,7 @@ namespace Nova
         {
             VirtualBlockModule.HandleOwnerEnabled();
 
-            if (NovaApplication.InPlayer(this))
+            if (AuraApplication.InPlayer(this))
             {
                 RebalanceGrid(forceChildRegistration: true);
             }
@@ -753,7 +753,7 @@ namespace Nova
         {
             ClearSerializedUIBlock();
 
-            if (!NovaApplication.IsPlaying ||
+            if (!AuraApplication.IsPlaying ||
                 virtualBlockSerializer == null ||
                 virtualBlockSerializer.Module == virtualBlockModule ||
                 !virtualBlockSerializer.Module.IsValid ||

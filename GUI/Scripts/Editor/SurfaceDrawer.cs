@@ -1,12 +1,12 @@
 ﻿
-using Nova.Editor.Utilities;
-using Nova.Internal.Rendering;
+using Aura.Editor.Utilities;
+using Aura.Internal.Rendering;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [Obfuscation]
     internal enum SurfacePreset
@@ -21,7 +21,7 @@ namespace Nova.Editor.GUIs
     }
 
     [CustomPropertyDrawer(typeof(Surface))]
-    internal class SurfaceDrawer : NovaPropertyDrawer<_Surface>
+    internal class SurfaceDrawer : AuraPropertyDrawer<_Surface>
     {
         private const float MetallicPresetThreshold = 0.8f;
         private const float GlossyPresetThreshold = 0.5f;
@@ -190,13 +190,13 @@ namespace Nova.Editor.GUIs
                     switch (visualType)
                     {
                         case VisualType.UIBlock2D:
-                            NovaSettings.UIBlock2DLightingModels |= (LightingModelBuildFlag)internalLightingModel.ToBuildFlag();
+                            AuraSettings.UIBlock2DLightingModels |= (LightingModelBuildFlag)internalLightingModel.ToBuildFlag();
                             break;
                         case VisualType.UIBlock3D:
-                            NovaSettings.UIBlock3DLightingModels |= (LightingModelBuildFlag)internalLightingModel.ToBuildFlag();
+                            AuraSettings.UIBlock3DLightingModels |= (LightingModelBuildFlag)internalLightingModel.ToBuildFlag();
                             break;
                         case VisualType.TextBlock:
-                            NovaSettings.TextBlockLightingModels |= (LightingModelBuildFlag)internalLightingModel.ToBuildFlag();
+                            AuraSettings.TextBlockLightingModels |= (LightingModelBuildFlag)internalLightingModel.ToBuildFlag();
                             break;
                     }
                 }

@@ -1,6 +1,6 @@
 ﻿
 using UnityEngine;
-using Nova.Internal.Utilities;
+using Aura.Internal.Utilities;
 #if UNITY_EDITOR
 using UnityEngine.SceneManagement;
 #if UNITY_2021_2_OR_NEWER
@@ -10,7 +10,7 @@ using UnityEditor.Experimental.SceneManagement;
 #endif
 #endif
 
-namespace Nova.Compat
+namespace Aura.Compat
 {
     internal class PrefabStageUtilsImpl : PrefabStageUtils.Impl
     {

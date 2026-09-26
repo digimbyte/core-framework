@@ -1,18 +1,18 @@
 ﻿
-using Nova.Editor.GUIs;
+using Aura.Editor.GUIs;
 using UnityEditor;
 
-namespace Nova.Editor.Layouts
+namespace Aura.Editor.Layouts
 {
     [CustomEditor(typeof(UIBlock)), CanEditMultipleObjects]
     internal class UIBlockEditor : BlockEditor<UIBlock>
     {
         protected override void DoGui(UIBlock uiBlock)
         {
-            NovaLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
-            NovaLayoutEditors.DrawPositionUI(layout, uiBlock);
-            NovaLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
-            NovaLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
+            AuraLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
+            AuraLayoutEditors.DrawPositionUI(layout, uiBlock);
+            AuraLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
+            AuraLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
         }
     }
 }

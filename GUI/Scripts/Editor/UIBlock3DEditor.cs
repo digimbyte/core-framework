@@ -1,9 +1,9 @@
 ﻿
-using Nova.Editor.Serialization;
+using Aura.Editor.Serialization;
 using UnityEditor;
-using static Nova.Editor.Serialization.Wrappers;
+using static Aura.Editor.Serialization.Wrappers;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(UIBlock3D)), CanEditMultipleObjects]
     internal class UIBlock3DEditor : BlockEditor<UIBlock3D>
@@ -19,15 +19,15 @@ namespace Nova.Editor.GUIs
 
         protected override void DoGui(UIBlock3D uiBlock)
         {
-            NovaLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
+            AuraLayoutEditors.DrawAutoLayoutUI(autoLayout, uiBlock);
 
-            NovaLayoutEditors.DrawPositionUI(layout, uiBlock);
-            NovaLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
+            AuraLayoutEditors.DrawPositionUI(layout, uiBlock);
+            AuraLayoutEditors.DrawSizeUI(layout, uiBlock, previewSizeProperty);
 
             UIBlock3DData.Calculated calc = serializedObject.isEditingMultipleObjects ? default : TargetBlock.CalculatedVisuals;
-            NovaRenderingEditors.DrawBodyVisualsUI(uiBlock.CalculatedSize.Value, renderData, surfaceInfo, baseRenderInfo, ref calc);
+            AuraRenderingEditors.DrawBodyVisualsUI(uiBlock.CalculatedSize.Value, renderData, surfaceInfo, baseRenderInfo, ref calc);
 
-            NovaLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
+            AuraLayoutEditors.DrawPaddingMarginUI(layout, uiBlock);
         }
     }
 }

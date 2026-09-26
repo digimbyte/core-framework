@@ -1,9 +1,9 @@
-// Copyright (c) CoreFramework — Nova UI integration for Animate (ref-root binding, boxed leaf I/O,
-// UIBlock Size/Position/Alignment fast paths). Kept isolated for a future Nova/UI overhaul.
+// Copyright (c) CoreFramework — Aura UI integration for Animate (ref-root binding, boxed leaf I/O,
+// UIBlock Size/Position/Alignment fast paths). Kept isolated for a future Aura/UI overhaul.
 using System;
 using System.Collections;
 using System.Reflection;
-using Nova;
+using Aura;
 using UnityEngine;
 
 namespace Core.Animator
@@ -38,64 +38,64 @@ namespace Core.Animator
         private delegate ref Length3 SizeGetter3D(UIBlock3D target);
         private delegate ref ImageAdjustment ImageAdjustmentGetter2D(UIBlock2D target);
 
-        private static float NovaUiBlock2ReadLeafAsSingle(object boxedStruct, MemberInfo leaf)
+        private static float AuraUiBlock2ReadLeafAsSingle(object boxedStruct, MemberInfo leaf)
         {
             if (leaf is FieldInfo fi) return Convert.ToSingle(fi.GetValue(boxedStruct));
             if (leaf is PropertyInfo pi && pi.CanRead) return Convert.ToSingle(pi.GetValue(boxedStruct));
             return 0f;
         }
 
-        private static void NovaUiBlock2WriteLeafFromSingle(object boxedStruct, MemberInfo leaf, float vIn, Type leafClrType)
+        private static void AuraUiBlock2WriteLeafFromSingle(object boxedStruct, MemberInfo leaf, float vIn, Type leafClrType)
         {
             object coerced = Convert.ChangeType(vIn, leafClrType);
             if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, coerced);
             else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, coerced);
         }
 
-        private static Color NovaUiBlock2ReadLeafAsColor(object boxedStruct, MemberInfo leaf)
+        private static Color AuraUiBlock2ReadLeafAsColor(object boxedStruct, MemberInfo leaf)
         {
             if (leaf is FieldInfo fi) return fi.GetValue(boxedStruct) is Color c ? c : default;
             if (leaf is PropertyInfo pi && pi.CanRead && pi.GetValue(boxedStruct) is Color pc) return pc;
             return Color.white;
         }
 
-        private static void NovaUiBlock2WriteLeafAsColor(object boxedStruct, MemberInfo leaf, Color v)
+        private static void AuraUiBlock2WriteLeafAsColor(object boxedStruct, MemberInfo leaf, Color v)
         {
             if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, v);
             else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, v);
         }
 
-        private static Vector3 NovaUiBlock2ReadLeafAsVector3(object boxedStruct, MemberInfo leaf)
+        private static Vector3 AuraUiBlock2ReadLeafAsVector3(object boxedStruct, MemberInfo leaf)
         {
             if (leaf is FieldInfo fi) return (Vector3)fi.GetValue(boxedStruct);
             if (leaf is PropertyInfo pi && pi.CanRead) return (Vector3)pi.GetValue(boxedStruct);
             return Vector3.zero;
         }
 
-        private static void NovaUiBlock2WriteLeafAsVector3(object boxedStruct, MemberInfo leaf, Vector3 v)
+        private static void AuraUiBlock2WriteLeafAsVector3(object boxedStruct, MemberInfo leaf, Vector3 v)
         {
             if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, v);
             else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, v);
         }
 
-        private static Quaternion NovaUiBlock2ReadLeafAsQuaternion(object boxedStruct, MemberInfo leaf)
+        private static Quaternion AuraUiBlock2ReadLeafAsQuaternion(object boxedStruct, MemberInfo leaf)
         {
             if (leaf is FieldInfo fi) return (Quaternion)fi.GetValue(boxedStruct);
             if (leaf is PropertyInfo pi && pi.CanRead) return (Quaternion)pi.GetValue(boxedStruct);
             return Quaternion.identity;
         }
 
-        private static void NovaUiBlock2WriteLeafAsQuaternion(object boxedStruct, MemberInfo leaf, Quaternion v)
+        private static void AuraUiBlock2WriteLeafAsQuaternion(object boxedStruct, MemberInfo leaf, Quaternion v)
         {
             if (leaf is FieldInfo fi) fi.SetValue(boxedStruct, v);
             else if (leaf is PropertyInfo pi && pi.CanWrite) pi.SetValue(boxedStruct, v);
         }
 
         /// <summary>
-        /// Bind getters/setters for a leaf member on any Nova <see cref="UIBlock"/> /
+        /// Bind getters/setters for a leaf member on any Aura <see cref="UIBlock"/> /
         /// <see cref="UIBlock2D"/> / <see cref="UIBlock3D"/> <c>public ref T Foo =&gt; …</c> root that has no CLR property setter.
         /// </summary>
-        private static bool TryBindNovaUIBlockGetterOnlyLeaf<T>(
+        private static bool TryBindAuraUIBlockGetterOnlyLeaf<T>(
             RefStructMarker marker,
             UIBlock block,
             MemberInfo leafMember,
@@ -547,28 +547,28 @@ namespace Core.Animator
             }
         }
 
-        private static bool TryBindNovaUIBlockGetterOnlyLeafFloat(RefStructMarker marker, UIBlock block, MemberInfo leafMember, Type leafClrType, out Func<float> getter, out Action<float> setter)
+        private static bool TryBindAuraUIBlockGetterOnlyLeafFloat(RefStructMarker marker, UIBlock block, MemberInfo leafMember, Type leafClrType, out Func<float> getter, out Action<float> setter)
         {
-            return TryBindNovaUIBlockGetterOnlyLeaf(marker, block, leafMember, NovaUiBlock2ReadLeafAsSingle,
-                (box, leaf, v) => NovaUiBlock2WriteLeafFromSingle(box, leaf, v, leafClrType), out getter, out setter);
+            return TryBindAuraUIBlockGetterOnlyLeaf(marker, block, leafMember, AuraUiBlock2ReadLeafAsSingle,
+                (box, leaf, v) => AuraUiBlock2WriteLeafFromSingle(box, leaf, v, leafClrType), out getter, out setter);
         }
 
-        private static bool TryBindNovaUIBlockGetterOnlyLeafColor(RefStructMarker marker, UIBlock block, MemberInfo leafMember, out Func<Color> getter, out Action<Color> setter)
+        private static bool TryBindAuraUIBlockGetterOnlyLeafColor(RefStructMarker marker, UIBlock block, MemberInfo leafMember, out Func<Color> getter, out Action<Color> setter)
         {
-            return TryBindNovaUIBlockGetterOnlyLeaf(marker, block, leafMember, NovaUiBlock2ReadLeafAsColor,
-                NovaUiBlock2WriteLeafAsColor, out getter, out setter);
+            return TryBindAuraUIBlockGetterOnlyLeaf(marker, block, leafMember, AuraUiBlock2ReadLeafAsColor,
+                AuraUiBlock2WriteLeafAsColor, out getter, out setter);
         }
 
-        private static bool TryBindNovaUIBlockGetterOnlyLeafVector3(RefStructMarker marker, UIBlock block, MemberInfo leafMember, out Func<Vector3> getter, out Action<Vector3> setter)
+        private static bool TryBindAuraUIBlockGetterOnlyLeafVector3(RefStructMarker marker, UIBlock block, MemberInfo leafMember, out Func<Vector3> getter, out Action<Vector3> setter)
         {
-            return TryBindNovaUIBlockGetterOnlyLeaf(marker, block, leafMember, NovaUiBlock2ReadLeafAsVector3,
-                NovaUiBlock2WriteLeafAsVector3, out getter, out setter);
+            return TryBindAuraUIBlockGetterOnlyLeaf(marker, block, leafMember, AuraUiBlock2ReadLeafAsVector3,
+                AuraUiBlock2WriteLeafAsVector3, out getter, out setter);
         }
 
-        private static bool TryBindNovaUIBlockGetterOnlyLeafQuaternion(RefStructMarker marker, UIBlock block, MemberInfo leafMember, out Func<Quaternion> getter, out Action<Quaternion> setter)
+        private static bool TryBindAuraUIBlockGetterOnlyLeafQuaternion(RefStructMarker marker, UIBlock block, MemberInfo leafMember, out Func<Quaternion> getter, out Action<Quaternion> setter)
         {
-            return TryBindNovaUIBlockGetterOnlyLeaf(marker, block, leafMember, NovaUiBlock2ReadLeafAsQuaternion,
-                NovaUiBlock2WriteLeafAsQuaternion, out getter, out setter);
+            return TryBindAuraUIBlockGetterOnlyLeaf(marker, block, leafMember, AuraUiBlock2ReadLeafAsQuaternion,
+                AuraUiBlock2WriteLeafAsQuaternion, out getter, out setter);
         }
 
         private bool TryHandleUIBlockAlignment(TweenEntry e, Component comp)
@@ -645,7 +645,7 @@ namespace Core.Animator
         /// Strip a leading <c>layout</c> segment (any casing) so paths like <c>layout.Size.Percent</c> match
         /// <c>Size.Percent</c> fast-path entries (Unity serializes the private layout field on <see cref="UIBlock"/> as <c>layout</c>).
         /// </summary>
-        private static string StripNovaLayoutPathPrefix(string path)
+        private static string StripAuraLayoutPathPrefix(string path)
         {
             if (string.IsNullOrEmpty(path)) return path;
             int dot = path.IndexOf('.');
@@ -668,22 +668,22 @@ namespace Core.Animator
         }
 
         /// <summary>
-        /// Interpret a bare Nova position axis as its scalar raw value in playback and property browsing.
+        /// Interpret a bare Aura position axis as its scalar raw value in playback and property browsing.
         /// </summary>
-        public static string NormalizeNovaPositionAxisPath(object target, string path)
+        public static string NormalizeAuraPositionAxisPath(object target, string path)
         {
             if (!(target is UIBlock) || string.IsNullOrEmpty(path)) return path;
-            string positionPath = StripNovaLayoutPathPrefix(path);
+            string positionPath = StripAuraLayoutPathPrefix(path);
             return positionPath == "Position.X" || positionPath == "Position.Y" || positionPath == "Position.Z"
                 ? positionPath + ".Raw" : path;
         }
 
         /// <summary>UIBlock-specific CustomProperty bindings, including layout-friendly Size/Position paths.</summary>
-        private bool TryNovaUIBlockCustomPropertyFastPath(TweenEntry e, Component comp, string resolvedPath, out Coroutine result)
+        private bool TryAuraUIBlockCustomPropertyFastPath(TweenEntry e, Component comp, string resolvedPath, out Coroutine result)
         {
             result = null;
 
-            string rawAxisPath = StripNovaLayoutPathPrefix(NormalizeNovaPositionAxisPath(comp, resolvedPath));
+            string rawAxisPath = StripAuraLayoutPathPrefix(NormalizeAuraPositionAxisPath(comp, resolvedPath));
             if (comp is UIBlock positionBlock &&
                 (rawAxisPath == "Position.X.Raw" || rawAxisPath == "Position.Y.Raw" || rawAxisPath == "Position.Z.Raw"))
             {
@@ -708,7 +708,7 @@ namespace Core.Animator
 
             if (comp is UIBlock sizeBlock)
             {
-                string sizePath = StripNovaLayoutPathPrefix(resolvedPath);
+                string sizePath = StripAuraLayoutPathPrefix(resolvedPath);
 
                 if (sizePath == "Size.Percent" || sizePath == "Size.Raw")
                 {
@@ -786,7 +786,7 @@ namespace Core.Animator
                 }
             }
 
-            string positionPath = StripNovaLayoutPathPrefix(resolvedPath);
+            string positionPath = StripAuraLayoutPathPrefix(resolvedPath);
             if ((comp is UIBlock || comp is UIBlock2D || comp is UIBlock3D) && (positionPath == "Position.Percent" || positionPath == "Position.Raw"))
             {
                 bool isPercent = positionPath.EndsWith("Percent", StringComparison.Ordinal);

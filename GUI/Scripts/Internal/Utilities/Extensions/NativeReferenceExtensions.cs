@@ -1,9 +1,9 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Nova.Internal.Utilities.Extensions
+namespace Aura.Internal.Utilities.Extensions
 {
     internal static class NativeReferenceExtensions
     {

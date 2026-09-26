@@ -1,15 +1,15 @@
 ﻿
-using Nova.Editor.Serialization;
+using Aura.Editor.Serialization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
     [CustomEditor(typeof(ItemView)), CanEditMultipleObjects]
-    internal class ItemViewEditor : NovaEditor
+    internal class ItemViewEditor : AuraEditor
     {
         private SerializedProperty visualsProp = null;
         private static readonly MethodInfo GetAssemblyMethod = typeof(MonoScript).GetMethod("GetAssemblyName", BindingFlags.Instance | BindingFlags.NonPublic);

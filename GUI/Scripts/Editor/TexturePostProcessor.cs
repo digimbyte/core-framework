@@ -1,15 +1,15 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Rendering;
+using Aura.Compat;
+using Aura.Internal.Rendering;
 using System;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
 
-namespace Nova.Editor
+namespace Aura.Editor
 {
     /// <summary>
-    /// Ensures that changes made to textures get handled by Nova
+    /// Ensures that changes made to textures get handled by Aura
     /// </summary>
     internal class TexturePostProcessor : AssetPostprocessor, IActiveBuildTargetChanged
     {
@@ -17,7 +17,7 @@ namespace Nova.Editor
 
         public void OnActiveBuildTargetChanged(BuildTarget previousTarget, BuildTarget newTarget)
         {
-            if (!Internal.NovaSettings.Initialized || !Internal.NovaSettings.PackedImagesEnabled)
+            if (!Internal.AuraSettings.Initialized || !Internal.AuraSettings.PackedImagesEnabled)
             {
                 return;
             }
@@ -71,13 +71,13 @@ namespace Nova.Editor
             {
                 // At least one texture description changed, so dirty everything
                 RenderEngine.Instance.DirtyEverything();
-                NovaApplication.QueueEditorPlayerLoop();
+                AuraApplication.QueueEditorPlayerLoop();
             }
             else if (textureReprocessed)
             {
                 // No descriptions changed, but texture contents may have changed
                 RenderEngine.Instance.EditorOnly_TexturesHaveBeenReprocessed = true;
-                NovaApplication.QueueEditorPlayerLoop();
+                AuraApplication.QueueEditorPlayerLoop();
             }
         }
     }

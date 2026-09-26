@@ -1,13 +1,13 @@
 ﻿
-using Nova.Editor.Serialization;
-using Nova.Editor.Utilities;
+using Aura.Editor.Serialization;
+using Aura.Editor.Utilities;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nova.Editor.GUIs
+namespace Aura.Editor.GUIs
 {
-    internal abstract class GestureRecognizerEditor<T> : NovaEditor<T> where T : GestureRecognizer
+    internal abstract class GestureRecognizerEditor<T> : AuraEditor<T> where T : GestureRecognizer
     {
         private static GUIContent navigationHeader = EditorGUIUtility.TrTextContent("Navigate");
 
@@ -88,18 +88,18 @@ namespace Nova.Editor.GUIs
 
             Rect toolBar = GUILayoutUtility.GetLastRect();
 
-            toolBar = toolBar.TopRight(2 * NovaGUI.SingleCharacterGUIWidth, PropertyDrawerUtils.SingleLineHeight);
+            toolBar = toolBar.TopRight(2 * AuraGUI.SingleCharacterGUIWidth, PropertyDrawerUtils.SingleLineHeight);
             Rect visibilityToggle = toolBar;
             visibilityToggle.x -= visibilityToggle.width;
 
-            bool graphEnabled = NovaEditorPrefs.DisplayNavigationDebugView;
+            bool graphEnabled = AuraEditorPrefs.DisplayNavigationDebugView;
             GUIContent navGraphLabel = Labels.GestureRecognizer.GetNavGraphLabel(graphEnabled);
-            NovaEditorPrefs.DisplayNavigationDebugView = GUI.Toggle(visibilityToggle, graphEnabled, navGraphLabel, NovaGUI.Styles.ToolbarButtonLeft);
+            AuraEditorPrefs.DisplayNavigationDebugView = GUI.Toggle(visibilityToggle, graphEnabled, navGraphLabel, AuraGUI.Styles.ToolbarButtonLeft);
 
-            EditorGUI.BeginDisabledGroup(!NovaEditorPrefs.DisplayNavigationDebugView);
-            bool filtered = NovaEditorPrefs.FilterNavDebugViewToSelection;
+            EditorGUI.BeginDisabledGroup(!AuraEditorPrefs.DisplayNavigationDebugView);
+            bool filtered = AuraEditorPrefs.FilterNavDebugViewToSelection;
             GUIContent filterLabel = Labels.GestureRecognizer.GetNavGraphFilterLabel(filtered);
-            NovaEditorPrefs.FilterNavDebugViewToSelection = GUI.Toggle(toolBar, filtered, filterLabel, NovaGUI.Styles.ToolbarButtonRight);
+            AuraEditorPrefs.FilterNavDebugViewToSelection = GUI.Toggle(toolBar, filtered, filterLabel, AuraGUI.Styles.ToolbarButtonRight);
             EditorGUI.EndDisabledGroup();
 
             if (EditorGUI.EndChangeCheck())

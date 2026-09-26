@@ -1,4 +1,4 @@
-Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
+Shader "Hidden/Aura/AuraTextBlockStandardSpecularTransparent"
 {
     Properties
     {
@@ -115,8 +115,8 @@ Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
 			// 
 
             // compile directives
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -148,7 +148,12 @@ Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
 
             #define NOVA_STANDARDSPECULAR_LIGHTING
             
-            #pragma multi_compile_local __ OUTLINE_ON            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../TextBlock.cginc"
+            #pragma multi_compile_local __ OUTLINE_ON
+            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../TextBlock.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -166,8 +171,8 @@ Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
             Blend [_AdditiveLightingSrcBlend] [_AdditiveLightingDstBlend]
             ZTest [_ZTest]
             
-            CGPROGRAM
-            #define _ALPHABLEND_ON 1
+            CGPROGRAMAura
+            #define _ALPHABLEAuraN 1
 
 			// 
             // compile directives
@@ -200,7 +205,12 @@ Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
 
             #define NOVA_STANDARDSPECULAR_LIGHTING
             
-            #pragma multi_compile_local __ OUTLINE_ON            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../TextBlock.cginc"
+            #pragma multi_compile_local __ OUTLINE_ON
+            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../TextBlock.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -211,8 +221,8 @@ Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
 
         // ---- shadow caster pass:
         Pass
-        {
-            Name "ShadowCaster"
+        {Aura
+            Name "ShadowCasteAura
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
             ZTest LEqual
@@ -246,7 +256,12 @@ Shader "Hidden/Nova/NovaTextBlockStandardSpecularTransparent"
 
             #define NOVA_STANDARDSPECULAR_LIGHTING
             
-            #pragma multi_compile_local __ OUTLINE_ON            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING            #include "../TextBlock.cginc"
+            #pragma multi_compile_local __ OUTLINE_ON
+            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER
+            #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
+            #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
+            #include "../TextBlock.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

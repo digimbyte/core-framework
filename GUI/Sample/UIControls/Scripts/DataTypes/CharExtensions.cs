@@ -1,6 +1,6 @@
 using TMPro;
 
-namespace NovaSamples.UIControls
+namespace AuraSamples.UIControls
 {
     /// <summary>
     /// Some utility extensions used by <see cref="TextField"/> and friends.

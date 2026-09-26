@@ -1,27 +1,27 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Layouts;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Layouts;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     [BurstCompile]
-    internal struct CoplanarSpaceBoundsJob : INovaJobParallelFor
+    internal struct CoplanarSpaceBoundsJob : IAuraJobParallelFor
     {
         [ReadOnly]
         public NativeList<DataStoreID> DirtyBatches;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<VisualElementIndex, VisualElement>> VisualElements;
+        public AuraHashMap<DataStoreID, AuraList<VisualElementIndex, VisualElement>> VisualElements;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, NovaList<CoplanarSetID, CoplanarSet>> CoplanarSets;
+        public AuraHashMap<DataStoreID, AuraList<CoplanarSetID, CoplanarSet>> CoplanarSets;
         [ReadOnly]
         public NativeList<DataStoreIndex, CoplanarSetID> CoplanarSetIDs;
         [NativeDisableContainerSafetyRestriction]
@@ -29,15 +29,15 @@ namespace Nova.Internal.Rendering
         [NativeDisableContainerSafetyRestriction]
         public NativeList<float4x4> WorldFromLocalMatrices;
         [ReadOnly]
-        public NovaHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
+        public AuraHashMap<DataStoreID, DataStoreIndex> DataStoreIDToDataStoreIndex;
         [ReadOnly]
         public NativeList<VisualModifierID, ClipMaskInfo> ClipMaskData;
         [ReadOnly]
-        public NovaHashMap<VisualModifierID, AABB> VisualModifierClipBounds;
+        public AuraHashMap<VisualModifierID, AABB> VisualModifierClipBounds;
         [ReadOnly]
         public NativeList<DataStoreIndex, VisualModifierID> VisualModifierIDs;
         [ReadOnly]
-        public NovaHashMap<RenderIndex, ComputeBufferIndex> ShadowIndices;
+        public AuraHashMap<RenderIndex, ComputeBufferIndex> ShadowIndices;
         [ReadOnly]
         public NativeList<VisualModifierID, DataStoreID> ModifierToBlockID;
         [ReadOnly]

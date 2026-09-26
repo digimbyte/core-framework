@@ -1,26 +1,26 @@
 ﻿
-using Nova.Compat;
-using Nova.Events;
-using Nova.Internal;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Layouts;
-using Nova.Internal.Rendering;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Events;
+using Aura.Internal;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Layouts;
+using Aura.Internal.Rendering;
+using Aura.Internal.Utilities;
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
-using InputModule = Nova.Internal.InputModule<Nova.UIBlock>; 
+using InputModule = Aura.Internal.InputModule<Aura.UIBlock>; 
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
-    /// Applies a set of <see cref="Nova.Layout"/> properties and <see cref="Nova.AutoLayout"/> properties across a connected transform hierarchy of UIBlocks
+    /// Applies a set of <see cref="Aura.Layout"/> properties and <see cref="Aura.AutoLayout"/> properties across a connected transform hierarchy of UIBlocks
     /// </summary>
-    [ExecuteAlways, AddComponentMenu("Nova/UIBlock")]
+    [ExecuteAlways, AddComponentMenu("Aura/UIBlock")]
     [HelpURL("https://novaui.io/manual/UIBlock.html")]
     public class UIBlock : CoreBlock, IUIBlock
     {
@@ -63,7 +63,7 @@ namespace Nova
         public virtual Color Color { get; set; }
 
         /// <summary>
-        /// The <see cref="Nova.Surface"/> configuration for this UIBlock, adjusts the mesh surface's appearance under scene lighting.
+        /// The <see cref="Aura.Surface"/> configuration for this UIBlock, adjusts the mesh surface's appearance under scene lighting.
         /// </summary>
         public ref Surface Surface
         {
@@ -91,7 +91,7 @@ namespace Nova
 
         /// <summary>
         /// Sets the GameObject's layer. Should be used instead of <c>gameobject.layer</c> to ensure that
-        /// Nova is tracking the new layer.
+        /// Aura is tracking the new layer.
         /// </summary>
         public int GameObjectLayer
         {
@@ -207,7 +207,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The size of the UIBlock. Calculated by the Nova Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
+        /// The size of the UIBlock. Calculated by the Aura Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
         /// </summary>
         /// <remarks>The final value here accounts for a combination of inputs from <see cref="Size">Size</see>, <see cref="SizeMinMax">Size Min Max</see>, 
         /// <see cref="AutoSize">Auto Size</see>, <see cref="AspectRatioAxis">Aspect Ratio Axis</see>, and the <see cref="PaddedSize">Padded Size</see> of its <see cref="Parent">Parent</see>.
@@ -225,7 +225,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// An <see cref="Nova.AutoSize"/> value for each axis. Provides a way to have this UIBlock's <see cref="CalculatedSize">Calculated Size</see> adapt to the size of its <see cref="Parent">Parent</see> or size of its children automatically.
+        /// An <see cref="Aura.AutoSize"/> value for each axis. Provides a way to have this UIBlock's <see cref="CalculatedSize">Calculated Size</see> adapt to the size of its <see cref="Parent">Parent</see> or size of its children automatically.
         /// </summary>
         /// <remarks>When set to a value other than <see cref="AutoSize.None"/> for a given axis, this will override any <see cref="Size">Size</see> configuration along that same axis.</remarks>
         public ref ThreeD<AutoSize> AutoSize
@@ -282,7 +282,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The amount of space applied <i>outward</i> from the bounds defined by <see cref="RotatedSize">Rotated Size</see>. Calculated by the Nova Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
+        /// The amount of space applied <i>outward</i> from the bounds defined by <see cref="RotatedSize">Rotated Size</see>. Calculated by the Aura Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
         /// </summary>
         /// <remarks>
         /// The final value here accounts for a combination of inputs from <see cref="Margin">Margin</see>, <see cref="MarginMinMax">Margin Min Max</see>, and the <see cref="PaddedSize">Padded Size</see> of its <see cref="Parent">Parent</see>.
@@ -403,11 +403,11 @@ namespace Nova
         /// </description></item>
         /// <item><description>
         /// This value will be converted and written to <c><see cref="Transform.localPosition">transform.localPosition</see></c>
-        /// as part of the Nova Engine update at the end of the current frame.
+        /// as part of the Aura Engine update at the end of the current frame.
         /// </description></item>
         /// <item><description>
         /// If the <see cref="Parent">Parent's</see> <c><see cref="AutoLayout">AutoLayout</see>.<see cref="AutoLayout.Enabled">Enabled</see> == <see langword="true"/></c>,
-        /// the <see cref="AutoLayout"/> will override this <c>Position</c> along the <see cref="Nova.AutoLayout"/>.<see cref="AutoLayout.Axis">Axis.</see>
+        /// the <see cref="AutoLayout"/> will override this <c>Position</c> along the <see cref="Aura.AutoLayout"/>.<see cref="AutoLayout.Axis">Axis.</see>
         /// </description></item>
         /// </list>
         /// </remarks>
@@ -523,7 +523,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The local position of the UIBlock, offset from its configured <see cref="Alignment">Alignment</see>. Calculated by the Nova Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
+        /// The local position of the UIBlock, offset from its configured <see cref="Alignment">Alignment</see>. Calculated by the Aura Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
         /// </summary>
         /// <remarks>
         /// The final value here accounts for a combination of inputs from <see cref="Position">Position</see>, <see cref="PositionMinMax">Position Min Max</see>, <c><see cref="Transform.localPosition">transform.localPosition</see></c>, 
@@ -571,7 +571,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The amount of space applied <i>inward</i> from the bounds defined by <see cref="CalculatedSize">Calculated Size</see>. Calculated by the Nova Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
+        /// The amount of space applied <i>inward</i> from the bounds defined by <see cref="CalculatedSize">Calculated Size</see>. Calculated by the Aura Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
         /// </summary>
         /// <remarks>
         /// The final value here accounts for a combination of inputs from <see cref="Padding">Padding</see>, <see cref="PaddingMinMax">Padding Min Max</see>, and <see cref="CalculatedSize">Calculated Size</see>.
@@ -632,7 +632,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The calculated output of <see cref="AutoLayout.Spacing"/>. Calculated by the Nova Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
+        /// The calculated output of <see cref="AutoLayout.Spacing"/>. Calculated by the Aura Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
         /// </summary>
         /// <remarks>
         /// The final value here accounts for a combination of inputs from <see cref="AutoLayout.Spacing"/>, <see cref="AutoLayout.SpacingMinMax"/>, and the <see cref="PaddedSize">Padded Size</see> of this UIBlock.</remarks>
@@ -645,7 +645,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The calculated output of <see cref="AutoLayout.Cross"/>.<see cref="CrossLayout.Spacing">Spacing</see>. Calculated by the Nova Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
+        /// The calculated output of <see cref="AutoLayout.Cross"/>.<see cref="CrossLayout.Spacing">Spacing</see>. Calculated by the Aura Engine once per dirty frame and whenenever <see cref="CalculateLayout"/> is called explicitly.
         /// </summary>
         /// <remarks>
         /// The final value here accounts for a combination of inputs from <see cref="AutoLayout.Cross"/>.<see cref="CrossLayout.Spacing">Spacing</see>, <see cref="AutoLayout.Cross"/>.<see cref="CrossLayout.SpacingMinMax">SpacingMinMax</see>, and the <see cref="PaddedSize">Padded Size</see> of this UIBlock.</remarks>
@@ -658,11 +658,11 @@ namespace Nova
         }
 
         /// <summary>
-        /// The Nova Engine will automatically process all modified layout properties at the end of each frame. However, some UI scenarios may require knowing the <see cref="CalculatedSize">Calculated Size</see>
-        /// or another calculated layout value intra-frame, before the Nova Engine has had a chance to run. Calling this method will force an inline recalculation of all modified layout properties on this UIBlock. 
+        /// The Aura Engine will automatically process all modified layout properties at the end of each frame. However, some UI scenarios may require knowing the <see cref="CalculatedSize">Calculated Size</see>
+        /// or another calculated layout value intra-frame, before the Aura Engine has had a chance to run. Calling this method will force an inline recalculation of all modified layout properties on this UIBlock. 
         /// </summary>
         /// <remarks>
-        /// This method only guarantees up-to-date calculated values for this UIBlock alone, meaning other UIBlocks in this UIBlock's hierarchy may not be updated in their entirety until the Nova Engine runs without
+        /// This method only guarantees up-to-date calculated values for this UIBlock alone, meaning other UIBlocks in this UIBlock's hierarchy may not be updated in their entirety until the Aura Engine runs without
         /// their own explicit call to <c>CalculateLayout()</c>.<br/>
         /// This call will always overwrite <c>transform.localPosition</c> with the calculated layout position.
         /// <c><see cref="GameObject.activeInHierarchy">gameObject.activeInHierarchy</see></c> must be <see langword="true"/>, otherwise nothing will be recalculated.
@@ -681,7 +681,7 @@ namespace Nova
 
         /// <summary>
         /// Move this <see cref="UIBlock"/> to the given Transform <paramref name="worldPosition"/> 
-        /// and update <see cref="Position"/> accordingly such that when the Nova Engine
+        /// and update <see cref="Position"/> accordingly such that when the Aura Engine
         /// recalculates the modified layout properties, the <i>resulting</i>
         /// <c>transform.position</c> will equal <paramref name="worldPosition"/>.
         /// </summary>
@@ -713,7 +713,7 @@ namespace Nova
 
         /// <summary>
         /// Move this <see cref="UIBlock"/> to the given Transform <paramref name="localPosition"/> 
-        /// and update <see cref="Position"/> accordingly such that when the Nova Engine
+        /// and update <see cref="Position"/> accordingly such that when the Aura Engine
         /// recalculates the modified layout properties, the <i>resulting</i> 
         /// <c>transform.localPosition</c> will equal <paramref name="localPosition"/>.
         /// </summary>

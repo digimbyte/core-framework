@@ -1,7 +1,7 @@
 ﻿
-using Nova.Compat;
+using Aura.Compat;
 
-namespace Nova.Internal.Utilities
+namespace Aura.Internal.Utilities
 {
     internal class UnityVersionUtilsImpl : UnityVersionUtils.Impl
     {

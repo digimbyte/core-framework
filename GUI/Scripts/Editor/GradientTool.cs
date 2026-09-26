@@ -1,11 +1,11 @@
 ﻿
-using Nova.Compat;
-using Nova.Editor.GUIs;
-using Nova.Internal.Utilities;
+using Aura.Compat;
+using Aura.Editor.GUIs;
+using Aura.Internal.Utilities;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEngine;
-namespace Nova.Editor.Tools
+namespace Aura.Editor.Tools
 {
     [FallbackTool(typeof(UIBlockTool))]
 #if UNITY_2021_2_OR_NEWER

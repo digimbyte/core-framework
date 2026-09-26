@@ -1,17 +1,17 @@
 ﻿
-using Nova.Compat;
-using Nova.Internal.Collections;
-using Nova.Internal.Core;
-using Nova.Internal.Hierarchy;
-using Nova.Internal.Utilities;
-using Nova.Internal.Utilities.Extensions;
+using Aura.Compat;
+using Aura.Internal.Collections;
+using Aura.Internal.Core;
+using Aura.Internal.Hierarchy;
+using Aura.Internal.Utilities;
+using Aura.Internal.Utilities.Extensions;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Nova.Internal.Rendering
+namespace Aura.Internal.Rendering
 {
     internal static class MaterialCache
     {
@@ -36,8 +36,8 @@ namespace Nova.Internal.Rendering
         private static List<ValuePair<ShaderCacheIndex, MaterialDescriptor>> materialDescriptors = new List<ValuePair<ShaderCacheIndex, MaterialDescriptor>>(Constants.SomeElementsInitialCapacity);
         private static List<ShaderDescriptor> shaderDescriptors = new List<ShaderDescriptor>(Constants.SomeElementsInitialCapacity);
 
-        public static NovaHashMap<MaterialDescriptor, MaterialCacheIndex> CachedMaterials;
-        public static NovaHashMap<ShaderDescriptor, ShaderCacheIndex> CachedShaders;
+        public static AuraHashMap<MaterialDescriptor, MaterialCacheIndex> CachedMaterials;
+        public static AuraHashMap<ShaderDescriptor, ShaderCacheIndex> CachedShaders;
 
         public static NativeList<ValuePair<ShaderCacheIndex, MaterialDescriptor>> MaterialsToAdd;
         public static NativeList<ShaderDescriptor> ShadersToAdd;
@@ -228,18 +228,18 @@ namespace Nova.Internal.Rendering
                 ref ShaderDescriptor descriptor = ref ShadersToAdd.ElementAt(i);
 
 #pragma warning disable CS0162 // Unreachable code detected
-                if (NovaApplication.ConstIsEditor)
+                if (AuraApplication.ConstIsEditor)
                 {
-                    if (NovaSettings.Config.ShouldLog(LogFlags.LightingModelNotIncludedInBuild) &&
+                    if (AuraSettings.Config.ShouldLog(LogFlags.LightingModelNotIncludedInBuild) &&
                         !ShaderUtils.IsIncluded(descriptor.VisualType, descriptor.LightingModel))
                     {
-                        Debug.LogWarning($"{descriptor.LightingModel.ToName()} lighting model being used on {descriptor.VisualType.ToBlockType().ToName()}, but it is not marked to be included in builds. If you wish to use this lighting model in builds, you can specify to include it in NovaSettings. {Constants.LogDisableMessage}");
+                        Debug.LogWarning($"{descriptor.LightingModel.ToName()} lighting model being used on {descriptor.VisualType.ToBlockType().ToName()}, but it is not marked to be included in builds. If you wish to use this lighting model in builds, you can specify to include it in AuraSettings. {Constants.LogDisableMessage}");
                     }
                 }
                 else if (!ShaderUtils.IsIncluded(descriptor.VisualType, descriptor.LightingModel))
                 {
                     // Shader wasn't included in build
-                    Debug.LogError($"{descriptor.LightingModel.ToName()} lighting model being used on {descriptor.VisualType.ToBlockType().ToName()}, but it was not marked to be included in builds. You can specify to include it in NovaSettings.");
+                    Debug.LogError($"{descriptor.LightingModel.ToName()} lighting model being used on {descriptor.VisualType.ToBlockType().ToName()}, but it was not marked to be included in builds. You can specify to include it in AuraSettings.");
                 }
 #pragma warning restore CS0162 // Unreachable code detected
 
@@ -299,7 +299,7 @@ namespace Nova.Internal.Rendering
 
         private static void EnsureSupportedTMPShader(Material material, TextMaterialID textMaterialID)
         {
-            if (!NovaSettings.Config.ShouldLog(LogFlags.UnsupportedTextShader) ||
+            if (!AuraSettings.Config.ShouldLog(LogFlags.UnsupportedTextShader) ||
                 IsSupportedTMPShader(material.shader))
             {
                 return;
@@ -315,7 +315,7 @@ namespace Nova.Internal.Rendering
                 gameObject = RenderingDataStore.Instance.Elements[dataStoreID].Transform.gameObject;
             }
 
-            Debug.LogWarning($"Unsupported text shader [{material.shader.name}] being used, Nova only supports [{Constants.TMPSupportedShaderName}]. {Constants.LogDisableMessage}", gameObject);
+            Debug.LogWarning($"Unsupported text shader [{material.shader.name}] being used, Aura only supports [{Constants.TMPSupportedShaderName}]. {Constants.LogDisableMessage}", gameObject);
         }
 
         private static Shader supportedTMPShader = null;

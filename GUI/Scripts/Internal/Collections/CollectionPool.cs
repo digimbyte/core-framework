@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace Nova.Internal.Collections
+namespace Aura.Internal.Collections
 {
     internal class ListPool<T> : CollectionPool<PooledList<T>, T> { }
 

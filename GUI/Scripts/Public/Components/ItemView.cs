@@ -1,10 +1,10 @@
 ﻿
-using Nova.Compat;
-using Nova.Events;
+using Aura.Compat;
+using Aura.Events;
 using System;
 using UnityEngine;
 
-namespace Nova
+namespace Aura
 {
     /// <summary>
     /// An abstract base class to be inherited by all user-defined, data-bindable <see cref="ItemView"/>.<see cref="ItemView.Visuals">Visuals</see> types.
@@ -42,12 +42,12 @@ namespace Nova
     public delegate bool PrefabProviderCallback<T>(T index, out ItemView sourcePrefab);
 
     /// <summary>
-    /// A UI Component which supports dynamic serialization of user-defined sets of visual fields (e.g. <see cref="Nova.UIBlock"/>s, any other <see cref="MonoBehaviour"/>s, etc.).
+    /// A UI Component which supports dynamic serialization of user-defined sets of visual fields (e.g. <see cref="Aura.UIBlock"/>s, any other <see cref="MonoBehaviour"/>s, etc.).
     /// The <see cref="ItemView"/> acts as a "middle man" when binding user-provided data types to a <see cref="ListView"/> or <see cref="GridView"/>
     /// </summary>
     [RequireComponent(typeof(UIBlock)), DisallowMultipleComponent]
     [HelpURL("https://novaui.io/manual/ItemView.html")]
-    [AddComponentMenu("Nova/Item View")]
+    [AddComponentMenu("Aura/Item View")]
     public sealed class ItemView : MonoBehaviour, IEventTargetProvider, IGameObjectActiveReceiver
     {
         #region Public
@@ -68,7 +68,7 @@ namespace Nova
         }
 
         /// <summary>
-        /// The <see cref="Nova.UIBlock"/> attached to <c>this.gameObject</c>.
+        /// The <see cref="Aura.UIBlock"/> attached to <c>this.gameObject</c>.
         /// </summary>
         public UIBlock UIBlock
         {
@@ -164,7 +164,7 @@ namespace Nova
 
         private void EnsureInitialized()
         {
-            if (!NovaApplication.InPlayer(this))
+            if (!AuraApplication.InPlayer(this))
             {
                 return;
             }
