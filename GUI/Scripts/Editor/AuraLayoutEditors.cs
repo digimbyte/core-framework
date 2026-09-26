@@ -141,7 +141,7 @@ namespace Aura.Editor.GUIs
                         ApplyAutosizeTypeChanges(layout.Size.Z, auto.Z);
                     }
 
-                    if (uiBlock is UIBlock2D && (uiBlock.AutoSize.X == AutoSize.Expand || uiBlock.AutoSize.Y == AutoSize.Expand))
+                    if ((uiBlock is UIBlock2D || uiBlock is TextBlock) && (uiBlock.AutoSize.X == AutoSize.Expand || uiBlock.AutoSize.Y == AutoSize.Expand))
                     {
                         DrawExpandWeightField(layout.ExpandWeightProp);
                     }
