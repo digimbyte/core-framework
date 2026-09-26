@@ -1,4 +1,4 @@
-Shader "Hidden/Aura/AuraDropShadowBlinnPhongTransparent"
+Shader "Hidden/Aura/AuraTextBlockStandardSpecularTransparent"
 {
     Properties
     {
@@ -15,7 +15,77 @@ Shader "Hidden/Aura/AuraDropShadowBlinnPhongTransparent"
         [HideInInspector]
         _AdditiveLightingDstBlend ("AdditiveLightingDstBlend", Float) = 1
         [HideInInspector]
-        _CullMode ("CullMode", Float) = 2
+        [HDR]_FaceColor ("Face Color", Color) = (1, 1, 1, 1)
+        [HideInInspector]
+        _FaceDilate ("Face Dilate", Range(-1, 1)) = 0
+        [HideInInspector]
+        [HDR]_OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
+        [HideInInspector]
+        _OutlineWidth ("Outline Thickness", Range(0, 1)) = 0
+        [HideInInspector]
+        _OutlineSoftness ("Outline Softness", Range(0, 1)) = 0
+        [HideInInspector]
+        [HDR]_UnderlayColor ("Border Color", Color) = (0, 0, 0, .5)
+        [HideInInspector]
+        _UnderlayOffsetX ("Border OffsetX", Range(-1, 1)) = 0
+        [HideInInspector]
+        _UnderlayOffsetY ("Border OffsetY", Range(-1, 1)) = 0
+        [HideInInspector]
+        _UnderlayDilate ("Border Dilate", Range(-1, 1)) = 0
+        [HideInInspector]
+        _UnderlaySoftness ("Border Softness", Range(0, 1)) = 0
+        [HideInInspector]
+        _WeightNormal ("Weight Normal", float) = 0
+        [HideInInspector]
+        _WeightBold ("Weight Bold", float) = .5
+        [HideInInspector]
+        _ShaderFlags ("Flags", float) = 0
+        [HideInInspector]
+        _ScaleRatioA ("Scale RatioA", float) = 1
+        [HideInInspector]
+        _ScaleRatioB ("Scale RatioB", float) = 1
+        [HideInInspector]
+        _ScaleRatioC ("Scale RatioC", float) = 1
+        [HideInInspector]
+        _MainTex ("Font Atlas", 2D) = "white" { }
+        [HideInInspector]
+        _TextureWidth ("Texture Width", float) = 512
+        [HideInInspector]
+        _TextureHeight ("Texture Height", float) = 512
+        [HideInInspector]
+        _GradientScale ("Gradient Scale", float) = 5
+        [HideInInspector]
+        _ScaleX ("Scale X", float) = 1
+        [HideInInspector]
+        _ScaleY ("Scale Y", float) = 1
+        [HideInInspector]
+        _PerspectiveFilter ("Perspective Correction", Range(0, 1)) = 0.875
+        [HideInInspector]
+        _Sharpness ("Sharpness", Range(-1, 1)) = 0
+        [HideInInspector]
+        _VertexOffsetX ("Vertex OffsetX", float) = 0
+        [HideInInspector]
+        _VertexOffsetY ("Vertex OffsetY", float) = 0
+        [HideInInspector]
+        _MaskSoftnessX ("Mask SoftnessX", float) = 0
+        [HideInInspector]
+        _MaskSoftnessY ("Mask SoftnessY", float) = 0
+        [HideInInspector]
+        _StencilComp ("Stencil Comparison", Float) = 8
+        [HideInInspector]
+        _Stencil ("Stencil ID", Float) = 0
+        [HideInInspector]
+        _StencilOp ("Stencil Operation", Float) = 0
+        [HideInInspector]
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [HideInInspector]
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        [HideInInspector]
+        _CullMode ("Cull Mode", Float) = 0
+        [HideInInspector]
+        _ColorMask ("Color Mask", Float) = 15
+        [HideInInspector]
+        _ClipMaskTex ("ClipMaskTex", 2D) = "white" { }
         [HideInInspector]
         _ZTest ("ZTest", Float) = 4
 
@@ -67,7 +137,7 @@ Shader "Hidden/Aura/AuraDropShadowBlinnPhongTransparent"
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
@@ -76,12 +146,14 @@ Shader "Hidden/Aura/AuraDropShadowBlinnPhongTransparent"
 
             #define NOVA_FORWARD_BASE_PASS
 
-            #define NOVA_BLINNPHONG_LIGHTING
+            #define NOVA_STANDARDSPECULAR_LIGHTING
             
+            #pragma multi_compile_local __ OUTLINE_ON
+            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
-            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../DropShadow.cginc"
+            #include "../TextBlock.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -99,13 +171,13 @@ Shader "Hidden/Aura/AuraDropShadowBlinnPhongTransparent"
             Blend [_AdditiveLightingSrcBlend] [_AdditiveLightingDstBlend]
             ZTest [_ZTest]
             
-            CGPROGRAM
-            #define _ALPHABLEND_ON 1
-Aura
-			// Aura
+            CGPROGRAMAura
+            #define _ALPHABLEAuraN 1
+
+			// 
             // compile directives
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -124,19 +196,21 @@ Aura
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_BLINNPHONG_LIGHTING
+            #define NOVA_STANDARDSPECULAR_LIGHTING
             
+            #pragma multi_compile_local __ OUTLINE_ON
+            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
-            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../DropShadow.cginc"
+            #include "../TextBlock.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -147,18 +221,18 @@ Aura
 
         // ---- shadow caster pass:
         Pass
-        {
-            Name "ShadowCaster"
+        {Aura
+            Name "ShadowCasteAura
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
-            ZTest LEqualAura
-Aura
+            ZTest LEqual
+
             CGPROGRAM
             #define _ALPHABLEND_ON 1
 
 			// 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -175,17 +249,19 @@ Aura
             
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_BLINNPHONG_LIGHTING
+            #define NOVA_STANDARDSPECULAR_LIGHTING
             
+            #pragma multi_compile_local __ OUTLINE_ON
+            #pragma multi_compile_local __ UNDERLAY_ON UNDERLAY_INNER
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
-            #pragma multi_compile_local __ NOVA_RADIAL_FILL
+            #pragma multi_compile_local __ NOVA_SUPER_SAMPLE
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../DropShadow.cginc"
+            #include "../TextBlock.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

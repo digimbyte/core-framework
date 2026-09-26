@@ -1,4 +1,4 @@
-Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
+Shader "Hidden/Aura/AuraUIBlock2DBlinnPhongTransparent"
 {
     Properties
     {
@@ -16,6 +16,10 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
         _AdditiveLightingDstBlend ("AdditiveLightingDstBlend", Float) = 1
         [HideInInspector]
         _CullMode ("CullMode", Float) = 2
+        [HideInInspector]
+        _AuraTextureArray ("AuraTextureArray", 2DArray) = "" { }
+        [HideInInspector]
+        _AuraDynamicTexture ("AuraDynamicTexture", 2D) = "white" { }
         [HideInInspector]
         _ClipMaskTex ("ClipMaskTex", 2D) = "white" { }
         [HideInInspector]
@@ -43,6 +47,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
             ZTest [_ZTest]
 
             CGPROGRAM
+            #define _ALPHABLEND_ON 1
 			// 
 
             // compile directives
@@ -55,7 +60,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
             #pragma instancing_options nolightmap
             #pragma instancing_options nolodfade
             
-            #pragma multi_compile_fwdbase
+            #pragma multi_compile_fwdbasealpha noshadow
 
             #pragma skip_variants LIGHTMAP_ON DIRLIGHTMAP_COMBINED DYNAMICLIGHTMAP_ON LIGHTMAP_SHADOW_MIXING SHADOWS_SHADOWMASK
             #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
@@ -68,7 +73,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            #include "UnityPBSLighting.cginc"
+            
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
@@ -77,11 +82,15 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
 
             #define NOVA_FORWARD_BASE_PASS
 
-            #define NOVA_STANDARD_LIGHTING
+            #define NOVA_BLINNPHONG_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE
+            #pragma multi_compile_local __ NOVA_INNER_SHADOW
+            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../UIBlock3D.cginc"
+            #include "../UIBlock2D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -98,13 +107,14 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
             ZWrite Off
             Blend [_AdditiveLightingSrcBlend] [_AdditiveLightingDstBlend]
             ZTest [_ZTest]
-            
-            CGPROGRAM
+            Aura
+            CGPROGRAMAura
+            #define _ALPHABLEND_ON 1
 
-			// Aura
-            // compile directAura
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+			// 
+            // compile directives
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -113,7 +123,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
 
             #define NOVA_FORWARD_ADD_PASS
 
-            #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fwdadd_fullshadows noshadow
             
             #include "HLSLSupport.cginc"
             
@@ -123,18 +133,22 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            #include "UnityPBSLighting.cginc"
+            
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_STANDARD_LIGHTING
+            #define NOVA_BLINNPHONG_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE
+            #pragma multi_compile_local __ NOVA_INNER_SHADOW
+            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../UIBlock3D.cginc"
+            #include "../UIBlock2D.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -143,19 +157,20 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
 
         }
 
-        // ---- shadow caster pass:
-        Pass
+        // ---- shadow castAuraass:
+        PassAura
         {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
             ZTest LEqual
-Aura
-            CGPROGRAMAura
+
+            CGPROGRAM
+            #define _ALPHABLEND_ON 1
 
 			// 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -172,16 +187,20 @@ Aura
             
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            #include "UnityPBSLighting.cginc"
+            
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_STANDARD_LIGHTING
+            #define NOVA_BLINNPHONG_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
+            #pragma multi_compile_local __ NOVA_DYNAMIC_IMAGE NOVA_STATIC_IMAGE
+            #pragma multi_compile_local __ NOVA_INNER_SHADOW
+            #pragma multi_compile_local __ NOVA_OUTER_BORDER NOVA_INNER_BORDER NOVA_CENTER_BORDER
+            #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../UIBlock3D.cginc"
+            #include "../UIBlock2D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

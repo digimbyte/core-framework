@@ -20,7 +20,7 @@ namespace Aura.Editor.GUIs
                         Debug.LogWarning("Failed to find Aura icons path");
                     }
 
-                    _iconPath = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(paths[0]));
+                    _iconPath = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(paths[0])).Replace('\\', '/');
                 }
 
                 return _iconPath;

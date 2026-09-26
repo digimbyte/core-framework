@@ -1,4 +1,4 @@
-Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
+Shader "Hidden/Aura/AuraUIBlock3DStandardOpaque"
 {
     Properties
     {
@@ -16,6 +16,8 @@ Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
         _AdditiveLightingDstBlend ("AdditiveLightingDstBlend", Float) = 1
         [HideInInspector]
         _CullMode ("CullMode", Float) = 2
+        [HideInInspector]
+        _ClipMaskTex ("ClipMaskTex", 2D) = "white" { }
         [HideInInspector]
         _ZTest ("ZTest", Float) = 4
 
@@ -41,7 +43,6 @@ Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
             ZTest [_ZTest]
 
             CGPROGRAM
-            #define _ALPHABLEND_ON 1
 			// 
 
             // compile directives
@@ -54,7 +55,7 @@ Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
             #pragma instancing_options nolightmap
             #pragma instancing_options nolodfade
             
-            #pragma multi_compile_fwdbasealpha noshadow
+            #pragma multi_compile_fwdbase
 
             #pragma skip_variants LIGHTMAP_ON DIRLIGHTMAP_COMBINED DYNAMICLIGHTMAP_ON LIGHTMAP_SHADOW_MIXING SHADOWS_SHADOWMASK
             #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
@@ -67,7 +68,7 @@ Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
@@ -76,12 +77,11 @@ Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
 
             #define NOVA_FORWARD_BASE_PASS
 
-            #define NOVA_LAMBERT_LIGHTING
+            #define NOVA_STANDARD_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
-            #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../DropShadow.cginc"
+            #include "../UIBlock3D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP
@@ -100,12 +100,11 @@ Shader "Hidden/Aura/AuraDropShadowLambertTransparent"
             ZTest [_ZTest]
             
             CGPROGRAM
-            #define _ALPHABLEND_ON 1
-Aura
+
 			// Aura
-            // compile directives
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            // compile directAura
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -114,7 +113,7 @@ Aura
 
             #define NOVA_FORWARD_ADD_PASS
 
-            #pragma multi_compile_fwdadd_fullshadows noshadow
+            #pragma multi_compile_fwdadd_fullshadows
             
             #include "HLSLSupport.cginc"
             
@@ -124,19 +123,18 @@ Aura
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_LAMBERT_LIGHTING
+            #define NOVA_STANDARD_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
-            #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../DropShadow.cginc"
+            #include "../UIBlock3D.cginc"
 
             
             NOVA_DUMMY_INSTANCE_SETUP
@@ -151,14 +149,13 @@ Aura
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
-            ZTest LEqualAura
+            ZTest LEqual
 Aura
-            CGPROGRAM
-            #define _ALPHABLEND_ON 1
+            CGPROGRAMAura
 
 			// 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -175,17 +172,16 @@ Aura
             
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_LAMBERT_LIGHTING
+            #define NOVA_STANDARD_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
-            #pragma multi_compile_local __ NOVA_RADIAL_FILL
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
-            #include "../DropShadow.cginc"
+            #include "../UIBlock3D.cginc"
 
 
             NOVA_DUMMY_INSTANCE_SETUP

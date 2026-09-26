@@ -1,4 +1,4 @@
-Shader "Hidden/Aura/AuraUIBlock3DBlinnPhongOpaque"
+Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
 {
     Properties
     {
@@ -68,7 +68,7 @@ Shader "Hidden/Aura/AuraUIBlock3DBlinnPhongOpaque"
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
@@ -77,7 +77,7 @@ Shader "Hidden/Aura/AuraUIBlock3DBlinnPhongOpaque"
 
             #define NOVA_FORWARD_BASE_PASS
 
-            #define NOVA_BLINNPHONG_LIGHTING
+            #define NOVA_STANDARDSPECULAR_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
@@ -103,8 +103,8 @@ Shader "Hidden/Aura/AuraUIBlock3DBlinnPhongOpaque"
 
 			// Aura
             // compile directAura
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -123,14 +123,14 @@ Shader "Hidden/Aura/AuraUIBlock3DBlinnPhongOpaque"
             #include "UnityShaderUtilities.cginc"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #include "AutoLight.cginc"
 
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_BLINNPHONG_LIGHTING
+            #define NOVA_STANDARDSPECULAR_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
@@ -154,8 +154,8 @@ Aura
             CGPROGRAMAura
 
 			// 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -172,12 +172,12 @@ Aura
             
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            
+            #include "UnityPBSLighting.cginc"
             #define INTERNAL_DATA
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_BLINNPHONG_LIGHTING
+            #define NOVA_STANDARDSPECULAR_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING

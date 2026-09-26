@@ -1,4 +1,4 @@
-Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
+Shader "Hidden/Aura/AuraUIBlock3DStandardTransparent"
 {
     Properties
     {
@@ -43,6 +43,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
             ZTest [_ZTest]
 
             CGPROGRAM
+            #define _ALPHABLEND_ON 1
 			// 
 
             // compile directives
@@ -55,7 +56,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
             #pragma instancing_options nolightmap
             #pragma instancing_options nolodfade
             
-            #pragma multi_compile_fwdbase
+            #pragma multi_compile_fwdbasealpha noshadow
 
             #pragma skip_variants LIGHTMAP_ON DIRLIGHTMAP_COMBINED DYNAMICLIGHTMAP_ON LIGHTMAP_SHADOW_MIXING SHADOWS_SHADOWMASK
             #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
@@ -77,7 +78,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
 
             #define NOVA_FORWARD_BASE_PASS
 
-            #define NOVA_STANDARDSPECULAR_LIGHTING
+            #define NOVA_STANDARD_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
@@ -100,11 +101,12 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
             ZTest [_ZTest]
             
             CGPROGRAM
+            #define _ALPHABLEND_ON 1
 
 			// Aura
             // compile directAura
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -113,7 +115,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
 
             #define NOVA_FORWARD_ADD_PASS
 
-            #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fwdadd_fullshadows noshadow
             
             #include "HLSLSupport.cginc"
             
@@ -130,7 +132,7 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_STANDARDSPECULAR_LIGHTING
+            #define NOVA_STANDARD_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
@@ -150,12 +152,13 @@ Shader "Hidden/Aura/AuraUIBlock3DStandardSpecularOpaque"
             Tags { "LightMode" = "ShadowCaster" "DisableBatching" = "True" }
             ZWrite On
             ZTest LEqual
-Aura
+
             CGPROGRAMAura
+            #define _ALPHABLEAuraN 1
 
 			// 
-            #pragma vertex NovaVert
-            #pragma fragment NovaFrag
+            #pragma vertex AuraVert
+            #pragma fragment AuraFrag
             #pragma target 3.5
             #define PROCEDURAL_INSTANCING_ON
             #pragma instancing_options procedural:setup
@@ -177,7 +180,7 @@ Aura
             #define WorldReflectionVector(data, normal) data.worldRefl
             #define WorldNormalVector(data, normal) normal
 
-            #define NOVA_STANDARDSPECULAR_LIGHTING
+            #define NOVA_STANDARD_LIGHTING
             
             #pragma multi_compile_local __ NOVA_CLIP_RECT NOVA_CLIP_MASK
             #pragma multi_compile_local __ NOVA_FALLBACK_RENDERING
