@@ -7,6 +7,13 @@ namespace Aura.Editor
     [CustomEditor(typeof(UIBlockActivator))]
     internal class UIBlockActivatorEditor : UnityEditor.Editor
     {
+        [InitializeOnLoadMethod]
+        private static void HideSceneIcon()
+        {
+            EditorApplication.delayCall += () =>
+                GizmoUtility.SetIconEnabled(typeof(UIBlockActivator), false);
+        }
+
         public override void OnInspectorGUI() { hideFlags = target.hideFlags | HideFlags.HideInInspector; }
         protected override void OnHeaderGUI() { }
         protected override bool ShouldHideOpenButton() => true;
